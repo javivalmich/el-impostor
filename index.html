@@ -160,6 +160,141 @@ body.red .sheet .act{background:var(--red)}
 .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);
   padding:12px 18px;border-radius:14px;font-weight:700;display:none;z-index:20;max-width:90vw;text-align:center}
 .toast.on{display:block}
+
+/* ---------- sala en tiempo real ---------- */
+#s-game.on{display:flex;flex-direction:column}
+#s-game>*{order:5}
+#s-game>.gtop{order:0}
+#s-game>.netline{order:1}
+#s-game>.elimban{order:2}
+#s-game>.card{order:3}
+#s-game>#phaseBox{order:4}
+#s-game.ph-vote>#phaseBox{order:2}
+.wrap.game{padding-bottom:110px}
+.gtop .who{display:flex;align-items:center;gap:10px;min-width:0}
+.gtop .me{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.netline{display:flex;align-items:center;justify-content:center;gap:7px;color:var(--muted);font-size:.86rem;font-weight:600;min-height:1.4em;margin:-4px 0 10px;text-align:center}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#2fbf71;box-shadow:0 0 0 3px rgba(47,191,113,.22);flex:none}
+.dot.off{background:var(--muted);opacity:.5;box-shadow:none}
+.av{width:42px;height:42px;border-radius:50%;background:var(--surface2);object-fit:cover;flex:none;display:block;border:2px solid var(--line)}
+.av.sm{width:32px;height:32px;border-width:1.5px}
+.av.xl{width:min(44vw,170px);height:min(44vw,170px);border:4px solid rgba(255,255,255,.85)}
+.elimban{background:#0e0e11;color:#fff;border:2px solid var(--red);border-radius:16px;text-align:center;padding:10px 14px;margin-bottom:12px;font-weight:800;letter-spacing:.06em}
+.elimban small{display:block;font-weight:600;letter-spacing:0;color:#c9c9d1;margin-top:1px}
+.phase{margin:14px 0 4px}
+.phase .pt{font-weight:900;font-size:1.5rem;line-height:1.1}
+.phase p{color:var(--muted);margin-top:4px}
+.phase p b{color:var(--text)}
+.vlist{display:grid;gap:8px;margin-top:12px}
+.vbtn{display:flex;align-items:center;gap:12px;width:100%;padding:9px 14px 9px 10px;border:2px solid var(--line);border-radius:18px;background:var(--surface);font-weight:800;font-size:1.15rem;text-align:left;min-height:58px}
+.vbtn span.n{flex:1;min-width:0;overflow-wrap:anywhere}
+.vbtn.on{border-color:var(--red);background:var(--red);color:#fff}
+.vbtn.on .av{border-color:#fff}
+.vbtn .chk{font-size:1.3rem;opacity:0}
+.vbtn.on .chk{opacity:1}
+.vprog{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-weight:800}
+.vprog .bar{flex:1;height:8px;border-radius:99px;background:var(--surface2);margin-left:12px;overflow:hidden}
+.vprog .bar i{display:block;height:100%;background:var(--red);border-radius:99px;transition:width .25s}
+.plist{display:flex;flex-direction:column;padding:4px 0}
+.pl{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.pl:last-child{border-bottom:0}
+.pl .nm2{font-weight:800;flex:1;min-width:0;overflow-wrap:anywhere;display:flex;align-items:center;gap:8px}
+.pl .tg{font-size:.7rem;font-weight:800;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--surface2);color:var(--muted);text-transform:uppercase}
+.pl.dead .nm2 b{text-decoration:line-through;opacity:.55}
+.pl.dead .av{filter:grayscale(1);opacity:.5}
+.pl.me .nm2 b{color:var(--red)}
+.grid button{display:flex;align-items:center;justify-content:center;gap:9px}
+.grid button .dot{margin-left:2px}
+.act.host{margin-top:14px}
+.hostnote{font-size:.9rem;color:var(--muted);text-align:center;margin-top:10px}
+.acct{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px auto 0;color:var(--muted);font-weight:600;font-size:.95rem}
+.acct .av{width:30px;height:30px}
+.acct button{background:none;border:0;padding:6px 4px;color:var(--muted);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.field{width:100%;font:inherit;font-size:1.05rem;padding:13px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--text);margin-top:10px}
+.sheet .err{color:var(--red)}
+.sheet .fine{font-size:.85rem;margin-top:10px}
+.sheet .fine a{color:var(--red);font-weight:700}
+.act.google{background:#fff;color:#0e0e11;border:2px solid var(--line);box-shadow:none}
+
+/* revelación */
+#reveal{position:fixed;inset:0;z-index:30;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0b0b0d;color:#fff}
+#reveal.on{display:block}
+#reveal.red{background:radial-gradient(circle at 50% 30%,#ff2a24 0,var(--red) 38%,var(--red-d) 100%)}
+#reveal.white{background:#fff;color:#0e0e11}
+#reveal.neutral{background:radial-gradient(ellipse at 50% 0,#2a2a33 0,#0b0b0d 70%)}
+.rv{min-height:100%;max-width:460px;margin:0 auto;padding:calc(28px + env(safe-area-inset-top,0px)) 20px calc(130px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
+.rv .k{font-weight:700;letter-spacing:.14em;font-size:.85rem;text-transform:uppercase;opacity:.8}
+.rv .big{font-weight:900;font-size:clamp(2.1rem,11vw,3rem);line-height:1.02;letter-spacing:.03em;overflow-wrap:anywhere}
+.rv .who{font-weight:900;font-size:clamp(2.4rem,13vw,3.6rem);line-height:1;margin:6px 0;overflow-wrap:anywhere}
+.rv img.logo2{width:min(46vw,200px);filter:drop-shadow(0 12px 28px rgba(0,0,0,.5))}
+.rv img.mas{mix-blend-mode:multiply;height:min(24vh,190px);width:auto}
+.rv p{opacity:.9;max-width:34ch}
+.rv .dots span{display:inline-block;width:14px;height:14px;margin:0 5px;border-radius:50%;background:#fff}
+.rv .counts{width:100%;margin-top:16px;text-align:left;display:grid;gap:7px}
+.rv .cr{display:flex;align-items:center;gap:10px;font-weight:700}
+.rv .cr .av{width:30px;height:30px;border-width:1.5px}
+.rv .cr .nm{width:34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rv .cr .b{flex:1;height:10px;border-radius:99px;background:rgba(127,127,127,.3);overflow:hidden}
+.rv .cr .b i{display:block;height:100%;background:currentColor;border-radius:99px}
+.rv .cr .v{width:2ch;text-align:right;font-weight:900}
+.rv .box{width:100%;margin-top:14px;padding:12px 14px;border-radius:18px;background:rgba(0,0,0,.28);text-align:left}
+#reveal.white .rv .box{background:#f1f1f4}
+.rv .box h4{margin:0 0 4px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+.rv .act{margin-top:16px}
+#reveal.white .rv .act{background:var(--red)}
+#reveal.red .rv .act{background:#0e0e11}
+.rv .wait{margin-top:16px;opacity:.75;font-weight:600}
+@media (prefers-reduced-motion:no-preference){
+  .rv .dots span{animation:pulse 1s infinite}
+  .rv .dots span:nth-child(2){animation-delay:.18s}
+  .rv .dots span:nth-child(3){animation-delay:.36s}
+  @keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+  .rv .pop{animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes pop{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+  #reveal.red .rv img.logo2{animation:shake .5s}
+  .rv .beat{animation:beat .9s infinite}
+  @keyframes beat{0%,100%{transform:scale(1)}30%{transform:scale(1.06)}60%{transform:scale(.98)}}
+}
+
+/* walkie */
+#wkFab{position:fixed;right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;width:62px;height:62px;border-radius:50%;padding:0;border:0;background:var(--red);color:#fff;
+  display:none;place-items:center;box-shadow:0 8px 22px rgba(224,18,15,.45)}
+#wkFab.on{display:grid}
+#wkFab svg{width:28px;height:28px}
+#wkFab b{position:absolute;top:-3px;right:-3px;min-width:22px;height:22px;border-radius:11px;background:#fff;color:#0e0e11;font-size:.78rem;display:grid;place-items:center;padding:0 6px;border:2px solid var(--red)}
+#wkFab b[hidden]{display:none}
+#wkTalk{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:60;background:#fff;color:#0e0e11;font-weight:800;padding:8px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.4);white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+#wkTalk[hidden]{display:none}
+#wk{position:fixed;inset:0;z-index:50;display:none}
+#wk.on{display:block}
+#wk .fondo{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.wk-caja{position:absolute;left:0;right:0;bottom:0;height:min(84vh,700px);display:flex;flex-direction:column;background:var(--surface);color:var(--text);border-top:3px solid var(--red);border-radius:24px 24px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px))}
+.wk-caja>*{width:100%;max-width:460px;margin-left:auto;margin-right:auto}
+.wk-cab{display:flex;justify-content:space-between;align-items:flex-start}
+.wk-cab h3{font-weight:900;font-size:1.5rem;margin:0}
+.wk-cab p{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+.wk-cab button{background:transparent;border:0;height:40px;width:40px;padding:0;font-size:1.3rem;color:var(--muted)}
+#wkAviso{display:none;background:#0e0e11;color:#fff;border:2px solid var(--red);border-radius:14px;padding:9px 12px;font-size:.88rem;font-weight:600;margin-top:8px}
+#wkAviso.on{display:block}
+#wkLista{flex:1;overflow:auto;margin:10px auto;-webkit-overflow-scrolling:touch}
+.wk-m{padding:8px 0;border-top:1px solid var(--line);font-size:.98rem;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.wk-m b{font-weight:800}
+.wk-m .txt{flex-basis:100%;padding-left:41px;margin-top:-6px;overflow-wrap:anywhere}
+.wk-m button{min-height:32px;padding:2px 12px;font-size:.9rem;border-radius:999px;background:transparent;border:1.5px solid var(--line)}
+.wk-vacio{color:var(--muted);font-size:.95rem;text-align:center;padding:24px 10px}
+.wk-escribe{display:flex;gap:8px}
+.wk-escribe input{flex:1;min-width:0;font:inherit;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--text)}
+.wk-escribe button{border:0;border-radius:14px;padding:0 18px;background:var(--text);color:var(--bg);font-weight:800}
+.wk-escribe button:disabled,.wk-escribe input:disabled{opacity:.45}
+#wkPtt{position:relative;overflow:hidden;margin-top:10px;min-height:76px;border-radius:18px;background:var(--surface2);border:2px solid var(--red);font-weight:900;font-size:1.25rem;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;color:var(--text)}
+#wkPtt.on{background:var(--red);color:#fff}
+#wkPtt:disabled{opacity:.45;border-color:var(--line)}
+#wkPtt *{pointer-events:none}
+#wkNivel{position:absolute;left:0;bottom:0;height:6px;width:100%;background:#fff;transform:scaleX(0);transform-origin:left}
+#wkEstado{font-size:.9rem;color:var(--red);font-weight:700;margin-top:8px;min-height:1.3em;text-align:center}
+#wkDiag{font-size:.78rem;color:var(--muted);margin-top:2px;text-align:center}
+[hidden]{display:none!important}
+.roundbtn:disabled{opacity:1;color:var(--text);cursor:default}
 </style>
 </head>
 <body>
@@ -174,6 +309,7 @@ body.red .sheet .act{background:var(--red)}
     <p class="lead">Todos tenéis la misma palabra menos el impostor. Cada uno la ve en su móvil.</p>
     <button class="act" id="goCreate">Crear partida</button>
     <button class="act sec" id="goJoin">Unirme con un código</button>
+    <div class="acct" id="acct"></div>
     <div class="panel">
       <details>
         <summary>Cómo se juega</summary>
@@ -182,7 +318,7 @@ body.red .sheet .act{background:var(--red)}
           <li>Los demás abren esta página, tocan «Unirme» y lo escriben. Cada uno elige un número distinto.</li>
           <li>Mantén pulsada la tarjeta para ver tu palabra. Si toda la pantalla se pone roja, eres el impostor.</li>
           <li>Por turnos, cada uno dice una palabra relacionada sin ser demasiado obvio. El impostor intenta pasar desapercibido.</li>
-          <li>Votad quién es el impostor. Luego tocad «Ver solución» y pasad a la siguiente ronda.</li>
+          <li>Cuando acabe el debate, el anfitrión abre la votación y cada uno vota en su móvil. Se descubre al más votado y el anfitrión pasa a la siguiente ronda. Si no hay conexión, se vota en voz alta y se usa «Ver solución».</li>
         </ol>
       </details>
     </div>
@@ -204,6 +340,10 @@ body.red .sheet .act{background:var(--red)}
       <div class="row">
         <div><div class="lbl">Pista al impostor</div><div class="sub">Una palabra relacionada para disimular</div></div>
         <button class="switch" id="hintSw" role="switch" aria-checked="true" aria-label="Pista para el impostor"></button>
+      </div>
+      <div class="row">
+        <div><div class="lbl">Jugamos a distancia</div><div class="sub">Abre el walkie-talkie al empezar</div></div>
+        <button class="switch" id="remoteSw" role="switch" aria-checked="false" aria-label="Jugamos a distancia"></button>
       </div>
     </div>
     <div class="panel">
@@ -239,14 +379,18 @@ body.red .sheet .act{background:var(--red)}
     <h2>¿Quién eres?</h2>
     <p class="hint-line" id="pickSummary"></p>
     <div class="grid" id="grid"></div>
-    <p class="tiny" style="margin-top:16px">Toca tu nombre. Cada uno el suyo.</p>
+    <p class="tiny" style="margin-top:16px">Toca tu nombre. Cada uno el suyo. El punto verde indica quién ya está conectado.</p>
+    <p class="tiny" id="pickWho"></p>
+    <div class="acct" id="acct2"></div>
   </section>
 
   <section class="screen" id="s-game">
     <div class="gtop">
-      <div class="me" id="meOut">Jugador 1</div>
+      <div class="who"><span id="meAv"></span><div class="me" id="meOut">Jugador 1</div></div>
       <button class="roundbtn" id="roundBtn">Ronda 1</button>
     </div>
+    <div class="netline" id="netLine"></div>
+    <div class="elimban" id="elimBan" hidden>ELIMINADO<small>Puedes mirar y escuchar el walkie, pero no votas hasta la siguiente ronda.</small></div>
     <div class="card" id="card" tabindex="0" role="button" aria-label="Mantén pulsado para ver tu palabra">
       <div class="front">
         <div class="helmet" aria-hidden="true"><div class="visor"><i></i><i></i></div></div>
@@ -255,16 +399,38 @@ body.red .sheet .act{background:var(--red)}
       </div>
       <div class="back" id="back"></div>
     </div>
+    <div id="phaseBox"></div>
     <p class="starter" id="starter"></p>
+    <div id="legacyBox">
+      <button class="act" id="nextRound">Siguiente ronda</button>
+      <button class="act sec" id="showSol">Ver solución</button>
+    </div>
+    <div class="panel" id="plistPanel" hidden>
+      <div class="cathead"><span class="lbl">Jugadores</span><span class="sub" id="plCount"></span></div>
+      <div class="plist" id="plist"></div>
+    </div>
     <p class="tiny" id="gameInfo"></p>
-    <button class="act" id="nextRound">Siguiente ronda</button>
-    <button class="act sec" id="showSol">Ver solución</button>
     <button class="link" id="showQr">Mostrar el QR de la partida</button>
     <button class="link" id="exitGame" style="margin-top:0">Salir de la partida</button>
   </section>
 
 </div>
 
+<div id="reveal" role="dialog" aria-live="polite"></div>
+<button id="wkFab" aria-label="Abrir el walkie-talkie"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg><b id="wkBadge" hidden>0</b></button>
+<div id="wkTalk" hidden role="status"></div>
+<section id="wk" aria-hidden="false">
+  <div class="fondo" id="wkFondo"></div>
+  <div class="wk-caja" role="dialog" aria-label="Walkie-talkie">
+    <header class="wk-cab"><div><h3>Walkie-talkie</h3><p id="wkCanal"></p></div><button id="wkCerrar" aria-label="Cerrar walkie">✕</button></header>
+    <div id="wkAviso"></div>
+    <div id="wkLista"></div>
+    <div class="wk-escribe"><input id="wkTxt" maxlength="200" placeholder="Escribe un mensaje" autocomplete="off" aria-label="Mensaje para el grupo"><button id="wkEnviar">Enviar</button></div>
+    <button id="wkPtt"><span id="wkPttTxt">Mantén para hablar</span><i id="wkNivel"></i></button>
+    <p id="wkEstado" role="status"></p>
+    <p id="wkDiag"></p>
+  </div>
+</section>
 <div class="overlay" id="overlay"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -2617,14 +2783,16 @@ function roundInfo(c,round){
 }
 function newSeed(){try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%2**18}catch(e){return Math.floor(Math.random()*2**18)}}
 function cleanName(x){return (x||'').replace(/[~#<>]/g,'').replace(/\s+/g,' ').trim().slice(0,14)}
-function linkFor(code,names){return location.href.split('#')[0]+'#j='+code+'~'+names.map(encodeURIComponent).join('~')}
+function linkFor(code,names,remote){return location.href.split('#')[0]+'#j='+code+'~'+names.map(encodeURIComponent).join('~')+(remote?'&d=1':'')}
 function parseLink(str){
   const i=(str||'').indexOf('#j=');if(i<0)return null;
-  const parts=str.slice(i+3).split('~');const code=(parts.shift()||'').toUpperCase().replace(/[^0-9A-Z]/g,'');
+  let body=str.slice(i+3),remote=false;
+  const amp=body.indexOf('&');if(amp>=0){remote=/(^|&)d=1(&|$)/.test(body.slice(amp+1));body=body.slice(0,amp)}
+  const parts=body.split('~');const code=(parts.shift()||'').toUpperCase().replace(/[^0-9A-Z]/g,'');
   const cfg=decode(code);if(!cfg)return null;
   let names;try{names=parts.map(x=>cleanName(decodeURIComponent(x)))}catch(e){return null}
   if(names.length!==cfg.n||names.some(n=>!n))return null;
-  return {code,cfg,names};
+  return {code,cfg,names,remote};
 }
 function summaryText(c){
   const cats=CATS.filter((_,i)=>c.mask&(1<<i)).length;
@@ -2634,102 +2802,325 @@ function listNames(a){return a.length===1?a[0]:a.slice(0,-1).join(', ')+' y '+a[
 
 /* ---------- Estado ---------- */
 const $=id=>document.getElementById(id);
-let setup={n:0,k:1,hint:true,mask:ALL_MASK};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const lsGet=(k,d=null)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
+function uid(n){const a=crypto.getRandomValues(new Uint8Array(n));let s='';for(const b of a)s+='abcdefghijkmnpqrstuvwxyz23456789'[b&31];return s}
+function b64(u){let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)}
+function deb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+const vibra=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+const EN_LOCAL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const QS=new URLSearchParams(location.search);
+const HOST_GRACE=(EN_LOCAL&&(+QS.get('grace'))*1000)||30000; /* segundos sin anfitrión antes de relevarlo */
+
+let setup={n:0,k:1,hint:true,mask:ALL_MASK,remote:false};
 let names=[];try{names=JSON.parse(localStorage.getItem('impostor-names')||'[]').map(cleanName).filter(Boolean).slice(0,18)}catch(e){names=[]}
-let game=null; // {code,cfg,names,me,round}
+let game=null; // {code,cfg,names,me,round,creator,remote}
 let vibrated=0;
-function save(){try{if(game)localStorage.setItem('impostor-v2',JSON.stringify({code:game.code,names:game.names,me:game.me,round:game.round}));else localStorage.removeItem('impostor-v2')}catch(e){}}
-function load(){try{const s=JSON.parse(localStorage.getItem('impostor-v2')||'null');if(s&&s.code&&Array.isArray(s.names)){const cfg=decode(s.code);if(cfg&&s.names.length===cfg.n&&s.me>=1&&s.me<=cfg.n&&s.round>=1)return {code:s.code,cfg,names:s.names,me:s.me,round:s.round}}}catch(e){}return null}
+function save(){try{if(game)localStorage.setItem('impostor-v2',JSON.stringify({code:game.code,names:game.names,me:game.me,round:game.round,creator:!!game.creator,remote:!!game.remote}));else localStorage.removeItem('impostor-v2')}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem('impostor-v2')||'null');if(s&&s.code&&Array.isArray(s.names)){const cfg=decode(s.code);if(cfg&&s.names.length===cfg.n&&s.me>=1&&s.me<=cfg.n&&s.round>=1)return {code:s.code,cfg,names:s.names,me:s.me,round:s.round,creator:!!s.creator,remote:!!s.remote}}}catch(e){}return null}
 function saveNames(){try{localStorage.setItem('impostor-names',JSON.stringify(names))}catch(e){}}
 
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));document.body.classList.remove('red');window.scrollTo(0,0)}
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));document.body.classList.remove('red');window.scrollTo(0,0);
+  document.querySelector('.wrap').classList.toggle('game',id==='s-game');
+  $('wkFab').classList.toggle('on',id==='s-game'&&!!game);
+  if(id!=='s-game')WK.cerrar();
+}
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
 
 let toastT;
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
-function sheet(html,bind){$('sheet').innerHTML=html;$('overlay').classList.add('on');bind&&bind();const f=$('sheet').querySelector('button');f&&f.focus()}
+function sheet(html,bind){$('sheet').innerHTML=html;$('overlay').classList.add('on');bind&&bind();const f=$('sheet').querySelector('button,input');f&&f.focus()}
 function closeSheet(){$('overlay').classList.remove('on')}
 $('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeSheet()});
 
-/* ---------- Crear ---------- */
-function renderSetup(){
-  setup.n=names.length;
-  const mk=maxK(Math.max(3,setup.n));if(setup.k>mk)setup.k=mk;
-  $('kVal').textContent=setup.k;
-  const box=$('names');box.innerHTML='';
-  if(!names.length)box.innerHTML='<div class="empty">Añade el nombre de cada jugador, también el tuyo.</div>';
-  names.forEach((n,i)=>{const d=document.createElement('span');d.className='nm';d.textContent=n;const x=document.createElement('button');x.textContent='×';x.setAttribute('aria-label','Quitar a '+n);x.onclick=()=>{names.splice(i,1);saveNames();renderSetup()};d.appendChild(x);box.appendChild(d)});
-  $('nCount').textContent=names.length<3?`${names.length} de mínimo 3`:`${names.length} jugadores`;
-  $('addName').disabled=names.length>=18;$('nameIn').disabled=names.length>=18;
-  $('kMinus').disabled=setup.k<=1;$('kPlus').disabled=setup.k>=mk;
-  $('kSub').textContent=`Máximo ${mk} con ${Math.max(3,setup.n)} jugadores`;
-  $('hintSw').setAttribute('aria-checked',setup.hint);
-  document.querySelectorAll('.chip').forEach((ch,i)=>{const on=!!(setup.mask&(1<<i));ch.classList.toggle('on',on);ch.setAttribute('aria-pressed',on)});
-  $('allCats').textContent=setup.mask===ALL_MASK?'Quitar todas':'Poner todas';
-  const count=poolFor(setup.mask).length;
-  $('count').textContent=setup.mask?`${count} palabras en juego`:'Elige al menos una categoría';
-  const ok=setup.mask&&names.length>=3;$('doCreate').disabled=!ok;$('doCreate').style.opacity=ok?1:.4;
-  $('count').textContent=!setup.mask?'Elige al menos una categoría':`${count} palabras en juego`;
+/* ---------- Personaje: avatar redondo ligero ----------
+   Es el render 2D de Punto Ciego para la cabeza: imagen de serie + máscara de zonas (capucha, ojos, ropa)
+   y se recolorea en un canvas con el look del perfil. */
+const HEAD_IMG='data:image/webp;base64,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';
+const HEAD_MASK='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAAAAAB3tzPbAAAEQklEQVR42u1cbW7sIAxMrD3HnMTH5yRzkv56Ut82LF8G7Gz6o6qqADOMbRwgPo7nZ+/POa1n/fV3ikNAy48ktwS04dnkjYB2tUpOCOhA27SfgI52kHYSUBsLTJsIqF0ESBsIGMLvp3B6gd9L4fQDv4/C6Qp/B4XTF/x2CuIOf2P3pzv8jSKIR/wtY5wO4TdpID7x1w8kPvHXDyVO8VcPJl7x1w4nbvFXDih+8Rub0A78akhgz/zrnFzIFQNx7gBqQ0D9aiDuA1Bh8NdKLMj8n8fcfSGdiL2GRdpNALUPsoPBORs/2h5nK4PJBNDRhk0MXhPxo7cZLZ1YF8PPqJBWpxKAbXPtJaA74LcIKP5m/7oX7fMBXWz7nzwhrVEA06TUFQSA1dMhphaEqfmfTlcACzPYKifW7fDfXDnNVGAW/t8daxsBdYG/0LX4jD45BjqJwFT4C1KJ6fjRRUAdzT+yoCS0/ZgQWIMf7QTU1/wjA0tC2884gYX40UhAQ8y/+/OBi9lSQwJwfEamQfBHMqHrCZN4BqRGBHB4PifWMDYkwQUI5cSX5iHBBQipQAUBDSNALAVoRgBHbAXgKAzd1ImjE9AwHvCY0ENgRzaKbXi58sYWRu9i4Tjw1hxceFfCRC3MSiXqR8ZYD9jkxFjnMXJsPF2paIUtBHCvdQBTW4tPAfCkEmFcQmK7sFcTQv1nfvf0gXRvJ2az/Pg2H0DDzD3rQEQC3Iw5lQmkKFu73+oD/DYn5sR6Aa8j2OkG6xRIXm2I4ZyYZj5AcqcE/PebdQSSodXQQxTiGxLuEqCTAF24AKujEID0n/n/7Y5O/Flyd+lRwsraYWiAlBdWnCWAt152Jg5lySX/OsSMFW4gxvxoYr/G0M7/+Y6fZQLIh86PeqzIe5oVoFHoMzOg5nWAHEU3MAe/BmfDh3DlPRyUH4elkX0U4K8CtLAQLsN/8SlixTZahQaNn/ZXRdBJG1usdh8/uxJcl+ixFFPlcM2giP+CAB0xYLnvs3szHPN30EsOnDEhejEj1nQrVlHBPuiwKqW3y0aN4yYHkjl2RmbaTn9df+fgSS+mnIY17IHIYAo5QwSyoatz/LTdWAS2RQgxz1HGnJlsVPI0ufAAo4PhTNrA6QRsKGRX3R4C7Qgw1sOnNauLQMccoruPwtvvKgLXbTC8+dZJoM8T0fDv2jWEveV5ugvdGR+CcHG5TrZz4KRynSOLKuzAc6BU4dxLqz2vr621Fi3SS4yZzBiB7Z8sDZ8T0zf+qpK1cIy/Kp2mY/y+70rwufR3uL5CHUABhDchm8+w4JmBeP8AHU8Ugm83EP8VGPDdJuShAMBIwVQEVwBPLjTdhiS4AB8JIIIEdw6jCOEFN1YAzyvl3qLBeF7q9xJAFBu6qwJ4Nrb21p3Gs7W4TAIJLsA9oxC+pO60WwXwHHCEqDvtVwE8Z2R7CSCYE9xOAUQj8APTMfbCDNoj+wAAAABJRU5ErkJggg==';
+const BLANCO=7;
+const COLORES=[['Rojo','#D83A34'],['Azul','#2F6FE0'],['Verde','#2FA05A'],['Rosa','#E86FB0'],['Naranja','#EE8A2A'],['Amarillo','#F2D23A'],['Menta','#6FE0C0'],['Blanco','#F1ECE3'],['Morado','#8A55D8'],['Marrón','#9A6A45'],['Cian','#3CC7D6'],['Lima','#9BD83A'],['Granate','#9E2B4A'],['Gris','#8A8F96'],['Coral','#FF7F6B']];
+const ROPA=[['Negra',null],['Grafito','#4A4A52'],['Hueso','#E6DFD2'],['Oliva','#6B7A3A'],['Marino','#22406E'],['Burdeos','#7C1F2E'],['Camel','#B8894F'],['Roja','#FF4637'],['Rosa','#E58FB5'],['Lavanda','#9C8AD8']];
+const ESTAMPADOS=['Lisa','Rayas','Cuadros','Camuflaje'];
+const GUANTES=[['Blancos',null],['Negros','#2A2A2E'],['Rojos','#E5483A'],['Amarillos','#F2D23A'],['Azules','#2F6FE0'],['Verdes','#2FA05A']];
+const OJOS=[['Blancos',null],['Rojos','#FF4637'],['Cian','#5FE0F0'],['Amarillos','#FFD84A'],['Lima','#B6F24A'],['Rosas','#FF8FC8']];
+const REF_HEAD=[26.3,227.7,39.5,239.9,0];
+function limpiaLook(l){l=l||{};const o={};const r=(v,n,d)=>Number.isInteger(v)&&v>=0&&v<n?v:d;
+  o.hood=r(l.hood,COLORES.length,BLANCO);o.cloth=r(l.cloth,ROPA.length,0);o.pat=r(l.pat,ESTAMPADOS.length,0);o.glove=r(l.glove,GUANTES.length,0);o.eye=r(l.eye,OJOS.length,0);return o}
+const hexRGB=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const arrOfLook=l=>[l.hood,l.cloth,l.pat,l.glove,l.eye];
+const lookOfArr=a=>Array.isArray(a)&&a.length===5?limpiaLook({hood:a[0],cloth:a[1],pat:a[2],glove:a[3],eye:a[4]}):null;
+const esDefecto=l=>l.hood===BLANCO&&!l.cloth&&!l.pat&&!l.glove&&!l.eye;
+const AV={B:null,cache:new Map()};
+function avLoad(){
+  const carga=src=>new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ko;i.src=src});
+  Promise.all([carga(HEAD_IMG),carga(HEAD_MASK)]).then(([im,lb])=>{
+    const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d',{willReadFrequently:true});
+    x.drawImage(im,0,0);const px=x.getImageData(0,0,c.width,c.height);
+    x.clearRect(0,0,c.width,c.height);x.drawImage(lb,0,0,c.width,c.height);const lab=x.getImageData(0,0,c.width,c.height).data;
+    const L=new Uint8Array(c.width*c.height);for(let i=0;i<L.length;i++)L[i]=Math.round(lab[i*4]/50);
+    AV.B={w:c.width,h:c.height,px:px.data,L};AV.cache.clear();renderAll();renderAcct();
+  }).catch(e=>console.warn('avatar',e));
 }
-CATS.forEach((c,i)=>{const b=document.createElement('button');b.className='chip';b.textContent=c.name;b.onclick=()=>{setup.mask^=(1<<i);renderSetup()};$('chips').appendChild(b)});
-function addName(){
-  const n=cleanName($('nameIn').value);if(!n)return;
-  if(names.some(x=>x.toLowerCase()===n.toLowerCase())){toast('Ese nombre ya está. Añade una inicial para distinguirlos.');return}
-  if(names.length>=18){toast('Máximo 18 jugadores');return}
-  names.push(n);saveNames();$('nameIn').value='';renderSetup();$('nameIn').focus();
+function pintaCabeza(look){
+  const B=AV.B,ref=REF_HEAD,esc2=B.w/90;
+  const c=document.createElement('canvas');c.width=B.w;c.height=B.h;const x=c.getContext('2d');const out=x.createImageData(B.w,B.h),d=out.data,src=B.px,L=B.L;
+  const cH=look.hood===BLANCO?null:hexRGB(COLORES[look.hood][1]),cR=ROPA[look.cloth][1]?hexRGB(ROPA[look.cloth][1]):null,
+    cG=GUANTES[look.glove][1]?hexRGB(GUANTES[look.glove][1]):null,cE=OJOS[look.eye][1]?hexRGB(OJOS[look.eye][1]):null,pat=look.pat;
+  const claro=(col,l,r,o)=>{const t=Math.min(1.25,l/r);for(let j=0;j<3;j++){let v=col[j]*t;if(l>r)v+=(255-v)*Math.min(1,(l-r)/(256-r))*.55;d[o+j]=v}};
+  for(let i=0,n=L.length;i<n;i++){
+    const o=i*4,lb=L[i],r=src[o],g=src[o+1],b=src[o+2],l=(r+g+b)/3;d[o+3]=src[o+3];
+    if(lb===2&&cH)claro(cH,l,ref[1],o);
+    else if(lb===4&&cE)claro(cE,l,ref[3]||240,o);
+    else if(lb===5&&cG)claro(cG,l,ref[4]||180,o);
+    else if(lb===1&&(cR||pat)){
+      const X=(i%B.w)/esc2,Y=Math.floor(i/B.w)/esc2;let f=1;
+      if(pat===1)f=Math.floor(Y/5)%2?.62:1;
+      else if(pat===2)f=(Math.floor(X/7)+Math.floor(Y/7))%2?.6:1;
+      else if(pat===3){const q=Math.sin(X*.23+Math.sin(Y*.15)*2.2)+Math.sin(Y*.19+Math.sin(X*.12)*2.4);f=q>.9?.5:q>-.4?.8:1.05}
+      const base=cR||[62,62,66],t=Math.max(.25,Math.min(2.4,l/ref[0]))*(cR?.5:.42)*f;
+      for(let j=0;j<3;j++)d[o+j]=base[j]*t;
+    }else{d[o]=r;d[o+1]=g;d[o+2]=b}
+  }
+  x.putImageData(out,0,0);return c;
 }
-$('addName').onclick=addName;
-$('nameIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addName()}});
-$('kMinus').onclick=()=>{setup.k--;renderSetup()};$('kPlus').onclick=()=>{setup.k++;renderSetup()};
-$('hintSw').onclick=()=>{setup.hint=!setup.hint;renderSetup()};
-$('allCats').onclick=()=>{setup.mask=setup.mask===ALL_MASK?0:ALL_MASK;renderSetup()};
-$('goCreate').onclick=()=>{renderSetup();show('s-create')};
+function avSrc(look){
+  if(!look||esDefecto(look)||!AV.B)return HEAD_IMG;
+  const k=arrOfLook(look).join('.');
+  if(!AV.cache.has(k)){let u=HEAD_IMG;try{u=pintaCabeza(look).toDataURL('image/png')}catch(e){console.warn('avatar',e)}AV.cache.set(k,u)}
+  return AV.cache.get(k);
+}
+const avImg=(look,cls='')=>`<img class="av ${cls}" src="${avSrc(look)}" alt="">`;
+let USER=null,PERFIL=null; // sesión de Punto Ciego (opcional) y su perfil {name,look}
+const myLook=()=>PERFIL?PERFIL.look:null;
+function lookOf(slot){
+  if(game&&slot===game.me)return myLook();
+  const e=NET.R&&NET.R[slot];return e&&e.a?lookOfArr(e.a):null;
+}
 
-let pending=null; // {code,cfg,names} antes de elegir jugador
-function qrSvg(text){try{const q=qrcode(0,'M');q.addData(text);q.make();return q.createSvgTag({cellSize:6,margin:2,scalable:true})}catch(e){return '<p style="color:#333">No se pudo generar el QR. Usa el enlace.</p>'}}
-$('doCreate').onclick=()=>{
-  if(!setup.mask||names.length<3)return;
-  const cfg={...setup,n:names.length,seed:newSeed()};const code=encode(cfg);
-  pending={code,cfg,names:names.slice()};$('qrOut').innerHTML=qrSvg(linkFor(code,pending.names));show('s-code');
+/* ---------- Red: Supabase Realtime (mismo proyecto que Punto Ciego) ---------- */
+const SUPA={
+  url:'https://qsmcdfyyxvqmesnbwsod.supabase.co',
+  key:'sb_publishable_gS_zmhigp_Qt-h8jTyQBCg_r9WwTVU9' /* clave publicable: es pública por diseño; los datos los protege RLS */
 };
-async function shareLink(code,nm){
-  const url=linkFor(code,nm);
-  try{if(navigator.share){await navigator.share({title:'El impostor',text:'Entra en la partida del impostor:',url});return}}catch(e){if(e&&e.name==='AbortError')return}
-  try{await navigator.clipboard.writeText(url);toast('Enlace copiado')}catch(e){toast('No se pudo copiar. Que escaneen el QR.')}
+const SB_LIB=(EN_LOCAL&&QS.get('sblib'))||'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js';
+let SB=null,sbP=null;
+function loadSB(){
+  if(SB)return Promise.resolve(SB);
+  if(sbP)return sbP;
+  sbP=new Promise((ok,ko)=>{
+    const t=setTimeout(()=>{sbP=null;ko(new Error('timeout'))},12000);
+    const e=document.createElement('script');e.src=SB_LIB;
+    e.onload=()=>{clearTimeout(t);try{
+      /* Sin storageKey propia: usa la misma que Punto Ciego (sb-<proyecto>-auth-token) y así comparten sesión en el mismo origen */
+      SB=window.supabase.createClient(SUPA.url,SUPA.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});ok(SB)}catch(x){sbP=null;ko(x)}};
+    e.onerror=()=>{clearTimeout(t);sbP=null;ko(new Error('no carga la librería'))};
+    document.head.appendChild(e);
+  });
+  return sbP;
 }
-$('shareCode').onclick=()=>shareLink(pending.code,pending.names);
-$('hostPick').onclick=()=>openPick('s-code');
-
-/* ---------- Unirse ---------- */
-$('goJoin').onclick=()=>{$('codeIn').value='';$('joinErr').textContent='';show('s-join');setTimeout(()=>$('codeIn').focus(),50)};
-$('codeIn').addEventListener('input',()=>{$('joinErr').textContent=''});
-$('codeIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('doJoin').click()});
-$('doJoin').onclick=()=>{
-  const got=parseLink($('codeIn').value.trim());
-  if(!got){$('joinErr').textContent='Ese enlace no es de una partida. Pide que te lo vuelvan a pasar.';return}
-  pending=got;openPick('s-join');
-};
-
-/* ---------- Elegir número ---------- */
-let pickFrom='s-home';
-function openPick(from){
-  pickFrom=from;
-  $('pickSummary').textContent=`${pending.names.length} jugadores, ${summaryText(pending.cfg)}.`;
-  const g=$('grid');g.innerHTML='';
-  pending.names.forEach((n,i)=>{const b=document.createElement('button');b.textContent=n;b.setAttribute('aria-label','Soy '+n);b.onclick=()=>startGame(i+1);g.appendChild(b)});
-  show('s-pick');
+const dbg=m=>{try{(window.__log=window.__log||[]).push(new Date().toISOString().slice(14,23)+' '+m);if(window.__log.length>40)window.__log.shift()}catch(e){}};
+const NET={lastSt:0,lastReq:0,ch:null,code:null,st:'off',cid:uid(8),t:Date.now(),grace:0,goneAt:0,resumed:false,hostSeen:false,downAt:0,R:{}};
+const netUp=()=>NET.st==='up';
+async function netJoin(code){
+  if(NET.code===code&&(NET.ch||NET.st==='connecting'))return;
+  netLeave();
+  NET.code=code;NET.st='connecting';NET.resumed=false;NET.hostSeen=false;renderAll();
+  let sb;try{sb=await loadSB()}catch(e){if(NET.code===code){NET.st='off';renderAll()}return}
+  if(NET.code!==code||NET.ch)return;
+  const ch=sb.channel('impostor-'+code,{config:{broadcast:{self:false,ack:false},presence:{key:NET.cid}}});
+  NET.ch=ch;
+  ch.on('broadcast',{event:'st'},m=>onState(m.payload));
+  ch.on('broadcast',{event:'act'},m=>onAct(m.payload));
+  ch.on('broadcast',{event:'req'},()=>onReq());
+  ch.on('broadcast',{event:'w'},m=>WK.recibe(m.payload));
+  ch.on('presence',{event:'sync'},onPresence);
+  ch.subscribe(status=>{
+    if(NET.ch!==ch)return;
+    if(status==='SUBSCRIBED'){NET.st='up';NET.downAt=0;NET.lastSt=Date.now();NET.grace=Date.now()+1600;dbg('SUBSCRIBED');NET.resumed=false;NET.hostSeen=false;netTrack();bc('req',{me:game?game.me:0});renderAll()}
+    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){if(NET.st!=='down'){NET.st='down';NET.downAt=Date.now()}renderAll()}
+  });
 }
-$('pickBack').onclick=()=>show(pickFrom);
-function startGame(me){game={code:pending.code,cfg:pending.cfg,names:pending.names,me,round:1};vibrated=0;save();renderGame();show('s-game')}
+function netLeave(){
+  const ch=NET.ch;NET.ch=null;NET.code=null;NET.st='off';NET.goneAt=0;NET.R={};
+  if(ch){try{SB&&SB.removeChannel(ch)}catch(e){}}
+}
+function hardReconnect(){if(!NET.code)return;const c=NET.code;netLeave();netJoin(c)}
+function netTrack(){
+  if(!NET.ch||NET.st!=='up')return;
+  const p={me:game?game.me:0,t:NET.t,h:iAmHost()};
+  const look=myLook();if(look)p.a=arrOfLook(look);
+  try{Promise.resolve(NET.ch.track(p)).catch(()=>{})}catch(e){}
+}
+function bc(event,payload){
+  if(!NET.ch||NET.st!=='up')return false;
+  try{Promise.resolve(NET.ch.send({type:'broadcast',event,payload})).catch(()=>{})}catch(e){return false}
+  return true;
+}
+function roster(){
+  const R={};if(!NET.ch)return R;
+  let st;try{st=NET.ch.presenceState()}catch(e){return R}
+  for(const key in st)for(const e of st[key]){
+    const me=e.me|0;if(me<1)continue;
+    const cur=R[me];if(!cur||e.t>cur.t)R[me]={me,key,t:e.t,h:!!e.h,a:e.a||null};
+  }
+  return R;
+}
+const iAmHost=()=>!!(game&&S&&S.host===game.me);
+function hostPresent(R){if(S&&R[S.host])return true;return Object.values(R).some(e=>e.h)}
+function onPresence(){
+  NET.R=roster();
+  if(game){
+    const e=NET.R[game.me];
+    if(e&&e.key!==NET.cid&&(e.t>NET.t||(e.t===NET.t&&e.key>NET.cid))){kicked();return}
+    const hp=hostPresent(NET.R);
+    if(hp&&!NET.hostSeen&&!iAmHost())bc('req',{me:game.me});
+    NET.hostSeen=hp;
+  }
+  renderAll();renderPick();
+}
+function kicked(){
+  const g=game;pending={code:g.code,cfg:g.cfg,names:g.names,creator:g.creator,remote:g.remote};
+  const who=g.names[g.me-1];game=null;S=null;save();WK.cerrar();
+  openPick('s-home');toast(`Otro móvil ha entrado como ${who}. Si eres tú, elige tu nombre otra vez.`);
+}
 
-/* ---------- Juego ---------- */
-function renderGame(){
+/* ---------- Estado de la sala (lo decide el anfitrión) ----------
+   S = {ep,sq,host,round,ph,dead,vt,res,score}
+   ph: word | debate | vote | reveal.  ep = época (sube al cambiar de anfitrión), sq = versión dentro de la época.
+   Los votos solo los guarda el anfitrión (HV); a los demás les llega quién ha votado, no a quién. */
+let S=null,HV=null,MYV=null,closeTm=null,lastVoteSend=0;
+function persistS(){if(game)lsSet('impostor-s-'+game.code,{S,HV})}
+function loadS(){const o=lsGet('impostor-s-'+game.code);if(o&&okState(o.S)){S=o.S;HV=o.HV||null}}
+function okState(m){return !!(m&&typeof m==='object'&&Number.isInteger(m.ep)&&Number.isInteger(m.sq)&&Number.isInteger(m.host)&&Number.isInteger(m.round)&&m.round>=1&&Array.isArray(m.dead)&&typeof m.ph==='string'&&m.score&&typeof m.score==='object')}
+function newer(m,c){if(!c)return true;if(m.ep!==c.ep)return m.ep>c.ep;if(m.host!==c.host)return m.host<c.host;return m.sq>c.sq}
+function initState(){return {ep:(S?S.ep:0)+1,sq:0,host:game.me,round:game.round,ph:'word',dead:[],vt:null,res:null,score:S&&S.score?S.score:{i:0,m:0,a:{}}}}
+function pub(){S.sq++;game.round=S.round;save();persistS();bc('st',S);renderAll()}
+function onState(m){
+  if(!game||!okState(m))return;
+  NET.lastSt=Date.now();
+  if(!newer(m,S))return;
+  dbg('st ep'+m.ep+' sq'+m.sq+' h'+m.host+' '+m.ph);
+  const was=iAmHost();
+  S=m;game.round=S.round;save();
+  if(S.host!==game.me){HV=null;clearTimeout(closeTm)}
+  persistS();NET.hostSeen=true;
+  if(was!==iAmHost()){netTrack();if(was)toast('Otro jugador es ahora el anfitrión')}
+  renderAll();
+}
+function onReq(){if(iAmHost()&&NET.resumed&&S)bc('st',S)}
+function onAct(m){if(!iAmHost()||!m)return;if(m.k==='vote')hVote(m.from|0,m.to|0,m.vid)}
+function resumeHost(){
+  /* el anfitrión vuelve (recarga o reconexión): sube de época para valer más que cualquier estado viejo */
+  S.ep++;S.sq=0;
+  if(S.round!==game.round){S.round=game.round;S.ph='word';S.dead=[];S.vt=null;S.res=null;HV=null} /* se avanzó de ronda sin conexión */
+  else if(S.vt&&(!HV||HV.id!==S.vt.id)){HV={id:S.vt.id,map:{}};S.vt={...S.vt,voted:[]}}
+  pub();netTrack();
+}
+function takeover(){
+  const first=!S;
+  S=S?{...S,host:game.me,ep:S.ep+1,sq:0,vt:S.vt?{...S.vt,voted:[]}:null}:initState();
+  HV={id:S.vt?S.vt.id:null,map:{}};
+  NET.resumed=true;NET.goneAt=0;
+  pub();netTrack();
+  if(!first)toast('Ahora eres el anfitrión');
+}
+function tick(){
+  if(!game)return;
+  const now=Date.now();
+  if(NET.code&&NET.st==='down'&&NET.downAt&&now-NET.downAt>12000){NET.downAt=now;hardReconnect();return}
+  if(!netUp()||now<NET.grace)return;
+  const R=roster();NET.R=R;
+  if(!R[game.me])return;
+  if(iAmHost()){if(!NET.resumed){NET.resumed=true;resumeHost()}}
+  else{
+    if(hostPresent(R))NET.goneAt=0;
+    else{
+      if(!NET.goneAt)NET.goneAt=now;
+      const espera=(game.creator&&!S)?0:HOST_GRACE;
+      if(now-NET.goneAt>=espera){
+        const lowest=Math.min(...Object.keys(R).map(Number));
+        if((game.creator&&!S)||lowest===game.me)takeover();
+      }
+    }
+    /* si el anfitrión está y no llega ningún estado, pídelo; si sigue sin llegar, reconecta el canal */
+    if(S&&hostPresent(R)){
+      const sin=now-NET.lastSt;
+      if(sin>45000){dbg('sin estado 45s: reconecto');NET.lastSt=now;hardReconnect();return}
+      if(sin>20000&&now-NET.lastReq>10000){NET.lastReq=now;dbg('sin estado 20s: pido');bc('req',{me:game.me})}
+    }
+    /* reenvía mi voto por si se perdió por el camino */
+    if(MYV&&S&&S.ph==='vote'&&S.vt&&S.vt.id===MYV.vid&&now-lastVoteSend>3000){lastVoteSend=now;bc('act',{k:'vote',from:game.me,to:MYV.to,vid:MYV.vid})}
+  }
+}
+const aliveList=()=>{const a=[];for(let i=1;i<=game.cfg.n;i++)if(!S.dead.includes(i))a.push(i);return a};
+const isDead=()=>!!(S&&game&&S.dead.includes(game.me));
+const mode=()=>(netUp()&&S)?'room':'solo';
+const impsNow=()=>roundInfo(game.cfg,S.round).imps;
+function hDebate(){S.ph='debate';S.vt=null;S.res=null;pub()}
+function hStartVote(cand,tie){S.vt={id:uid(6),cand,voted:[],tie:tie?1:0};S.ph='vote';S.res=null;HV={id:S.vt.id,map:{}};pub()}
+function hVote(from,to,vid){
+  if(!S||S.ph!=='vote'||!S.vt||vid!==S.vt.id)return;
+  if(!HV||HV.id!==S.vt.id)HV={id:S.vt.id,map:{}};
+  if(from<1||from>game.cfg.n||S.dead.includes(from)||!S.vt.cand.includes(to)||to===from)return;
+  if(HV.map[from]===to&&S.vt.voted.includes(from))return;
+  HV.map[from]=to;
+  S.vt.voted=Object.keys(HV.map).map(Number).filter(x=>!S.dead.includes(x)).sort((a,b)=>a-b);
+  pub();
+  clearTimeout(closeTm);
+  if(S.vt.voted.length>=aliveList().length){const id=S.vt.id;closeTm=setTimeout(()=>{if(iAmHost()&&S.ph==='vote'&&S.vt&&S.vt.id===id)hClose()},1100)}
+}
+function hClose(){
+  if(!iAmHost()||S.ph!=='vote'||!S.vt)return;
+  clearTimeout(closeTm);
+  const vt=S.vt,al=aliveList(),counts={};vt.cand.forEach(c=>counts[c]=0);
+  const map=(HV&&HV.id===vt.id)?HV.map:{};
+  for(const f in map){const to=map[f];if(al.includes(+f)&&vt.cand.includes(to)&&to!==+f)counts[to]++}
+  const max=Math.max(...vt.cand.map(c=>counts[c]));
+  const top=max>0?vt.cand.filter(c=>counts[c]===max):[];
+  const res={id:uid(6),counts,top,elim:null,out:'none'};
+  if(max>0&&top.length>1)res.out=vt.tie?'tie2':'tie';
+  else if(max>0){
+    res.elim=top[0];S.dead=[...S.dead,top[0]];
+    const imps=impsNow(),ia=imps.filter(i=>!S.dead.includes(i)).length,inn=aliveList().length-ia;
+    res.out=ia===0?'inn':ia>=inn?'imp':'cont';
+    if(res.out==='inn'||res.out==='imp'){
+      const sc={i:S.score.i,m:S.score.m,a:{...S.score.a}};
+      if(res.out==='inn')sc.i++;else sc.m++;
+      imps.forEach(p=>sc.a[p]=(sc.a[p]||0)+1);
+      S.score=sc;
+    }
+  }
+  S.res=res;S.ph='reveal';S.vt=null;pub();
+}
+function hAfter(){
+  const r=S.res;if(!r)return hDebate();
+  if(r.out==='tie')hStartVote(r.top,true);
+  else if(r.out==='inn'||r.out==='imp')hNextRound();
+  else hDebate();
+}
+function hNextRound(){S.round++;S.dead=[];S.ph='word';S.vt=null;S.res=null;HV=null;MYV=null;pub()}
+function castVote(to){
+  if(!S||S.ph!=='vote'||!S.vt||isDead()||!S.vt.cand.includes(to)||to===game.me)return;
+  MYV={vid:S.vt.id,to};lastVoteSend=Date.now();
+  if(iAmHost())hVote(game.me,to,S.vt.id);else bc('act',{k:'vote',from:game.me,to,vid:S.vt.id});
+  renderPhase();
+}
+
+/* ---------- Pintado de la partida ---------- */
+function renderAll(){
+  if(!game)return;
+  NET.R=roster();
+  renderCard();renderTop();renderNet();renderPhase();renderPlist();renderReveal();WK.pinta();
+}
+let cardKey='';
+function renderCard(){
+  const key=game.code+'|'+game.me+'|'+game.round;if(key===cardKey)return;cardKey=key;
   const {cfg,me,round}=game;const info=roundInfo(cfg,round);
   const isImp=info.imps.includes(me);
-  $('meOut').textContent=game.names[me-1];
-  $('roundBtn').textContent='Ronda '+round;
-  $('starter').innerHTML='Empieza a hablar <b></b>';$('starter').querySelector('b').textContent=game.names[info.starter-1];
-  $('gameInfo').textContent=`${game.names.length} jugadores, ${summaryText(cfg)}.`;
   const card=$('card');card.classList.remove('open','civil','imp');card.classList.add(isImp?'imp':'civil');
   const back=$('back');
   if(isImp){
@@ -2744,11 +3135,258 @@ function renderGame(){
     back.querySelector('.cat').textContent=info.word.c.toUpperCase();
   }
 }
+function renderTop(){
+  const {cfg,me,round}=game;const info=roundInfo(cfg,round);const room=mode()==='room';
+  $('meOut').textContent=game.names[me-1];
+  const av=avImg(myLook());if($('meAv')._h!==av){$('meAv')._h=av;$('meAv').innerHTML=av}
+  $('roundBtn').textContent='Ronda '+round;$('roundBtn').disabled=room;
+  $('starter').innerHTML='Empieza a hablar <b></b>';$('starter').querySelector('b').textContent=game.names[info.starter-1];
+  $('starter').hidden=room;
+  $('gameInfo').textContent=`${game.names.length} jugadores, ${summaryText(cfg)}.`;
+  $('legacyBox').hidden=room;
+  $('elimBan').hidden=!(room&&isDead());
+}
+function renderNet(){
+  if(!game)return;
+  const el=$('netLine');let t,on=false;
+  if(NET.st==='up'){
+    const n=Object.keys(NET.R||{}).length;on=true;
+    t=S?`En línea · ${n} de ${game.cfg.n} conectados`:'Conectado · esperando al anfitrión…';
+  }else if(NET.st==='connecting')t='Conectando…';
+  else t='Sin conexión: votad en voz alta';
+  const h=(on?'1':'0')+t;if(el._h===h)return;el._h=h;
+  el.innerHTML='<span class="dot'+(on?'':' off')+'"></span><span></span>';el.lastChild.textContent=t;
+}
+let phHtml='';
+function renderPhase(){
+  if(!game)return;
+  const box=$('phaseBox'),sec=$('s-game'),room=mode()==='room';
+  sec.classList.toggle('ph-vote',room&&S.ph==='vote'&&!isDead());
+  let h='';
+  if(room){
+    const host=iAmHost(),dead=isDead(),nm=i=>esc(game.names[i-1]),info=roundInfo(game.cfg,S.round);
+    const alive=aliveList(),hostName=nm(S.host);
+    const starter=`Empieza a hablar <b>${nm(info.starter)}</b>.`;
+    if(S.ph==='word'){
+      h=`<div class="phase"><div class="pt">Mirad vuestra tarjeta</div><p>Mantén pulsada la tarjeta para ver tu palabra. ${starter}</p>`+
+        (host?`<button class="act host" data-a="debate">Empezar debate</button><button class="link" data-a="skip">Saltar a la siguiente ronda</button>`:`<p class="hostnote">El anfitrión (${hostName}) empieza el debate.</p>`)+`</div>`;
+    }else if(S.ph==='debate'){
+      h=`<div class="phase"><div class="pt">Debate</div><p>Por turnos, cada uno dice algo relacionado sin ser demasiado obvio. ${S.dead.length?'':starter} Quedan <b>${alive.length}</b> con vida.</p>`+
+        (host?`<button class="act host" data-a="startVote">Empezar votación</button><button class="link" data-a="skip">Saltar a la siguiente ronda</button>`:`<p class="hostnote">El anfitrión (${hostName}) abrirá la votación.</p>`)+`</div>`;
+    }else if(S.ph==='vote'&&S.vt){
+      const vt=S.vt,voted=vt.voted.length,total=alive.length;
+      h=`<div class="phase"><div class="pt">${dead?'Están votando':'¿Quién es el impostor?'}</div>`;
+      if(dead)h+=`<p>Estás eliminado: miras, pero no votas.</p>`;
+      else{
+        h+=`<p>${vt.tie?'Hubo empate. Votad solo entre los empatados. ':''}Toca a quien votas. Puedes cambiarlo hasta que voten todos.</p><div class="vlist">`;
+        vt.cand.filter(s=>s!==game.me).forEach(s=>{
+          const on=MYV&&MYV.vid===vt.id&&MYV.to===s;
+          h+=`<button class="vbtn${on?' on':''}" data-a="vote" data-s="${s}" aria-pressed="${!!on}">${avImg(lookOf(s),'sm')}<span class="n">${nm(s)}</span><span class="chk">✓</span></button>`;
+        });
+        h+=`</div>`;
+      }
+      h+=`<div class="vprog"><span>${voted} de ${total} han votado</span><span class="bar"><i style="width:${total?Math.round(voted*100/total):0}%"></i></span></div>`;
+      if(host)h+=`<button class="act host" data-a="closeVote">Cerrar votación</button>`;
+      h+=`</div>`;
+    }
+  }
+  if(h!==phHtml){phHtml=h;box.innerHTML=h}
+}
+$('phaseBox').addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b||!game||!S)return;const a=b.dataset.a;
+  if(a==='vote')castVote(+b.dataset.s);
+  else if(!iAmHost())return;
+  else if(a==='debate'&&S.ph==='word')hDebate();
+  else if(a==='startVote'&&S.ph==='debate')hStartVote(aliveList(),false);
+  else if(a==='closeVote')hClose();
+  else if(a==='skip')sheet(`<h3>¿Siguiente ronda?</h3><p>Se cierra esta ronda y todos pasan a una palabra nueva.</p>
+    <button class="act" id="skYes">Siguiente ronda</button><button class="link" id="skNo">Cancelar</button>`,()=>{
+    $('skNo').onclick=closeSheet;$('skYes').onclick=()=>{closeSheet();if(iAmHost())hNextRound()};
+  });
+});
+let plHtml='';
+function renderPlist(){
+  const pan=$('plistPanel'),show=netUp();pan.hidden=!show;if(!show)return;
+  const R=NET.R||{};
+  $('plCount').textContent=`${Object.keys(R).length} de ${game.cfg.n} conectados`;
+  const h=game.names.map((n,i)=>{
+    const s=i+1,on=!!R[s],dead=S&&S.dead.includes(s),isMe=s===game.me,isHost=S&&S.host===s;
+    return `<div class="pl${dead?' dead':''}${isMe?' me':''}">${avImg(lookOf(s),'')}<div class="nm2"><b>${esc(n)}</b>${isMe?'<span class="tg">Tú</span>':''}${isHost?'<span class="tg">Anfitrión</span>':''}${dead?'<span class="tg">Eliminado</span>':''}</div><span class="dot${on?'':' off'}" title="${on?'Conectado':'Sin conexión'}"></span></div>`;
+  }).join('');
+  if(h!==plHtml){plHtml=h;$('plist').innerHTML=h}
+}
+
+/* ---------- Revelación ---------- */
+let REV={id:null,t0:0,tm:null,html:'',vib:false};
+const seenRes=id=>{try{return (sessionStorage.getItem('impostor-seen')||'').split(',').includes(id)}catch(e){return false}};
+const markRes=id=>{try{sessionStorage.setItem('impostor-seen',((sessionStorage.getItem('impostor-seen')||'')+','+id).slice(-60))}catch(e){}};
+function outText(r,imps){
+  const n=i=>game.names[i-1];
+  switch(r.out){
+    case 'cont':return imps.includes(r.elim)?'Ha caído un impostor, pero aún queda otro. Se vuelve al debate con la misma palabra.':'Queda eliminado. Se vuelve al debate con la misma palabra.';
+    case 'tie':return `Empate entre ${listNames(r.top.map(n))}. Se repite la votación solo entre ellos.`;
+    case 'tie2':return 'Vuelve a haber empate: nadie queda eliminado. A debatir otra vez.';
+    case 'none':return 'Nadie ha votado. A debatir otra vez.';
+    default:return '';
+  }
+}
+function renderReveal(){
+  const el=$('reveal');
+  if(!(game&&mode()==='room'&&S.ph==='reveal'&&S.res)){
+    if(REV.id!==null||el.classList.contains('on')){el.className='';el.innerHTML='';REV.id=null;REV.html='';clearTimeout(REV.tm);document.body.style.overflow=''}
+    return;
+  }
+  const r=S.res,imps=impsNow(),nm=i=>esc(game.names[i-1]);
+  if(REV.id!==r.id){REV.id=r.id;REV.t0=seenRes(r.id)?Date.now()-99999:Date.now();REV.vib=false;markRes(r.id)}
+  const age=Date.now()-REV.t0,stage=age<2200?0:age<4400?1:age<6000?2:3;
+  clearTimeout(REV.tm);const nx=[2200,4400,6000][stage];if(nx)REV.tm=setTimeout(renderReveal,nx-age+30);
+  const isImp=r.elim!=null&&imps.includes(r.elim),host=iAmHost();
+  let cls='neutral',h='';
+  if(stage===0){
+    h=`<div class="k">Votación cerrada</div><div class="big">Contando los votos…</div><div class="dots" style="margin-top:14px"><span></span><span></span><span></span></div>`;
+  }else if(stage===1){
+    if(r.elim!=null)h=`<div class="k">El más votado es</div>${avImg(lookOf(r.elim),'xl')}<div class="who beat">${nm(r.elim)}</div>`;
+    else if(r.top.length)h=`<div class="k">Hay un empate entre</div><div class="who beat">${listNames(r.top.map(nm))}</div>`;
+    else h=`<div class="big">Nadie ha votado</div>`;
+  }else{
+    if(r.elim!=null&&isImp){cls='red';h=`<img class="logo2" src="${LOGO}" alt=""><div class="k">${nm(r.elim)}</div><div class="big pop">¡ERA EL IMPOSTOR!</div>`}
+    else if(r.elim!=null){cls='white';h=`<img class="mas" src="${MASCOT}" alt=""><div class="k" style="color:#6b6b75">${nm(r.elim)}</div><div class="big pop">NO ERA EL IMPOSTOR</div>`}
+    else if(r.top.length)h=`<div class="big pop">¡EMPATE!</div><p>${listNames(r.top.map(nm))}</p>`;
+    else h=`<div class="big pop">NADIE HA VOTADO</div>`;
+    if(stage>=2&&!REV.vib){REV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60])}
+    if(stage===3){
+      const rows=Object.keys(r.counts).map(Number).sort((a,b)=>r.counts[b]-r.counts[a]||a-b),mx=Math.max(1,...rows.map(s=>r.counts[s]));
+      h+=`<div class="box"><h4>Votos</h4><div class="counts">`+rows.map(s=>`<div class="cr">${avImg(lookOf(s),'sm')}<span class="nm">${nm(s)}</span><span class="b"><i style="width:${Math.round(r.counts[s]*100/mx)}%"></i></span><span class="v">${r.counts[s]}</span></div>`).join('')+`</div></div>`;
+      if(r.out==='inn'||r.out==='imp'){
+        const sc=S.score,wl=Object.keys(sc.a).map(Number).sort((a,b)=>sc.a[b]-sc.a[a]||a-b);
+        h+=`<div class="box"><h4>${r.out==='inn'?'Ganan los inocentes':'Ganan los impostores'}</h4><div style="font-weight:900;font-size:1.5rem;line-height:1.2" id="rvW"></div><div style="margin-top:6px">${imps.length>1?'Los impostores eran':'El impostor era'} <b>${listNames(imps.map(nm))}</b></div></div>`+
+          `<div class="box"><h4>Marcador de la sesión</h4><div>Inocentes <b>${sc.i}</b> · Impostores <b>${sc.m}</b></div>`+
+          (wl.length?`<div style="margin-top:4px;opacity:.85">Veces impostor: ${wl.map(s=>`${nm(s)} ${sc.a[s]}`).join(' · ')}</div>`:'')+`</div>`;
+      }else h+=`<p style="margin-top:12px">${esc(outText(r,imps))}</p>`;
+      const lab=r.out==='tie'?'Repetir votación':r.out==='inn'||r.out==='imp'?'Siguiente ronda':'Volver al debate';
+      h+=host?`<button class="act" data-a="after">${lab}</button>`:`<p class="wait">Esperando al anfitrión…</p>`;
+    }
+  }
+  const html=`<div class="rv">${h}</div>`;
+  if(html!==REV.html||el.className!==('on '+cls)){
+    REV.html=html;el.className='on '+cls;el.innerHTML=html;
+    const w=$('rvW');if(w)w.textContent=roundInfo(game.cfg,S.round).word.w;
+    document.body.style.overflow='hidden';
+  }
+}
+$('reveal').addEventListener('click',e=>{const b=e.target.closest('[data-a="after"]');if(b&&iAmHost()&&S.ph==='reveal')hAfter()});
+
+/* ---------- Crear ---------- */
+function renderSetup(){
+  setup.n=names.length;
+  const mk=maxK(Math.max(3,setup.n));if(setup.k>mk)setup.k=mk;
+  $('kVal').textContent=setup.k;
+  const box=$('names');box.innerHTML='';
+  if(!names.length)box.innerHTML='<div class="empty">Añade el nombre de cada jugador, también el tuyo.</div>';
+  names.forEach((n,i)=>{const d=document.createElement('span');d.className='nm';d.textContent=n;const x=document.createElement('button');x.textContent='×';x.setAttribute('aria-label','Quitar a '+n);x.onclick=()=>{names.splice(i,1);saveNames();renderSetup()};d.appendChild(x);box.appendChild(d)});
+  $('nCount').textContent=names.length<3?`${names.length} de mínimo 3`:`${names.length} jugadores`;
+  $('addName').disabled=names.length>=18;$('nameIn').disabled=names.length>=18;
+  $('kMinus').disabled=setup.k<=1;$('kPlus').disabled=setup.k>=mk;
+  $('kSub').textContent=`Máximo ${mk} con ${Math.max(3,setup.n)} jugadores`;
+  $('hintSw').setAttribute('aria-checked',setup.hint);
+  $('remoteSw').setAttribute('aria-checked',setup.remote);
+  document.querySelectorAll('.chip').forEach((ch,i)=>{const on=!!(setup.mask&(1<<i));ch.classList.toggle('on',on);ch.setAttribute('aria-pressed',on)});
+  $('allCats').textContent=setup.mask===ALL_MASK?'Quitar todas':'Poner todas';
+  const count=poolFor(setup.mask).length;
+  const ok=setup.mask&&names.length>=3;$('doCreate').disabled=!ok;$('doCreate').style.opacity=ok?1:.4;
+  $('count').textContent=!setup.mask?'Elige al menos una categoría':`${count} palabras en juego`;
+}
+CATS.forEach((c,i)=>{const b=document.createElement('button');b.className='chip';b.textContent=c.name;b.onclick=()=>{setup.mask^=(1<<i);renderSetup()};$('chips').appendChild(b)});
+function addName(){
+  const n=cleanName($('nameIn').value);if(!n)return;
+  if(names.some(x=>x.toLowerCase()===n.toLowerCase())){toast('Ese nombre ya está. Añade una inicial para distinguirlos.');return}
+  if(names.length>=18){toast('Máximo 18 jugadores');return}
+  names.push(n);saveNames();$('nameIn').value='';renderSetup();$('nameIn').focus();
+}
+$('addName').onclick=addName;
+$('nameIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addName()}});
+$('kMinus').onclick=()=>{setup.k--;renderSetup()};$('kPlus').onclick=()=>{setup.k++;renderSetup()};
+$('hintSw').onclick=()=>{setup.hint=!setup.hint;renderSetup()};
+$('remoteSw').onclick=()=>{setup.remote=!setup.remote;renderSetup()};
+$('allCats').onclick=()=>{setup.mask=setup.mask===ALL_MASK?0:ALL_MASK;renderSetup()};
+let autoNamed=false;
+function autoName(){ /* con sesión, tu nombre de Punto Ciego se añade solo (una vez) */
+  if(autoNamed||!PERFIL||!PERFIL.name)return;autoNamed=true;
+  const n=cleanName(PERFIL.name);if(!n||names.some(x=>x.toLowerCase()===n.toLowerCase())||names.length>=18)return;
+  names.unshift(n);saveNames();
+}
+$('goCreate').onclick=()=>{autoName();renderSetup();show('s-create')};
+
+let pending=null; // {code,cfg,names,creator,remote} antes de elegir jugador
+function qrSvg(text){try{const q=qrcode(0,'M');q.addData(text);q.make();return q.createSvgTag({cellSize:6,margin:2,scalable:true})}catch(e){return '<p style="color:#333">No se pudo generar el QR. Usa el enlace.</p>'}}
+$('doCreate').onclick=()=>{
+  if(!setup.mask||names.length<3)return;
+  const cfg={...setup,n:names.length,seed:newSeed()};const code=encode(cfg);
+  pending={code,cfg,names:names.slice(),creator:true,remote:!!setup.remote};$('qrOut').innerHTML=qrSvg(linkFor(code,pending.names,pending.remote));show('s-code');
+};
+async function shareLink(code,nm,remote){
+  const url=linkFor(code,nm,remote);
+  try{if(navigator.share){await navigator.share({title:'El impostor',text:'Entra en la partida del impostor:',url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(url);toast('Enlace copiado')}catch(e){toast('No se pudo copiar. Que escaneen el QR.')}
+}
+$('shareCode').onclick=()=>shareLink(pending.code,pending.names,pending.remote);
+$('hostPick').onclick=()=>openPick('s-code');
+
+/* ---------- Unirse ---------- */
+$('goJoin').onclick=()=>{$('codeIn').value='';$('joinErr').textContent='';show('s-join');setTimeout(()=>$('codeIn').focus(),50)};
+$('codeIn').addEventListener('input',()=>{$('joinErr').textContent=''});
+$('codeIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('doJoin').click()});
+$('doJoin').onclick=()=>{
+  const got=parseLink($('codeIn').value.trim());
+  if(!got){$('joinErr').textContent='Ese enlace no es de una partida. Pide que te lo vuelvan a pasar.';return}
+  pending=got;openPick('s-join');
+};
+
+/* ---------- Elegir jugador ---------- */
+let pickFrom='s-home';
+function openPick(from){
+  pickFrom=from;
+  $('pickSummary').textContent=`${pending.names.length} jugadores, ${summaryText(pending.cfg)}.`;
+  show('s-pick');renderPick();renderAcct();
+  if(!game){netJoin(pending.code);netTrack()} /* solo para ver quién está conectado */
+}
+function renderPick(){
+  if(!pending||!$('s-pick').classList.contains('on'))return;
+  const R=roster(),g=$('grid');g.innerHTML='';
+  const mine=PERFIL&&PERFIL.name?PERFIL.name.toLowerCase():'';
+  pending.names.forEach((n,i)=>{
+    const s=i+1,b=document.createElement('button');
+    b.innerHTML=(R[s]?'<span class="dot" title="Conectado"></span>':'')+'<span></span>';b.lastChild.textContent=n;
+    b.setAttribute('aria-label','Soy '+n+(R[s]?' (ya conectado)':''));
+    if(mine&&n.toLowerCase()===mine)b.style.borderColor='var(--red)';
+    b.onclick=()=>{
+      if(!R[s])return startGame(s);
+      sheet(`<h3>${esc(n)} ya está conectado</h3><p>Otro móvil ha entrado como ${esc(n)}. Si eres tú (por ejemplo, cambias de móvil), sigue: el otro móvil saldrá de la partida.</p>
+        <button class="act" id="pkYes">Soy yo</button><button class="link" id="pkNo">Elegir otro</button>`,()=>{$('pkNo').onclick=closeSheet;$('pkYes').onclick=()=>{closeSheet();startGame(s)}});
+    };
+    g.appendChild(b);
+  });
+  const hint=$('pickWho');
+  hint.textContent=PERFIL&&PERFIL.name&&!pending.names.some(x=>x.toLowerCase()===mine)?`Tu nombre en Punto Ciego es «${PERFIL.name}», pero no está en esta lista. Elige el que te toque.`:'';
+}
+$('pickBack').onclick=()=>{if(!game)netLeave();show(pickFrom)};
+function startGame(me){
+  game={code:pending.code,cfg:pending.cfg,names:pending.names,me,round:1,creator:!!pending.creator,remote:!!pending.remote};
+  S=null;HV=null;MYV=null;loadS();if(S)game.round=S.round;
+  vibrated=0;cardKey='';save();
+  netJoin(game.code);netTrack();
+  show('s-game');renderAll();lockScreen();
+  if(game.remote&&!lsGet('impostor-wk-'+game.code)){lsSet('impostor-wk-'+game.code,1);setTimeout(()=>WK.abrir(),500)}
+  if(WK.inapp())toast('Estás dentro de otra app: el micrófono no irá. Abre el enlace en Safari o Chrome.');
+}
+function enterGame(){cardKey='';netJoin(game.code);netTrack();show('s-game');renderAll();lockScreen()}
+
+/* ---------- Pantalla de juego ---------- */
 function reveal(on){
   if(!game)return;const card=$('card');const isImp=card.classList.contains('imp');
   card.classList.toggle('open',on);
   document.body.classList.toggle('red',on&&isImp);
-  if(on&&isImp&&vibrated!==game.round){vibrated=game.round;try{navigator.vibrate&&navigator.vibrate([90,60,90,60,220])}catch(e){}}
+  if(on&&isImp&&vibrated!==game.round){vibrated=game.round;vibra([90,60,90,60,220])}
 }
 (function(){
   const card=$('card');
@@ -2760,7 +3398,8 @@ function reveal(on){
   window.addEventListener('blur',()=>reveal(false));
   document.addEventListener('visibilitychange',()=>{if(document.hidden)reveal(false)});
 })();
-function goRound(r){game.round=Math.max(1,r);save();renderGame();toast(`Ronda ${game.round}. Comprobad que todos estáis en la misma.`)}
+/* Modo sin conexión: cada móvil lleva su ronda y se vota en voz alta */
+function goRound(r){game.round=Math.max(1,r);save();renderAll();toast(`Ronda ${game.round}. Comprobad que todos estáis en la misma.`)}
 $('nextRound').onclick=()=>goRound(game.round+1);
 $('showSol').onclick=()=>{
   sheet(`<h3>¿Ya habéis votado?</h3><p>La solución se verá en esta pantalla.</p>
@@ -2778,6 +3417,7 @@ $('showSol').onclick=()=>{
   });
 };
 $('roundBtn').onclick=()=>{
+  if(mode()==='room')return;
   let r=game.round;
   sheet(`<h3>Cambiar de ronda</h3><p>Úsalo si tu ronda no coincide con la de los demás.</p>
     <div class="row" style="margin-top:10px;border:0;padding:8px 0"><div class="lbl">Ronda</div><div class="step"><button id="rM" aria-label="Ronda anterior">−</button><output id="rV"></output><button id="rP" aria-label="Ronda siguiente">+</button></div></div>
@@ -2791,25 +3431,307 @@ $('exitGame').onclick=()=>{
   sheet(`<h3>¿Salir de la partida?</h3><p>Podrás volver a entrar con el mismo enlace.</p>
     <button class="act" id="exYes">Salir</button><button class="link" id="exNo">Seguir jugando</button>`,()=>{
     $('exNo').onclick=closeSheet;
-    $('exYes').onclick=()=>{closeSheet();game=null;save();show('s-home')};
+    $('exYes').onclick=()=>{closeSheet();const c=game.code;netLeave();WK.cerrar();game=null;S=null;HV=null;MYV=null;lsDel('impostor-s-'+c);save();phHtml='';plHtml='';show('s-home')};
+  });
+};
+$('showQr').onclick=()=>{
+  sheet(`<h3>Únete a la partida</h3><div class="qr">${qrSvg(linkFor(game.code,game.names,game.remote))}</div>
+    <button class="act sec" id="qShare">Compartir enlace</button><button class="link" id="qClose">Cerrar</button>`,()=>{
+    $('qShare').onclick=()=>shareLink(game.code,game.names,game.remote);$('qClose').onclick=closeSheet;
   });
 };
 
-$('showQr').onclick=()=>{
-  sheet(`<h3>Únete a la partida</h3><div class="qr">${qrSvg(linkFor(game.code,game.names))}</div>
-    <button class="act sec" id="qShare">Compartir enlace</button><button class="link" id="qClose">Cerrar</button>`,()=>{
-    $('qShare').onclick=()=>shareLink(game.code,game.names);$('qClose').onclick=closeSheet;
-  });
+/* Que la pantalla no se apague durante la partida */
+let WL=null;
+async function lockScreen(){try{if(game&&navigator.wakeLock&&!WL){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null})}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)return;
+  if(NET.code&&(!NET.ch||NET.ch.state!=='joined'))hardReconnect();
+  lockScreen();
+});
+window.addEventListener('online',()=>{if(NET.code&&NET.st!=='up')hardReconnect()});
+
+/* ---------- Walkie-talkie ----------
+   Adaptado del de Punto Ciego: voz en PCM de 8 kHz (o grabación si el móvil no da sonido en directo) con efecto radio,
+   pulsar y mantener o toque-toque. Aquí viaja por el canal de la partida de Supabase Realtime, sin cifrar. */
+function comp(x){x=Math.max(-1,Math.min(1,x));const m=Math.round(Math.log1p(255*Math.abs(x))/Math.log(256)*127);return x<0?128|m:m}
+function decomp(b){const v=(Math.pow(256,(b&127)/127)-1)/255;return b&128?-v:v}
+const nombreDe=s=>{const n=game&&game.names[s-1];return n||'Alguien'};
+const WK={
+  abierto:false,visto:0,voces:[],chat:[],ses:{},blobs:{},rec:null,modo:lsGet('imp.wkmodo','pcm'),
+  ctx(){
+    if(!this._c){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;this._c=new C();this.bus=this.radio(this._c)}
+    if(this._c.state==='suspended')this._c.resume().catch(()=>{});return this._c;
+  },
+  radio(c){
+    const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=380;
+    const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2900;
+    const ws=c.createWaveShaper(),k=new Float32Array(1024);for(let i=0;i<1024;i++){const x=i/511.5-1;k[i]=Math.tanh(2.4*x)/Math.tanh(2.4)}ws.curve=k;
+    const g=c.createGain();g.gain.value=1.15;hp.connect(lp);lp.connect(ws);ws.connect(g);g.connect(c.destination);return hp;
+  },
+  ruido(dur=.1,vol=.16){const c=this.ctx();if(!c)return;const n=Math.floor(c.sampleRate*dur),b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);
+    for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*vol*(1-i/n);const s=c.createBufferSource();s.buffer=b;s.connect(this.bus);s.start()},
+  /* WhatsApp, Instagram, etc. abren la web en un navegador integrado que no deja usar el micro */
+  inapp(){const ua=navigator.userAgent;return /FBAN|FBAV|FB_IAB|Instagram|WhatsApp|Line\/|Snapchat|TikTok|Twitter|MicroMessenger|; wv\)/i.test(ua)||(/iPhone|iPad|iPod/.test(ua)&&!/Safari\//.test(ua)&&!/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua))},
+  noPuede(){
+    if(!game)return 'Entra en una partida para usar el walkie';
+    if(!netUp())return 'Sin conexión: el walkie necesita internet';
+    if(isDead())return 'Estás eliminado: puedes escuchar, pero no hablar hasta la siguiente ronda';
+    return '';
+  },
+  estado(t){$('wkEstado').textContent=t||''},
+  diag(){
+    const tot=game?game.cfg.n:0,n=Object.keys(NET.R||{}).length;
+    let t=netUp()?`Conectados: ${n} de ${tot}.`:'Sin conexión.';
+    t+=` Micro: ${this.stream?'listo':'sin abrir'}, modo ${this.modo==='mr'?'grabación':'directo'}.`;
+    $('wkDiag').textContent=t;
+  },
+  btn(on){$('wkPtt').classList.toggle('on',on);$('wkPttTxt').textContent=on?(this.rec&&this.rec.latch?'Grabando: toca para enviar':'Hablando… suelta para enviar'):'Mantén para hablar'},
+  nivel(v){$('wkNivel').style.transform=`scaleX(${Math.min(1,v*2.5)})`},
+  hablando(nombre){const e=$('wkTalk');if(nombre){e.textContent='📻 '+nombre+' está hablando';e.hidden=false}else e.hidden=true},
+  async micro(){
+    if(this.stream&&this.stream.active&&this.stream.getAudioTracks().some(t=>t.readyState==='live'))return;
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('este navegador no deja usar el micro');
+    this.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});this.src=null;
+  },
+  async empieza(){
+    const no=this.noPuede();if(no){this.estado(no);return}
+    if(this.rec)return;const c=this.ctx();
+    const r=this.rec={id:uid(10),n:0,t0:Date.now(),pico:0,partes:[],arrancando:true};
+    this.btn(true);this.estado('Abriendo micro…');
+    try{await this.micro()}catch(e){if(this.rec===r)this.rec=null;this.btn(false);this.nivel(0);
+      this.estado(this.inapp()?'Aquí el micro está bloqueado: abre el enlace en Safari o Chrome. El texto sí funciona.':'No hay acceso al micro ('+(e.message||e.name)+'). El texto sí funciona.');this.diag();return}
+    if(this.rec!==r)return;
+    r.arrancando=false;r.t0=Date.now();this.ruido(.07,.1);this.diag();
+    this.estado(r.latch?'Grabando… toca otra vez para enviar':'Hablando… suelta para enviar');this.btn(true);
+    if(this.modo==='mr'||!c||!c.createScriptProcessor)return this.empiezaMR(r);
+    if(!this.src||this.src.context!==c)this.src=c.createMediaStreamSource(this.stream);
+    const sp=c.createScriptProcessor(4096,1,1),ratio=c.sampleRate/8000;let ph=0,sum=0,cnt=0;const buf=[];
+    sp.onaudioprocess=e=>{
+      if(this.rec!==r||r.mr)return;const d=e.inputBuffer.getChannelData(0);let lv=0;
+      for(let i=0;i<d.length;i++){const x=d[i],a=x<0?-x:x;if(a>lv)lv=a;sum+=x;cnt++;ph++;if(ph>=ratio){ph-=ratio;buf.push(sum/cnt);sum=0;cnt=0}}
+      r.pico=Math.max(r.pico,lv);this.nivel(lv);
+      if(buf.length>=3200)this.trozo(r,buf.splice(0,3200),false);
+      if(Date.now()-r.t0>1600&&r.pico<0.0005&&!r.cambio){r.cambio=true;this.modo='mr';lsSet('imp.wkmodo','mr');this.paraSP(r);buf.length=0;r.n=0;this.estado('El micro no daba sonido: cambio a modo grabación');this.empiezaMR(r);return}
+      if(Date.now()-r.t0>20000)this.para(true);
+    };
+    r.sp=sp;r.buf=buf;this.src.connect(sp);sp.connect(c.destination);
+  },
+  paraSP(r){try{r.sp&&r.sp.disconnect();this.src&&this.src.disconnect(r.sp)}catch(e){}r.sp=null},
+  trozo(r,arr,fin){
+    const f=Float32Array.from(arr),u=new Uint8Array(f.length);for(let i=0;i<f.length;i++)u[i]=comp(f[i]);
+    r.partes.push(f);bc('w',{id:uid(12),k:'pcm',s:r.id,n:r.n++,from:game.me,d:b64(u),fin});
+  },
+  empiezaMR(r){
+    let mr;try{mr=new MediaRecorder(this.stream)}catch(e){this.rec=null;this.btn(false);this.estado('Este móvil no puede grabar audio. El texto sí funciona.');return}
+    r.mr=mr;const partes=[];mr.ondataavailable=e=>{if(e.data&&e.data.size)partes.push(e.data)};
+    mr.onstop=async()=>{
+      const blob=new Blob(partes,{type:mr.mimeType||'audio/webm'});const u=new Uint8Array(await blob.arrayBuffer());
+      const TAM=45000,tot=Math.max(1,Math.ceil(u.length/TAM));
+      for(let i=0;i<tot;i++)bc('w',{id:uid(12),k:'blob',s:r.id,n:i,of:tot,from:game.me,mime:blob.type,d:b64(u.subarray(i*TAM,(i+1)*TAM))});
+      this.voces.push({t:Date.now(),from:game.me,blob:u,mime:blob.type,dur:(Date.now()-r.t0)/1000});this.pinta();
+    };
+    mr.start();r.lim=setTimeout(()=>{if(this.rec===r)this.para(true)},20000);
+  },
+  para(forzar){
+    const r=this.rec;if(!r)return;
+    if(r.arrancando&&!forzar){r.latch=true;this.btn(true);return}
+    this.rec=null;this.btn(false);this.nivel(0);clearTimeout(r.lim);
+    if(r.arrancando)return;
+    if(r.mr){try{r.mr.stop()}catch(e){}}
+    else{this.paraSP(r);this.trozo(r,(r.buf||[]).splice(0),true);
+      const tot=r.partes.reduce((a,x)=>a+x.length,0);if(tot>800){const pcm=new Float32Array(tot);let o=0;for(const x of r.partes){pcm.set(x,o);o+=x.length}this.voces.push({t:Date.now(),from:game.me,pcm,dur:tot/8000})}}
+    this.ruido(.07,.1);this.estado('Enviado');setTimeout(()=>{if(!this.rec)this.estado('')},1500);this.pinta();
+  },
+  subir(pcm){const c=this.ctx(),sr=c.sampleRate,n=Math.max(1,Math.floor(pcm.length*sr/8000)),b=c.createBuffer(1,n,sr),d=b.getChannelData(0),k=8000/sr;
+    for(let i=0;i<n;i++){const x=i*k,i0=Math.floor(x),f=x-i0;d[i]=(pcm[i0]||0)*(1-f)+(pcm[i0+1]||pcm[i0]||0)*f}return b},
+  recibe(m){
+    if(!m||!game||!Number.isInteger(m.from)||m.from<1||m.from>game.cfg.n||m.from===game.me)return;
+    if(m.k==='txt'){
+      const t=String(m.txt||'').slice(0,200);if(!t)return;
+      this.chat.push({t:Date.now(),from:m.from,txt:t});if(this.chat.length>80)this.chat.shift();
+      if(this.abierto)this.ruido(.05,.08);this.pinta();return;
+    }
+    const c=this.ctx();if(!c)return;const nombre=nombreDe(m.from);
+    if(m.k==='pcm'&&typeof m.d==='string'){
+      let s=this.ses[m.s];
+      if(!s){s=this.ses[m.s]={from:m.from,exp:0,buf:{},t:0,partes:[],t0:Date.now()};this.ruido(.09,.14);this.hablando(nombre)}
+      const u=deb64(m.d),pcm=new Float32Array(u.length);for(let i=0;i<u.length;i++)pcm[i]=decomp(u[i]);
+      s.buf[m.n]={pcm,fin:m.fin};
+      const vacia=()=>{while(s.buf[s.exp]){const it=s.buf[s.exp];delete s.buf[s.exp];s.exp++;this.suena(s,it.pcm);if(it.fin){this.cierra(m.s);return true}}return false};
+      if(vacia())return;
+      const ks=Object.keys(s.buf).map(Number);if(ks.length>4){s.exp=Math.min(...ks);if(vacia())return}
+      clearTimeout(s.tmo);s.tmo=setTimeout(()=>this.cierra(m.s),3000);
+    }else if(m.k==='blob'&&typeof m.d==='string'){
+      let s=this.blobs[m.s];if(!s)s=this.blobs[m.s]={of:m.of,p:[],from:m.from,mime:m.mime};
+      s.p[m.n]=deb64(m.d);
+      if(s.p.filter(Boolean).length===s.of){
+        const tot=s.p.reduce((a,x)=>a+x.length,0),u=new Uint8Array(tot);let o=0;for(const x of s.p){u.set(x,o);o+=x.length}
+        delete this.blobs[m.s];const v={t:Date.now(),from:m.from,blob:u,mime:m.mime};this.voces.push(v);this.reproduce(v);this.pinta();
+      }
+    }
+  },
+  suena(s,pcm){
+    const c=this.ctx(),b=this.subir(pcm),src=c.createBufferSource();src.buffer=b;src.connect(this.bus);
+    const t=Math.max(c.currentTime+.15,s.t);src.start(t);s.t=t+b.duration;s.partes.push(pcm);
+  },
+  cierra(sid){
+    const s=this.ses[sid];if(!s)return;delete this.ses[sid];clearTimeout(s.tmo);
+    const tot=s.partes.reduce((a,x)=>a+x.length,0),pcm=new Float32Array(tot);let o=0;for(const x of s.partes){pcm.set(x,o);o+=x.length}
+    this.voces.push({t:s.t0,from:s.from,pcm,dur:tot/8000});if(this.voces.length>30)this.voces.shift();
+    const c=this.ctx(),falta=Math.max(0,(s.t-c.currentTime)*1000);
+    setTimeout(()=>{this.ruido(.08,.12);if(!Object.keys(this.ses).length)this.hablando(null)},falta);this.pinta();
+  },
+  async reproduce(v){
+    const c=this.ctx();if(!c)return;let b;
+    try{b=v.pcm?this.subir(v.pcm):await c.decodeAudioData(v.blob.buffer.slice(v.blob.byteOffset,v.blob.byteOffset+v.blob.byteLength))}catch(e){this.estado('No se pudo reproducir ese audio');return}
+    if(!v.dur)v.dur=b.duration;const s=c.createBufferSource();s.buffer=b;s.connect(this.bus);this.ruido(.08,.12);
+    this.hablando(nombreDe(v.from));s.onended=()=>{this.ruido(.08,.12);if(!Object.keys(this.ses).length)this.hablando(null)};s.start(c.currentTime+.1);
+  },
+  elementos(){
+    const txt=this.chat.map(m=>({t:m.t,from:m.from,txt:m.txt}));
+    const voz=this.voces.map((v,i)=>({t:v.t,from:v.from,voz:i,dur:v.dur}));
+    return txt.concat(voz).sort((a,b)=>a.t-b.t).slice(-80);
+  },
+  pinta(){
+    if(!game)return;
+    const els=this.elementos();
+    if(this.abierto)this.visto=Date.now();
+    const nuevos=els.filter(e=>e.t>this.visto&&e.from!==game.me).length;
+    const bd=$('wkBadge');bd.hidden=!nuevos||this.abierto;bd.textContent=nuevos;
+    if(!this.abierto)return;
+    $('wkCanal').textContent=`Canal de la partida ${fmt(game.code)}`;
+    const av=$('wkAviso'),ia=this.inapp();av.classList.toggle('on',ia);
+    if(ia)av.textContent='Estás dentro de otra app (WhatsApp, Instagram…) y ahí el micrófono no funciona. Abre el enlace en Safari o Chrome. Los mensajes de texto sí funcionan.';
+    const no=this.noPuede();if(!this.rec){if(no)this.estado(no);else if(this._no)this.estado('')}this._no=no;
+    $('wkPtt').disabled=!!no&&!this.rec;$('wkEnviar').disabled=!!no;$('wkTxt').disabled=!!no;
+    const h=els.length?els.map(e=>{
+      const nom=`${avImg(lookOf(e.from),'sm')} <b>${esc(nombreDe(e.from))}</b>`;
+      return e.txt!==undefined?`<div class="wk-m">${nom}<span class="txt">${esc(e.txt)}</span></div>`:`<div class="wk-m">${nom}<button data-i="${e.voz}">▶ ${Math.max(1,Math.round(e.dur||0))} s</button></div>`}).join('')
+      :'<p class="wk-vacio">Aún no ha hablado nadie. Mantén el botón para hablar, o escribe abajo.</p>';
+    const L=$('wkLista');if(L._h!==h){const abajo=L.scrollHeight-L.scrollTop-L.clientHeight<40;L._h=h;L.innerHTML=h;if(abajo||!L._ini){L.scrollTop=L.scrollHeight;L._ini=true}}
+  },
+  abrir(){this.abierto=true;$('wk').classList.add('on');this.ctx();this.diag();$('wkLista')._ini=false;this.pinta()},
+  cerrar(){this.abierto=false;$('wk').classList.remove('on');if(this.rec)this.para(true);this.hablando(null);this.pinta()},
+  init(){
+    $('wkFab').onclick=()=>this.abrir();$('wkCerrar').onclick=()=>this.cerrar();$('wkFondo').onclick=()=>this.cerrar();
+    const mandar=()=>{const i=$('wkTxt'),t=i.value.trim();if(!t||this.noPuede())return;
+      this.chat.push({t:Date.now(),from:game.me,txt:t});bc('w',{id:uid(8),k:'txt',from:game.me,txt:t});i.value='';this.pinta()};
+    $('wkEnviar').onclick=mandar;$('wkTxt').onkeydown=e=>{if(e.key==='Enter')mandar()};
+    $('wkLista').onclick=e=>{const b=e.target.closest('button[data-i]');if(b){const v=this.voces[+b.dataset.i];v&&this.reproduce(v)}};
+    const b=$('wkPtt');let abajo=0,tocaParar=false;
+    b.onpointerdown=e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}
+      if(this.rec){tocaParar=true;return}abajo=Date.now();this.empieza()};
+    const arriba=()=>{
+      if(tocaParar){tocaParar=false;this.para(true);return}
+      const r=this.rec;if(!r)return;
+      if(Date.now()-abajo<350||r.arrancando){r.latch=true;this.btn(true);this.estado('Grabando… toca otra vez para enviar');return}
+      if(!r.latch)this.para(true);
+    };
+    b.onpointerup=arriba;b.onpointercancel=()=>{if(this.rec&&!this.rec.latch&&!this.rec.arrancando)this.para(true)};
+    b.oncontextmenu=e=>e.preventDefault();
+  }
 };
+WK.init();
+
+/* ---------- Cuenta opcional de Punto Ciego ---------- */
+let GOOGLE=false;
+function renderAcct(){
+  const html=USER?
+    `${avImg(myLook(),'sm')}<span>${PERFIL&&PERFIL.name?'Hola, <b></b>':'Sesión iniciada'}</span><button data-a="out">Salir</button>`
+    :`<button data-a="in">Entrar con mi cuenta de Punto Ciego</button>`;
+  ['acct','acct2'].forEach(id=>{
+    const el=$(id);if(!el)return;
+    if(el._h!==html){el._h=html;el.innerHTML=html;const b=el.querySelector('b');if(b)b.textContent=PERFIL.name}
+  });
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('#acct button,#acct2 button');if(!b)return;
+  if(b.dataset.a==='in')loginSheet();else logoutSheet();
+});
+function errorCuenta(e){
+  const m=((e&&(e.code||''))+' '+(e&&e.message||'')).toLowerCase();
+  if(m.includes('invalid')&&m.includes('credential'))return 'Correo o contraseña incorrectos.';
+  if(m.includes('not confirmed'))return 'Tienes que confirmar el correo antes de entrar.';
+  if(m.includes('rate')||m.includes('too many')||m.includes('security purposes'))return 'Demasiados intentos seguidos. Espera un minuto.';
+  if(m.includes('invalid')&&m.includes('email'))return 'Ese correo no parece válido.';
+  if(m.includes('fetch')||m.includes('network'))return 'No hay conexión con el servidor de cuentas.';
+  return (e&&e.message)||'Algo ha fallado. Prueba otra vez.';
+}
+function loginSheet(){
+  sheet(`<h3>Tu cuenta de Punto Ciego</h3><p>Es la misma cuenta. Solo sirve para usar tu nombre y tu personaje: para jugar no hace falta.</p>
+    <input class="field" id="lgMail" type="email" autocomplete="username" inputmode="email" placeholder="Correo" autocapitalize="off" spellcheck="false">
+    <input class="field" id="lgPass" type="password" autocomplete="current-password" placeholder="Contraseña">
+    <p class="err" id="lgErr" role="alert"></p>
+    <button class="act" id="lgGo">Entrar</button>
+    ${GOOGLE?'<button class="act google" id="lgG">Entrar con Google</button>':''}
+    <button class="link" id="lgNo">Ahora no</button>
+    <p class="fine">¿Aún no tienes cuenta? Créala en <a href="https://javivalmich.github.io/Punto-Ciego/" target="_blank" rel="noopener">Punto Ciego</a>.</p>`,()=>{
+    $('lgNo').onclick=closeSheet;
+    const go=async()=>{
+      const email=$('lgMail').value.trim(),password=$('lgPass').value;
+      if(!email||!password){$('lgErr').textContent='Escribe tu correo y tu contraseña.';return}
+      $('lgGo').disabled=true;$('lgErr').textContent='';
+      try{
+        const sb=await loadSB();const {error}=await sb.auth.signInWithPassword({email,password});
+        if(error)throw error;closeSheet();toast('Sesión iniciada');
+      }catch(e){$('lgErr').textContent=errorCuenta(e);$('lgGo').disabled=false}
+    };
+    $('lgGo').onclick=go;$('lgPass').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+    if($('lgG'))$('lgG').onclick=async()=>{
+      try{
+        if(pending)lsSet('impostor-ret',linkFor(pending.code,pending.names,pending.remote));
+        const sb=await loadSB();const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
+        if(error)throw error;
+      }catch(e){$('lgErr').textContent=errorCuenta(e)}
+    };
+  });
+}
+function logoutSheet(){
+  sheet(`<h3>¿Salir de tu cuenta?</h3><p>Como Punto Ciego usa la misma sesión en este navegador, también saldrás de allí. Podrás jugar igual, con el nombre escrito.</p>
+    <button class="act" id="loYes">Salir</button><button class="link" id="loNo">Cancelar</button>`,()=>{
+    $('loNo').onclick=closeSheet;
+    $('loYes').onclick=async()=>{closeSheet();try{const sb=await loadSB();await sb.auth.signOut({scope:'local'})}catch(e){}};
+  });
+}
+async function iniciaCuentas(){
+  try{
+    const sb=await loadSB();
+    sb.auth.onAuthStateChange((ev,ses)=>{setTimeout(()=>trasSesion(ses),0)});
+    const {data}=await sb.auth.getSession();
+    await trasSesion(data.session);
+    fetch(SUPA.url+'/auth/v1/settings',{headers:{apikey:SUPA.key}}).then(r=>r.json()).then(j=>{if(j&&j.external&&j.external.google)GOOGLE=true}).catch(()=>{});
+  }catch(e){console.warn('cuentas',e)}
+}
+async function trasSesion(ses){
+  const u=ses&&ses.user?ses.user:null;
+  if((u?u.id:'')===(USER?USER.id:'')&&(!u||PERFIL)){USER=u;return}
+  USER=u;
+  if(!u){PERFIL=null;renderAcct();renderPick();renderAll();netTrack();return}
+  const key='impostor-perfil-'+u.id;
+  try{
+    const {data,error}=await SB.from('profiles').select('username,look').eq('id',u.id).maybeSingle();
+    if(error)throw error;
+    PERFIL=data?{name:data.username,look:limpiaLook(data.look)}:{name:'',look:limpiaLook({})};
+    lsSet(key,PERFIL);
+  }catch(e){console.warn('perfil',e);const c=lsGet(key);PERFIL=c?{name:c.name,look:limpiaLook(c.look)}:{name:'',look:limpiaLook({})}}
+  renderAcct();renderPick();renderAll();netTrack();
+  if($('s-create').classList.contains('on')){autoName();renderSetup()}
+}
 
 /* ---------- Arranque ---------- */
-game=load();
+game=load();if(game)loadS();
 const fromLink=parseLink(location.hash);
-if(fromLink){
+let ret=null;if(!fromLink){const r=lsGet('impostor-ret');if(r){lsDel('impostor-ret');ret=parseLink(r)}}
+if(fromLink||ret){
+  const got=fromLink||ret;
   try{history.replaceState(null,'',location.href.split('#')[0])}catch(e){}
-  if(game&&game.code===fromLink.code&&JSON.stringify(game.names)===JSON.stringify(fromLink.names)){renderGame();show('s-game')}
-  else{pending=fromLink;openPick('s-home')}
-}else if(game){renderGame();show('s-game')}else show('s-home');
+  if(game&&game.code===got.code&&JSON.stringify(game.names)===JSON.stringify(got.names)){enterGame()}
+  else{pending=got;openPick('s-home')}
+}else if(game){enterGame()}else show('s-home');
+renderAcct();avLoad();iniciaCuentas();
+setInterval(tick,1000);
+setInterval(()=>{if(iAmHost()&&NET.resumed&&netUp()&&S)bc('st',S)},8000); /* latido: repara mensajes perdidos */
 </script>
 </body>
 </html>
