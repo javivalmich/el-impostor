@@ -304,6 +304,22 @@ body.red .sheet .act{background:var(--red)}
 .jr button.no{background:var(--surface2);color:var(--text)}
 #joinReq .tiny{margin-bottom:8px}
 .step button:disabled{opacity:.3}
+
+/* walkie compacto en la sala de espera: no tapa la lista ni "Empezar" (la página deja hueco debajo) */
+#wk.compact{pointer-events:none}
+#wk.compact .fondo{display:none}
+#wk.compact .wk-caja{pointer-events:auto;height:min(52vh,400px);box-shadow:0 -10px 30px rgba(0,0,0,.5)}
+#wk.compact #wkDiag{display:none}
+body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
+
+/* hojas de confirmación y avisos por encima del walkie */
+.overlay{z-index:70}
+.toast{z-index:80}
+
+/* el punto verde va junto al nombre y el borde derecho queda libre para el botón del walkie */
+.pl{gap:10px}
+.pl .nm2{flex:0 1 auto}
+.pl .kick{margin-left:2px}
 [hidden]{display:none!important}
 .roundbtn:disabled{opacity:1;color:var(--text);cursor:default}
 </style>
@@ -2886,11 +2902,13 @@ function save(){try{if(game&&game.legacy)localStorage.setItem('impostor-v2',JSON
 function load(){try{const s=JSON.parse(localStorage.getItem('impostor-v2')||'null');if(s&&s.code&&Array.isArray(s.names)){const cfg=decode(s.code);if(cfg&&s.names.length===cfg.n&&s.me>=1&&s.me<=cfg.n&&s.round>=1)return {code:s.code,cfg,names:s.names,me:s.me,round:s.round,creator:!!s.creator,remote:!!s.remote,legacy:true}}}catch(e){}return null}
 function saveNames(){try{localStorage.setItem('impostor-names',JSON.stringify(names))}catch(e){}}
 
+const WKS=['s-game','s-lobby','s-wait']; // pantallas donde está el walkie (el panel no se cierra al pasar de una a otra)
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));document.body.classList.remove('red');window.scrollTo(0,0);
-  document.querySelector('.wrap').classList.toggle('game',id==='s-game');
-  $('wkFab').classList.toggle('on',id==='s-game'&&!!game);
-  if(id!=='s-game')WK.cerrar();
+  const wk=WKS.includes(id)&&!!(ROOM||game);
+  document.querySelector('.wrap').classList.toggle('game',WKS.includes(id));
+  $('wkFab').classList.toggle('on',wk);
+  if(!wk)WK.cerrar();else WK.modo();
 }
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
 
@@ -3088,7 +3106,7 @@ function onPresence(){
 }
 /* Mismo móvil o navegador abierto en otro sitio: la conexión más antigua se aparta (sin borrar lo guardado) */
 function yieldTab(){
-  netLeave();ROOM=null;game=null;S=null;HV=null;MYV=null;phHtml='';plHtml='';WK.cerrar();
+  netLeave();WK.reset();WK.cerrar();ROOM=null;game=null;S=null;HV=null;MYV=null;phHtml='';plHtml='';
   show('s-home');toast('Esta partida se ha abierto en otra pestaña con tu mismo jugador.');
 }
 function nameTaken(){
@@ -3097,7 +3115,7 @@ function nameTaken(){
   $('joinErr').textContent=`Ya hay alguien llamado «${nm}» en la sala. Añade una inicial.`;
 }
 function dropRoom(){
-  const c=ROOM&&ROOM.code;netLeave();WK.cerrar();ROOM=null;game=null;S=null;HV=null;MYV=null;phHtml='';plHtml='';
+  const c=ROOM&&ROOM.code;netLeave();WK.reset();WK.cerrar();ROOM=null;game=null;S=null;HV=null;MYV=null;phHtml='';plHtml='';
   if(c)lsDel('impostor-s-'+c);saveRoom();
 }
 
@@ -3294,13 +3312,17 @@ function routeScreen(){
   const want=game?'s-game':(S&&S.ph!=='lobby')?'s-wait':'s-lobby';
   const cur=document.querySelector('.screen.on');
   if(!cur||cur.id!==want)show(want);
+  if(enteredRoom!==ROOM.code){enteredRoom=ROOM.code;onEnterRoom()}
   if(want==='s-game'&&entered!==ROOM.code){entered=ROOM.code;onEnterGame()}
 }
-function onEnterGame(){
-  cardKey='';vibrated=0;lockScreen();
-  if(game.remote&&!lsGet('impostor-wk-'+game.code)){lsSet('impostor-wk-'+game.code,1);setTimeout(()=>WK.abrir(),500)}
+/* Al entrar en la sala (crear o unirse): "Jugamos a distancia" abre el walkie solo, una vez por sala */
+let enteredRoom='';
+function onEnterRoom(){
+  lockScreen();
+  if(ROOM.remote&&!lsGet('impostor-wk-'+ROOM.code)){lsSet('impostor-wk-'+ROOM.code,1);setTimeout(()=>{if(ROOM&&!WK.abierto)WK.abrir()},500)}
   if(WK.inapp())toast('Estás dentro de otra app: el micrófono no irá. Abre el enlace en Safari o Chrome.');
 }
+function onEnterGame(){cardKey='';vibrated=0;lockScreen()}
 let cardKey='';
 function renderCard(){
   const key=game.code+'|'+game.me+'|'+game.round+'|'+game.cfg.seed+'|'+game.cfg.n;if(key===cardKey)return;cardKey=key;
@@ -3396,7 +3418,7 @@ function renderPlist(){
   const h=game.names.map((n,i)=>{
     const s=i+1,pid=S.pl[i].p,on=!!(R[pid]&&!R[pid].w),dead=S.dead.includes(s),isMe=s===game.me,isHost=S.host===pid;
     if(on)cnt++;
-    return `<div class="pl${dead?' dead':''}${isMe?' me':''}">${avImg(lookOf(s),'')}<div class="nm2"><b>${esc(n)}</b>${isMe?'<span class="tg">Tú</span>':''}${isHost?'<span class="tg">Anfitrión</span>':''}${dead?'<span class="tg">Eliminado</span>':''}</div><span class="dot${on?'':' off'}" title="${on?'Conectado':'Sin conexión'}"></span></div>`;
+    return `<div class="pl${dead?' dead':''}${isMe?' me':''}">${avImg(lookOf(s),'')}<span class="dot${on?'':' off'}" title="${on?'Conectado':'Sin conexión'}"></span><div class="nm2"><b>${esc(n)}</b>${isMe?'<span class="tg">Tú</span>':''}${isHost?'<span class="tg">Anfitrión</span>':''}${dead?'<span class="tg">Eliminado</span>':''}</div></div>`;
   }).join('');
   $('plCount').textContent=`${cnt} de ${game.names.length} conectados`;
   if(h!==plHtml){plHtml=h;$('plist').innerHTML=h}
@@ -3432,7 +3454,7 @@ function renderLobby(){
   }
   const rows=list.map(e=>{
     const isMe=e.p===PID,isH=S&&S.host===e.p,look=isMe?myLook():(e.a?lookOfArr(e.a):null);
-    return `<div class="pl${isMe?' me':''}">${avImg(look,'')}<div class="nm2"><b>${esc(e.n)}</b>${isMe?'<span class="tg">Tú</span>':''}${isH?'<span class="tg">Anfitrión</span>':''}</div>${host&&!isMe?`<button class="kick" data-a="kick" data-p="${esc(e.p)}" aria-label="Sacar a ${esc(e.n)}">✕</button>`:''}<span class="dot" title="Conectado"></span></div>`;
+    return `<div class="pl${isMe?' me':''}">${avImg(look,'')}<span class="dot" title="Conectado"></span><div class="nm2"><b>${esc(e.n)}</b>${isMe?'<span class="tg">Tú</span>':''}${isH?'<span class="tg">Anfitrión</span>':''}</div>${host&&!isMe?`<button class="kick" data-a="kick" data-p="${esc(e.p)}" aria-label="Sacar a ${esc(e.n)}">✕</button>`:''}</div>`;
   }).join('');
   const all=rows+'|'+h;
   if(all!==lbHtml){lbHtml=all;$('lbList').innerHTML=rows||'<p class="empty">Nadie todavía…</p>';$('lbHost').innerHTML=h}
@@ -3742,7 +3764,7 @@ $('showQr').onclick=()=>{
 
 /* Que la pantalla no se apague durante la partida */
 let WL=null;
-async function lockScreen(){try{if(game&&navigator.wakeLock&&!WL){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null})}}catch(e){}}
+async function lockScreen(){try{if((game||ROOM)&&navigator.wakeLock&&!WL){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null})}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)return;
   if(NET.code&&(!NET.ch||NET.ch.state!=='joined'))hardReconnect();
@@ -3755,7 +3777,12 @@ window.addEventListener('online',()=>{if(NET.code&&NET.st!=='up')hardReconnect()
    pulsar y mantener o toque-toque. Aquí viaja por el canal de la partida de Supabase Realtime, sin cifrar. */
 function comp(x){x=Math.max(-1,Math.min(1,x));const m=Math.round(Math.log1p(255*Math.abs(x))/Math.log(256)*127);return x<0?128|m:m}
 function decomp(b){const v=(Math.pow(256,(b&127)/127)-1)/255;return b&128?-v:v}
-const nombreDe=s=>{const n=game&&game.names[s-1];return n||'Alguien'};
+/* Quien habla se identifica por su PID (fijo por móvil), no por el número de jugador: así vale en la sala de espera y en la partida */
+const pidName=(p,fb)=>{const e=S&&S.pl&&S.pl.find(x=>x.p===p);if(e)return e.n;const r=NET.R&&NET.R[p];return (r&&r.n)||fb||'Alguien'};
+function lookOfPid(p){if(p===PID)return myLook();const r=NET.R&&NET.R[p];return r&&r.a?lookOfArr(r.a):null}
+const wkKey=()=>ROOM?ROOM.code:'';
+const ssGet=k=>{try{return JSON.parse(sessionStorage.getItem(k)||'null')}catch(e){return null}};
+const ssSet=(k,v)=>{try{if(v==null)sessionStorage.removeItem(k);else sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const WK={
   abierto:false,visto:0,voces:[],chat:[],ses:{},blobs:{},rec:null,modo:lsGet('imp.wkmodo','pcm'),
   ctx(){
@@ -3773,21 +3800,38 @@ const WK={
   /* WhatsApp, Instagram, etc. abren la web en un navegador integrado que no deja usar el micro */
   inapp(){const ua=navigator.userAgent;return /FBAN|FBAV|FB_IAB|Instagram|WhatsApp|Line\/|Snapchat|TikTok|Twitter|MicroMessenger|; wv\)/i.test(ua)||(/iPhone|iPad|iPod/.test(ua)&&!/Safari\//.test(ua)&&!/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua))},
   noPuede(){
-    if(!game)return 'Entra en una partida para usar el walkie';
+    if(!ROOM)return game?'Sin conexión: el walkie necesita internet':'Entra en una partida para usar el walkie';
     if(!netUp())return 'Sin conexión: el walkie necesita internet';
+    if(isWaiting()&&!S.acc.some(p=>p.p===PID))return 'Esperas a que el anfitrión te acepte: puedes escuchar y leer, pero no hablar ni escribir';
     if(isDead())return 'Estás eliminado: puedes escuchar, pero no hablar hasta la siguiente ronda';
     return '';
   },
+  /* ¿puede hablar ese PID? Se comprueba también al recibir, por si alguien manda algo que su móvil no debería enviar */
+  puedeHablar(p){
+    if(S){
+      if(S.ban.includes(p))return false;
+      const acc=S.acc.some(x=>x.p===p);
+      if(S.ph!=='lobby'&&S.pl){const i=S.pl.findIndex(x=>x.p===p);if(i<0)return acc;if(S.dead.includes(i+1))return false}
+      const r=NET.R&&NET.R[p];if(r&&r.w&&!acc)return false;
+    }
+    return true;
+  },
+  reset(){
+    if(this.rec)this.para(true);
+    for(const k in this.ses)clearTimeout(this.ses[k].tmo);
+    this.voces=[];this.chat=[];this.ses={};this.blobs={};this.visto=0;this.hablando(null);
+    const k=wkKey();ssSet('impostor-chat-'+k,null);ssSet('impostor-wkopen-'+k,null);
+  },
   estado(t){$('wkEstado').textContent=t||''},
   diag(){
-    const tot=game?game.cfg.n:0,n=Object.keys(NET.R||{}).length;
-    let t=netUp()?`Conectados: ${n} de ${tot}.`:'Sin conexión.';
+    const n=Object.values(NET.R||{}).filter(e=>!e.w).length;
+    let t=netUp()?`Conectados: ${n}.`:'Sin conexión.';
     t+=` Micro: ${this.stream?'listo':'sin abrir'}, modo ${this.modo==='mr'?'grabación':'directo'}.`;
     $('wkDiag').textContent=t;
   },
   btn(on){$('wkPtt').classList.toggle('on',on);$('wkPttTxt').textContent=on?(this.rec&&this.rec.latch?'Grabando: toca para enviar':'Hablando… suelta para enviar'):'Mantén para hablar'},
   nivel(v){$('wkNivel').style.transform=`scaleX(${Math.min(1,v*2.5)})`},
-  hablando(nombre){const e=$('wkTalk');if(nombre){e.textContent='📻 '+nombre+' está hablando';e.hidden=false}else e.hidden=true},
+  hablando(p,fb){const e=$('wkTalk');if(p){e.innerHTML=avImg(lookOfPid(p),'sm')+'<span></span>';e.lastChild.textContent=pidName(p,fb)+' está hablando';e.hidden=false}else e.hidden=true},
   async micro(){
     if(this.stream&&this.stream.active&&this.stream.getAudioTracks().some(t=>t.readyState==='live'))return;
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('este navegador no deja usar el micro');
@@ -3819,7 +3863,7 @@ const WK={
   paraSP(r){try{r.sp&&r.sp.disconnect();this.src&&this.src.disconnect(r.sp)}catch(e){}r.sp=null},
   trozo(r,arr,fin){
     const f=Float32Array.from(arr),u=new Uint8Array(f.length);for(let i=0;i<f.length;i++)u[i]=comp(f[i]);
-    r.partes.push(f);bc('w',{id:uid(12),k:'pcm',s:r.id,n:r.n++,from:game.me,d:b64(u),fin});
+    r.partes.push(f);bc('w',{id:uid(12),k:'pcm',s:r.id,n:r.n++,p:PID,nm:myName(),d:b64(u),fin});
   },
   empiezaMR(r){
     let mr;try{mr=new MediaRecorder(this.stream)}catch(e){this.rec=null;this.btn(false);this.estado('Este móvil no puede grabar audio. El texto sí funciona.');return}
@@ -3827,8 +3871,8 @@ const WK={
     mr.onstop=async()=>{
       const blob=new Blob(partes,{type:mr.mimeType||'audio/webm'});const u=new Uint8Array(await blob.arrayBuffer());
       const TAM=45000,tot=Math.max(1,Math.ceil(u.length/TAM));
-      for(let i=0;i<tot;i++)bc('w',{id:uid(12),k:'blob',s:r.id,n:i,of:tot,from:game.me,mime:blob.type,d:b64(u.subarray(i*TAM,(i+1)*TAM))});
-      this.voces.push({t:Date.now(),from:game.me,blob:u,mime:blob.type,dur:(Date.now()-r.t0)/1000});this.pinta();
+      for(let i=0;i<tot;i++)bc('w',{id:uid(12),k:'blob',s:r.id,n:i,of:tot,p:PID,nm:myName(),mime:blob.type,d:b64(u.subarray(i*TAM,(i+1)*TAM))});
+      this.voces.push({t:Date.now(),p:PID,n:myName(),blob:u,mime:blob.type,dur:(Date.now()-r.t0)/1000});this.pinta();
     };
     mr.start();r.lim=setTimeout(()=>{if(this.rec===r)this.para(true)},20000);
   },
@@ -3839,22 +3883,23 @@ const WK={
     if(r.arrancando)return;
     if(r.mr){try{r.mr.stop()}catch(e){}}
     else{this.paraSP(r);this.trozo(r,(r.buf||[]).splice(0),true);
-      const tot=r.partes.reduce((a,x)=>a+x.length,0);if(tot>800){const pcm=new Float32Array(tot);let o=0;for(const x of r.partes){pcm.set(x,o);o+=x.length}this.voces.push({t:Date.now(),from:game.me,pcm,dur:tot/8000})}}
+      const tot=r.partes.reduce((a,x)=>a+x.length,0);if(tot>800){const pcm=new Float32Array(tot);let o=0;for(const x of r.partes){pcm.set(x,o);o+=x.length}this.voces.push({t:Date.now(),p:PID,n:myName(),pcm,dur:tot/8000})}}
     this.ruido(.07,.1);this.estado('Enviado');setTimeout(()=>{if(!this.rec)this.estado('')},1500);this.pinta();
   },
   subir(pcm){const c=this.ctx(),sr=c.sampleRate,n=Math.max(1,Math.floor(pcm.length*sr/8000)),b=c.createBuffer(1,n,sr),d=b.getChannelData(0),k=8000/sr;
     for(let i=0;i<n;i++){const x=i*k,i0=Math.floor(x),f=x-i0;d[i]=(pcm[i0]||0)*(1-f)+(pcm[i0+1]||pcm[i0]||0)*f}return b},
   recibe(m){
-    if(!m||!game||!Number.isInteger(m.from)||m.from<1||m.from>game.cfg.n||m.from===game.me)return;
+    if(!m||!ROOM||typeof m.p!=='string'||m.p.length>24||m.p===PID||!this.puedeHablar(m.p))return;
+    const fb=String(m.nm||'').slice(0,14);
     if(m.k==='txt'){
       const t=String(m.txt||'').slice(0,200);if(!t)return;
-      this.chat.push({t:Date.now(),from:m.from,txt:t});if(this.chat.length>80)this.chat.shift();
+      this.chat.push({t:Date.now(),p:m.p,n:pidName(m.p,fb),txt:t});if(this.chat.length>80)this.chat.shift();this.guardaChat();
       if(this.abierto)this.ruido(.05,.08);this.pinta();return;
     }
-    const c=this.ctx();if(!c)return;const nombre=nombreDe(m.from);
+    const c=this.ctx();if(!c)return;
     if(m.k==='pcm'&&typeof m.d==='string'){
       let s=this.ses[m.s];
-      if(!s){s=this.ses[m.s]={from:m.from,exp:0,buf:{},t:0,partes:[],t0:Date.now()};this.ruido(.09,.14);this.hablando(nombre)}
+      if(!s){s=this.ses[m.s]={p:m.p,n:pidName(m.p,fb),exp:0,buf:{},t:0,partes:[],t0:Date.now()};this.ruido(.09,.14);this.hablando(m.p,fb)}
       const u=deb64(m.d),pcm=new Float32Array(u.length);for(let i=0;i<u.length;i++)pcm[i]=decomp(u[i]);
       s.buf[m.n]={pcm,fin:m.fin};
       const vacia=()=>{while(s.buf[s.exp]){const it=s.buf[s.exp];delete s.buf[s.exp];s.exp++;this.suena(s,it.pcm);if(it.fin){this.cierra(m.s);return true}}return false};
@@ -3862,14 +3907,16 @@ const WK={
       const ks=Object.keys(s.buf).map(Number);if(ks.length>4){s.exp=Math.min(...ks);if(vacia())return}
       clearTimeout(s.tmo);s.tmo=setTimeout(()=>this.cierra(m.s),3000);
     }else if(m.k==='blob'&&typeof m.d==='string'){
-      let s=this.blobs[m.s];if(!s)s=this.blobs[m.s]={of:m.of,p:[],from:m.from,mime:m.mime};
+      let s=this.blobs[m.s];if(!s)s=this.blobs[m.s]={of:m.of,p:[],from:m.p,n:pidName(m.p,fb),mime:m.mime};
       s.p[m.n]=deb64(m.d);
       if(s.p.filter(Boolean).length===s.of){
         const tot=s.p.reduce((a,x)=>a+x.length,0),u=new Uint8Array(tot);let o=0;for(const x of s.p){u.set(x,o);o+=x.length}
-        delete this.blobs[m.s];const v={t:Date.now(),from:m.from,blob:u,mime:m.mime};this.voces.push(v);this.reproduce(v);this.pinta();
+        delete this.blobs[m.s];const v={t:Date.now(),p:m.p,n:s.n,blob:u,mime:m.mime};this.voces.push(v);this.reproduce(v);this.pinta();
       }
     }
   },
+  guardaChat(){ssSet('impostor-chat-'+wkKey(),this.chat.slice(-60))},
+  cargaChat(){const c=ssGet('impostor-chat-'+wkKey());if(Array.isArray(c))this.chat=c.filter(x=>x&&typeof x.p==='string'&&typeof x.txt==='string').slice(-80)},
   suena(s,pcm){
     const c=this.ctx(),b=this.subir(pcm),src=c.createBufferSource();src.buffer=b;src.connect(this.bus);
     const t=Math.max(c.currentTime+.15,s.t);src.start(t);s.t=t+b.duration;s.partes.push(pcm);
@@ -3877,7 +3924,7 @@ const WK={
   cierra(sid){
     const s=this.ses[sid];if(!s)return;delete this.ses[sid];clearTimeout(s.tmo);
     const tot=s.partes.reduce((a,x)=>a+x.length,0),pcm=new Float32Array(tot);let o=0;for(const x of s.partes){pcm.set(x,o);o+=x.length}
-    this.voces.push({t:s.t0,from:s.from,pcm,dur:tot/8000});if(this.voces.length>30)this.voces.shift();
+    this.voces.push({t:s.t0,p:s.p,n:s.n,pcm,dur:tot/8000});if(this.voces.length>30)this.voces.shift();
     const c=this.ctx(),falta=Math.max(0,(s.t-c.currentTime)*1000);
     setTimeout(()=>{this.ruido(.08,.12);if(!Object.keys(this.ses).length)this.hablando(null)},falta);this.pinta();
   },
@@ -3885,37 +3932,38 @@ const WK={
     const c=this.ctx();if(!c)return;let b;
     try{b=v.pcm?this.subir(v.pcm):await c.decodeAudioData(v.blob.buffer.slice(v.blob.byteOffset,v.blob.byteOffset+v.blob.byteLength))}catch(e){this.estado('No se pudo reproducir ese audio');return}
     if(!v.dur)v.dur=b.duration;const s=c.createBufferSource();s.buffer=b;s.connect(this.bus);this.ruido(.08,.12);
-    this.hablando(nombreDe(v.from));s.onended=()=>{this.ruido(.08,.12);if(!Object.keys(this.ses).length)this.hablando(null)};s.start(c.currentTime+.1);
+    this.hablando(v.p,v.n);s.onended=()=>{this.ruido(.08,.12);if(!Object.keys(this.ses).length)this.hablando(null)};s.start(c.currentTime+.1);
   },
   elementos(){
-    const txt=this.chat.map(m=>({t:m.t,from:m.from,txt:m.txt}));
-    const voz=this.voces.map((v,i)=>({t:v.t,from:v.from,voz:i,dur:v.dur}));
+    const txt=this.chat.map(m=>({t:m.t,p:m.p,n:m.n,txt:m.txt}));
+    const voz=this.voces.map((v,i)=>({t:v.t,p:v.p,n:v.n,voz:i,dur:v.dur}));
     return txt.concat(voz).sort((a,b)=>a.t-b.t).slice(-80);
   },
   pinta(){
-    if(!game)return;
+    if(!ROOM&&!game)return;
     const els=this.elementos();
     if(this.abierto)this.visto=Date.now();
-    const nuevos=els.filter(e=>e.t>this.visto&&e.from!==game.me).length;
+    const nuevos=els.filter(e=>e.t>this.visto&&e.p!==PID).length;
     const bd=$('wkBadge');bd.hidden=!nuevos||this.abierto;bd.textContent=nuevos;
     if(!this.abierto)return;
-    $('wkCanal').textContent=`Canal de la partida ${game.legacy?fmt(game.code):game.code}`;
+    $('wkCanal').textContent=ROOM?`Sala ${ROOM.code}`:'Partida sin conexión';
     const av=$('wkAviso'),ia=this.inapp();av.classList.toggle('on',ia);
     if(ia)av.textContent='Estás dentro de otra app (WhatsApp, Instagram…) y ahí el micrófono no funciona. Abre el enlace en Safari o Chrome. Los mensajes de texto sí funcionan.';
     const no=this.noPuede();if(!this.rec){if(no)this.estado(no);else if(this._no)this.estado('')}this._no=no;
     $('wkPtt').disabled=!!no&&!this.rec;$('wkEnviar').disabled=!!no;$('wkTxt').disabled=!!no;
     const h=els.length?els.map(e=>{
-      const nom=`${avImg(lookOf(e.from),'sm')} <b>${esc(nombreDe(e.from))}</b>`;
+      const nom=`${avImg(lookOfPid(e.p),'sm')} <b>${esc(pidName(e.p,e.n))}</b>`;
       return e.txt!==undefined?`<div class="wk-m">${nom}<span class="txt">${esc(e.txt)}</span></div>`:`<div class="wk-m">${nom}<button data-i="${e.voz}">▶ ${Math.max(1,Math.round(e.dur||0))} s</button></div>`}).join('')
       :'<p class="wk-vacio">Aún no ha hablado nadie. Mantén el botón para hablar, o escribe abajo.</p>';
     const L=$('wkLista');if(L._h!==h){const abajo=L.scrollHeight-L.scrollTop-L.clientHeight<40;L._h=h;L.innerHTML=h;if(abajo||!L._ini){L.scrollTop=L.scrollHeight;L._ini=true}}
   },
-  abrir(){this.abierto=true;$('wk').classList.add('on');this.ctx();this.diag();$('wkLista')._ini=false;this.pinta()},
-  cerrar(){this.abierto=false;$('wk').classList.remove('on');if(this.rec)this.para(true);this.hablando(null);this.pinta()},
+  modo(){const cur=document.querySelector('.screen.on'),c=!!(this.abierto&&cur&&cur.id!=='s-game');$('wk').classList.toggle('compact',c);document.body.classList.toggle('wk-compact',c)},
+  abrir(){this.abierto=true;$('wk').classList.add('on');ssSet('impostor-wkopen-'+wkKey(),1);this.ctx();this.diag();$('wkLista')._ini=false;this.modo();this.pinta()},
+  cerrar(){const era=this.abierto;this.abierto=false;$('wk').classList.remove('on');if(era)ssSet('impostor-wkopen-'+wkKey(),null);if(this.rec)this.para(true);this.hablando(null);this.modo();this.pinta()},
   init(){
     $('wkFab').onclick=()=>this.abrir();$('wkCerrar').onclick=()=>this.cerrar();$('wkFondo').onclick=()=>this.cerrar();
     const mandar=()=>{const i=$('wkTxt'),t=i.value.trim();if(!t||this.noPuede())return;
-      this.chat.push({t:Date.now(),from:game.me,txt:t});bc('w',{id:uid(8),k:'txt',from:game.me,txt:t});i.value='';this.pinta()};
+      this.chat.push({t:Date.now(),p:PID,n:myName(),txt:t});if(this.chat.length>80)this.chat.shift();this.guardaChat();bc('w',{id:uid(8),k:'txt',p:PID,nm:myName(),txt:t});i.value='';this.pinta()};
     $('wkEnviar').onclick=mandar;$('wkTxt').onkeydown=e=>{if(e.key==='Enter')mandar()};
     $('wkLista').onclick=e=>{const b=e.target.closest('button[data-i]');if(b){const v=this.voces[+b.dataset.i];v&&this.reproduce(v)}};
     const b=$('wkPtt');let abajo=0,tocaParar=false;
@@ -4049,6 +4097,7 @@ if(!/#(s|j)=/.test(location.hash)){const r=lsGet('impostor-ret');if(r){lsDel('im
 if(!handleLink(ret)){
   if(ROOM)renderAll();else if(game)enterGame();else show('s-home');
 }
+if(ROOM){WK.cargaChat();if(ssGet('impostor-wkopen-'+ROOM.code))WK.abrir();else WK.pinta()}
 renderAcct();avLoad();iniciaCuentas();
 setInterval(tick,1000);
 setInterval(()=>{if(iAmHost()&&NET.resumed&&netUp()&&S)bc('st',S)},8000); /* latido: repara mensajes perdidos */

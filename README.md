@@ -13,7 +13,7 @@ Jugar: https://javivalmich.github.io/el-impostor/
 - Ronda: **palabra → debate → votación → resultado**. El anfitrión abre el debate y la votación; cada uno vota en su móvil (no a sí mismo, y se puede cambiar hasta que voten todos). Se ve cuántos han votado, no a quién.
 - Al cerrar, se descubre al más votado en todas las pantallas. Si era impostor y no quedan más, ganan los inocentes; si los impostores igualan a los inocentes, ganan ellos. Si empatan, se repite entre los empatados y, si vuelven a empatar, nadie sale. Los eliminados miran y escuchan, pero no votan ni hablan hasta la siguiente ronda.
 - Hay un marcador de la sesión (victorias y veces que ha sido impostor cada uno).
-- **Walkie-talkie**: botón fijo abajo. Mantén para hablar, o toca una vez para grabar y otra para enviar. También mensajes de texto. Dentro de WhatsApp/Instagram el micrófono no funciona: hay que abrir el enlace en Safari o Chrome (el texto sí va).
+- **Walkie-talkie**: botón fijo abajo, en la sala de espera y en la partida. Mantén para hablar, o toca una vez para grabar y otra para enviar. También mensajes de texto. Quien habla sale con su nombre y su avatar. Si se marcó «Jugamos a distancia», se abre solo al entrar en la sala. Al empezar la partida sigue abierto y conserva los mensajes. Los que esperan a entrar en la siguiente ronda escuchan y leen, pero no hablan hasta que el anfitrión los acepta; los eliminados escuchan hasta la siguiente ronda; a quien se saca o se rechaza se le corta. Dentro de WhatsApp/Instagram el micrófono no funciona: hay que abrir el enlace en Safari o Chrome (el texto sí va).
 
 ## Cuentas (opcional)
 
@@ -22,7 +22,7 @@ Jugar nunca requiere cuenta. Con «Entrar con mi cuenta de Punto Ciego» se usa 
 ## Cómo funciona por dentro
 
 - Al empezar, el anfitrión fija la lista de jugadores y genera la semilla, y las envía con los ajustes. La palabra y los impostores de cada ronda se calculan en cada móvil a partir de esa lista, esa semilla y el número de ronda; **no viaja por red quién es impostor**.
-- Cada móvil tiene un identificador fijo guardado en el navegador: al recargar vuelve a su sitio con su nombre. Si el mismo jugador se abre en otra pestaña, la antigua se aparta.
+- Cada móvil tiene un identificador fijo (PID) guardado en el navegador: al recargar vuelve a su sitio con su nombre, y el walkie identifica a quien habla por ese PID (no por el número de jugador). Si el mismo jugador se abre en otra pestaña, la antigua se aparta.
 - Lo compartido (fase, ronda, eliminados, quién ha votado, resultado) lo decide el anfitrión y se difunde por **Supabase Realtime** (un canal por sala, `impostor-<CÓDIGO>`, con broadcast y presence, con la clave publicable, sin cuenta; no usa tablas). Los demás solo envían acciones (su voto).
 - Si el anfitrión se desconecta más de 30 s (también en la sala de espera), pasa a serlo el siguiente jugador conectado según el orden de la lista (en la sala, el que entró antes).
 - El código solo sirve para encontrar la sala; antes de darlo por bueno se comprueba por presencia que no hay otra sala con él.
