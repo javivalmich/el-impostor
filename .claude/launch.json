@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "el-impostor",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["http-server", "-p", "8383", "-c-1"],
+      "port": 8383
+    }
+  ]
+}
