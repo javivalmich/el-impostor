@@ -79,6 +79,9 @@ h2{font-weight:900;font-size:2rem;line-height:1.05;letter-spacing:.01em;margin:8
 .switch::after{content:"";position:absolute;top:4px;left:4px;width:26px;height:26px;border-radius:50%;background:var(--muted);transition:transform .15s,background .15s}
 .switch[aria-checked="true"]{background:var(--red)}
 .switch[aria-checked="true"]::after{transform:translateX(26px);background:#fff}
+.seg{display:flex;gap:6px;flex-wrap:wrap;width:100%}
+.seg button{flex:1;min-width:0;padding:10px 6px;border-radius:999px;border:1.5px solid var(--line);background:transparent;font-weight:700;font-size:.82rem;color:var(--text)}
+.seg button[aria-pressed="true"]{background:var(--red);color:#fff;border-color:var(--red)}
 .cathead{display:flex;justify-content:space-between;align-items:baseline;padding-top:14px;margin-bottom:10px}
 .cathead button{background:none;border:0;padding:4px;color:var(--red);font-weight:700}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -172,7 +175,6 @@ body.red .sheet .act{background:var(--red)}
 #s-game>#joinReq{order:2}
 #s-game>.card{order:3}
 #s-game>#phaseBox{order:4}
-#s-game.ph-vote>#phaseBox{order:2}
 .wrap.game{padding-bottom:110px}
 .gtop .who{display:flex;align-items:center;gap:10px;min-width:0}
 .gtop .me{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -268,6 +270,10 @@ body.red .sheet .act{background:var(--red)}
 #wkFab svg{width:28px;height:28px}
 #wkFab b{position:absolute;top:-3px;right:-3px;min-width:22px;height:22px;border-radius:11px;background:#fff;color:#0e0e11;font-size:.78rem;display:grid;place-items:center;padding:0 6px;border:2px solid var(--red)}
 #wkFab b[hidden]{display:none}
+#exitFab{position:fixed;left:14px;top:calc(14px + env(safe-area-inset-top,0px));z-index:90;width:42px;height:42px;border-radius:50%;padding:0;border:0;background:rgba(14,14,17,.55);color:#fff;
+  display:none;place-items:center;font-size:1.1rem;font-weight:700;line-height:1}
+#exitFab.on{display:grid}
+body.has-exit .wrap{padding-top:calc(56px + env(safe-area-inset-top,0px))}
 #wkTalk{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:60;background:#fff;color:#0e0e11;font-weight:800;padding:8px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.4);white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
 #wkTalk[hidden]{display:none}
 #wk{position:fixed;inset:0;z-index:50;display:none}
@@ -351,7 +357,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
           <li>Los demás abren el enlace o el QR (o tocan «Unirme» y escriben el código) y ponen su nombre. Cuando estéis todos, el anfitrión pulsa «Empezar».</li>
           <li>Mantén pulsada la tarjeta para ver tu palabra. Si toda la pantalla se pone roja, eres el impostor.</li>
           <li>Por turnos, cada uno dice una palabra relacionada sin ser demasiado obvio. El impostor intenta pasar desapercibido.</li>
-          <li>Cuando acabe el debate, el anfitrión abre la votación y cada uno vota en su móvil. Se descubre al más votado y el anfitrión pasa a la siguiente ronda. Si no hay conexión, se vota en voz alta y se usa «Ver solución».</li>
+          <li>Cuando queráis, cualquiera pulsa «Pasar a votar» y cada uno vota en su móvil. Se descubre al más votado y la partida pasa sola a la siguiente ronda. Si no hay conexión, se vota en voz alta y se usa «Ver solución».</li>
         </ol>
       </details>
     </div>
@@ -369,9 +375,13 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
         <div><div class="lbl">Impostores</div><div class="sub" id="k2Sub">Se ajusta al máximo según los jugadores</div></div>
         <div class="step"><button id="k2Minus" aria-label="Menos impostores">−</button><output id="k2Val">1</output><button id="k2Plus" aria-label="Más impostores">+</button></div>
       </div>
-      <div class="row">
-        <div><div class="lbl">Pista al impostor</div><div class="sub">Una palabra relacionada para disimular</div></div>
-        <button class="switch" id="hint2Sw" role="switch" aria-checked="true" aria-label="Pista para el impostor"></button>
+      <div class="row" style="flex-direction:column;align-items:stretch;gap:10px">
+        <div><div class="lbl">Pista al impostor</div><div class="sub" id="hint2Sub">Ve solo la categoría</div></div>
+        <div class="seg" id="hint2Seg" role="radiogroup" aria-label="Nivel de pista para el impostor">
+          <button type="button" data-v="0" aria-pressed="false">Sin pista</button>
+          <button type="button" data-v="1" aria-pressed="true">Categoría</button>
+          <button type="button" data-v="2" aria-pressed="false">Pista vaga</button>
+        </div>
       </div>
       <div class="row">
         <div><div class="lbl">Jugamos a distancia</div><div class="sub">Abre el walkie-talkie al empezar</div></div>
@@ -424,9 +434,13 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
         <div><div class="lbl">Impostores</div><div class="sub" id="kSub"></div></div>
         <div class="step"><button id="kMinus" aria-label="Menos impostores">−</button><output id="kVal">1</output><button id="kPlus" aria-label="Más impostores">+</button></div>
       </div>
-      <div class="row">
-        <div><div class="lbl">Pista al impostor</div><div class="sub">Una palabra relacionada para disimular</div></div>
-        <button class="switch" id="hintSw" role="switch" aria-checked="true" aria-label="Pista para el impostor"></button>
+      <div class="row" style="flex-direction:column;align-items:stretch;gap:10px">
+        <div><div class="lbl">Pista al impostor</div><div class="sub" id="hintSub">Ve solo la categoría</div></div>
+        <div class="seg" id="hintSeg" role="radiogroup" aria-label="Nivel de pista para el impostor">
+          <button type="button" data-v="0" aria-pressed="false">Sin pista</button>
+          <button type="button" data-v="1" aria-pressed="true">Categoría</button>
+          <button type="button" data-v="2" aria-pressed="false">Pista vaga</button>
+        </div>
       </div>
       <div class="row">
         <div><div class="lbl">Votación secreta</div><div class="sub">Si no, votáis hablando y el móvil solo apunta el resultado</div></div>
@@ -533,6 +547,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
 
 <div id="reveal" role="dialog" aria-live="polite"></div>
 <button id="wkFab" aria-label="Abrir el walkie-talkie"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg><b id="wkBadge" hidden>0</b></button>
+<button id="exitFab" aria-label="Salir de la partida">✕</button>
 <div id="wkTalk" hidden role="status"></div>
 <section id="wk" aria-hidden="false">
   <div class="fondo" id="wkFondo"></div>
@@ -2852,16 +2867,16 @@ var qrcode = function() {
 <script>
 /* ---------- Banco de palabras (palabra:pista) ---------- */
 const CATS = [
- {name:"Comida y bebida", words:"Paella:arroz|Tortilla de patatas:huevo|Pizza:horno|Sushi:palillos|Hamburguesa:pan|Croquetas:bechamel|Churros:chocolate|Gazpacho:frío|Pulpo a la gallega:pimentón|Jamón:pata|Queso:ratón|Helado:verano|Palomitas:cine|Chocolate:cacao|Café:mañana|Cerveza:caña|Vino:uva|Sangría:jarra|Tacos:México|Kebab:madrugada|Lentejas:cuchara|Cocido:garbanzos|Ensalada:lechuga|Espaguetis:tenedor|Donut:agujero|Tarta:velas|Fresa:rojo|Plátano:Canarias|Sandía:pepitas|Piña:tropical|Aguacate:verde|Huevo frito:yema|Patatas bravas:picante|Pan con tomate:aceite|Magdalena:desayuno|Mayonesa:salsa|Nachos:guacamole|Mejillones:lata|Chorizo:embutido|Refresco:burbujas|Batido:pajita|Galletas:leche|Cereales:bol|Ramen:caldo"},
- {name:"Animales", words:"Perro:ladrar|Gato:bigotes|León:melena|Elefante:trompa|Jirafa:cuello|Pingüino:hielo|Tiburón:aleta|Delfín:saltar|Calamar:tinta|Cocodrilo:dientes|Serpiente:veneno|Águila:vista|Búho:noche|Loro:hablar|Mono:rama|Canguro:bolsa|Koala:eucalipto|Oso panda:bambú|Cebra:rayas|Caballo:herradura|Vaca:leche|Cerdo:barro|Oveja:lana|Gallina:huevo|Conejo:zanahoria|Tortuga:caparazón|Rana:charca|Mariposa:alas|Abeja:miel|Hormiga:colonia|Araña:telaraña|Mosquito:picadura|Murciélago:cueva|Ballena:gigante|Medusa:picor|Camello:joroba|Lobo:aullido|Zorro:astuto|Ardilla:bellota|Hámster:rueda|Flamenco:rosa|Pavo real:plumas|Tigre:rayas|Caracol:lento"},
- {name:"Lugares", words:"Playa:toalla|Aeropuerto:maleta|Hospital:bata|Colegio:recreo|Biblioteca:silencio|Gimnasio:pesas|Discoteca:música|Supermercado:carro|Cine:butaca|Museo:cuadro|Iglesia:campana|Cementerio:lápida|Estadio:grada|Piscina:cloro|Montaña:cima|Desierto:arena|Selva:humedad|Zoo:jaula|Circo:carpa|Parque de atracciones:cola|Cárcel:barrotes|Farmacia:receta|Peluquería:tijeras|Restaurante:carta|Hotel:recepción|Camping:tienda|Metro:andén|Gasolinera:surtidor|Banco:cajero|Oficina:reunión|Ascensor:botones|Castillo:almena|Faro:luz|Isla desierta:náufrago|Iglú:frío|Pirámides:Egipto|Torre Eiffel:París|Nueva York:rascacielos|Las Vegas:casino|Venecia:góndola|La Luna:cráter|Autobús:parada|Tren:vía|Crucero:camarote"},
- {name:"Objetos", words:"Paraguas:lluvia|Llave:puerta|Espejo:reflejo|Reloj:hora|Tijeras:cortar|Móvil:pantalla|Mando a distancia:sofá|Almohada:cama|Cepillo de dientes:baño|Secador:pelo|Lavadora:ropa|Microondas:calentar|Nevera:frío|Vela:cera|Mechero:fuego|Bolígrafo:tinta|Mochila:espalda|Cartera:dinero|Gafas de sol:verano|Sombrero:cabeza|Zapatillas:correr|Calcetín:pie|Bufanda:cuello|Anillo:dedo|Collar:perlas|Martillo:clavo|Escalera:subir|Bombilla:idea|Cámara de fotos:flash|Auriculares:música|Guitarra:cuerdas|Globo:aire|Pelota:botar|Dado:suerte|Brújula:norte|Linterna:oscuridad|Tenedor:cubiertos|Sartén:aceite|Maleta:ruedas|Bañador:piscina|Pijama:dormir|Corbata:traje|Cuchara:sopa|Papel higiénico:rollo"},
- {name:"Profesiones", words:"Médico:consulta|Bombero:manguera|Policía:placa|Profesor:pizarra|Cocinero:delantal|Camarero:bandeja|Piloto:cabina|Azafata:pasillo|Astronauta:espacio|Dentista:muela|Veterinario:mascota|Abogado:juicio|Juez:sentencia|Fontanero:tubería|Electricista:cables|Carpintero:madera|Albañil:ladrillo|Arquitecto:planos|Peluquero:peine|Panadero:madrugar|Cartero:buzón|Taxista:taxímetro|Mecánico:grasa|Payaso:nariz|Mago:chistera|Detective:lupa|Espía:secreto|Periodista:noticia|Fotógrafo:objetivo|Youtuber:vídeo|Influencer:seguidores|Futbolista:balón|Socorrista:silbato|Jardinero:plantas|Pescador:red|Granjero:campo|Enfermero:vacuna|Pirata:parche|Soldado:uniforme|Cura:misa|DJ:mezclas|Actor:guion|Cirujano:bisturí|Basurero:camión"},
- {name:"Deportes y hobbies", words:"Fútbol:gol|Baloncesto:canasta|Tenis:raqueta|Pádel:pared|Natación:largos|Surf:ola|Esquí:nieve|Boxeo:guantes|Ciclismo:etapa|Golf:hoyo|Ajedrez:tablero|Yoga:postura|Escalada:cuerda|Buceo:botella|Karaoke:micrófono|Bolos:pleno|Dardos:diana|Billar:taco|Póker:farol|Parchís:ficha|Videojuegos:mando|Pesca:anzuelo|Senderismo:ruta|Maratón:kilómetros|Patinaje:ruedas|Paracaidismo:avión|Puenting:caída|Salsa:pareja|Repostería:receta|Leer:páginas|Pintura:pincel|Jardinería:maceta|Fotografía:encuadre|Acampada:fogata|Crossfit:sudor|Ping-pong:mesa|Voleibol:red|Rugby:melé|Fórmula 1:boxes|Sudoku:números|Puzzle:piezas|Kitesurf:cometa|Balonmano:portería|Monopoly:hotel"},
- {name:"Cine y TV", words:"Titanic:iceberg|Harry Potter:varita|Star Wars:galaxia|El Rey León:sabana|Shrek:ogro|Toy Story:juguetes|Jurassic Park:dinosaurio|La Casa de Papel:máscara|Juego de Tronos:dragones|Friends:sofá|Los Simpson:amarillo|Stranger Things:monstruo|El juego del calamar:muñeca|Breaking Bad:laboratorio|Batman:murciélago|Spider-Man:telaraña|Superman:capa|James Bond:espía|Frozen:hielo|Buscando a Nemo:pez|Piratas del Caribe:tesoro|Matrix:pastilla|Terminator:robot|E.T.:bicicleta|Rocky:escaleras|El Padrino:mafia|Gladiator:Roma|Avatar:azul|Barbie:rosa|Mr. Bean:muecas|Operación Triunfo:academia|Gran Hermano:casa|Supervivientes:isla|Pasapalabra:rosco|MasterChef:cocina|Super Mario:fontanero|Pokémon:entrenador|Minecraft:bloques|Fortnite:baile|Los Vengadores:equipo|Top Gun:avión|Indiana Jones:látigo|Aladdín:lámpara|La Sirenita:mar|Cenicienta:zapato"},
- {name:"España", words:"Siesta:dormir|Baile flamenco:guitarra|San Fermín:encierro|Las Fallas:fuego|La Tomatina:tomate|Feria de Abril:farolillos|Semana Santa:procesión|Camino de Santiago:peregrino|Sagrada Familia:obras|Alhambra:Granada|Puerta del Sol:reloj|Nochevieja:campanadas|Reyes Magos:regalos|Lotería de Navidad:bombo|Botellón:parque|Chiringuito:playa|Sobremesa:charla|Tapas:bar|Vermut:domingo|Rebujito:feria|Castellers:altura|Ibiza:fiesta|Benidorm:guiris|Canarias:volcán|Mallorca:isla|Galicia:lluvia|Madrid:capital|Barcelona:Gaudí|Sevilla:calor|Real Madrid:blanco|Barça:azulgrana|Don Quijote:molinos|Mercadona:hacendado|El Corte Inglés:rebajas|Mus:órdago|Terraza:caña|Abanico:calor|Botijo:agua|Toro de Osborne:carretera|Queimada:conjuro|Romería:ermita|Turrón:Navidad|Puente de diciembre:vacaciones|Verbena:pueblo"},
- {name:"Fiesta y noche", words:"Resaca:domingo|Chupito:vaso|Despedida de soltero:disfraz|Boda:anillos|Cumpleaños:velas|Barbacoa:carbón|Portero de discoteca:lista|Guardarropa:abrigo|Bola de discoteca:brillo|Confeti:colores|Fuegos artificiales:cielo|Photocall:pose|Disfraz:máscara|Halloween:calabaza|Carnaval:comparsa|Nochebuena:cena|After:amanecer|Último metro:prisa|Reservado VIP:pulsera|Beer pong:vasos|Verdad o reto:pregunta|Ligar:mirada|Primera cita:nervios|Selfie:móvil|Stories:Instagram|Cubitos de hielo:congelador|Gin tonic:copa|Mojito:hierbabuena|Tequila:limón|Champán:brindis|Fiesta en la piscina:flotador|Festival:camping|Concierto:escenario|Afterwork:oficina|Perreo:reggaetón|Tardeo:terraza|Cotillón:matasuegras|Pedir un taxi:esperar|Borrachera:tambaleo|Fiesta sorpresa:esconderse|Karaoke de bar:desafinar|Discoteca light:tarde|Barra libre:pulsera|Brindis:discurso"},
- {name:"Naturaleza y espacio", words:"Volcán:lava|Arcoíris:colores|Tormenta:rayos|Nieve:blanco|Terremoto:temblor|Tornado:remolino|Cascada:agua|Río:puente|Lago:orilla|Bosque:árboles|Cueva:estalactitas|Glaciar:hielo|Aurora boreal:Noruega|Eclipse:sombra|Luna llena:lobo|Estrella fugaz:deseo|Sol:calor|Niebla:gris|Granizo:bolitas|Marea:luna|Reloj de arena:tiempo|Cactus:pinchos|Palmera:coco|Girasol:amarillo|Rosa:espinas|Seta:bosque|Roble:tronco|Hojas secas:otoño|Primavera:flores|Invierno:abrigo|Verano:vacaciones|Diamante:brillo|Oro:tesoro|Meteorito:impacto|Planeta:órbita|Agujero negro:espacio|Iceberg:flotar|Arrecife de coral:colores|Musgo:húmedo|Huracán:viento|Ola gigante:tsunami|Duna:viento|Cometa:cola|Marte:rojo"}
+ {name:"Comida y bebida", words:"Paella:domingo|Tortilla de patatas:receta de familia|Pizza:de madrugada|Sushi:comida exótica|Hamburguesa:para pedir a domicilio|Croquetas:aperitivo|Churros:media mañana|Gazpacho:calor|Pulpo a la gallega:plato de fiesta|Jamón:tapa de bar|Queso:para picar|Helado:vacaciones|Palomitas:fin de semana|Chocolate:capricho|Café:desayuno|Cerveza:sed|Vino:cena especial|Sangría:reunión de amigos|Tacos:sabor fuerte|Kebab:después de fiesta|Lentejas:comida de domingo|Cocido:plato de cuchara|Ensalada:plato ligero|Espaguetis:mancharse la camisa|Donut:antojo dulce|Tarta:para celebrar|Fresa:fruta dulce|Plátano:media tarde|Sandía:refrescante|Piña:tarde de calor|Aguacate:moda saludable|Huevo frito:plato de cuchara casero|Patatas bravas:ración|Pan con tomate:antes de trabajar|Magdalena:media mañana temprano|Mayonesa:salsa aparte|Nachos:salsa aparte|Mejillones:ración de bar|Chorizo:ración para compartir|Refresco:con hielo|Batido:postre ligero|Galletas:desayuno rápido|Cereales:con chocolate|Ramen:moda reciente"},
+ {name:"Animales", words:"Perro:compañía|Gato:mimos|León:safari|Elefante:gran tamaño|Jirafa:safari|Pingüino:hielo|Tiburón:profundidades|Delfín:aguas frías|Calamar:espectáculo|Cocodrilo:cuidado|Serpiente:fiereza|Águila:respeto|Búho:de noche|Loro:ternura|Mono:acrobacias|Canguro:familia|Koala:pereza|Oso panda:pereza|Cebra:manada|Caballo:trabajo duro|Vaca:madrugón|Cerdo:granja|Oveja:rebaño|Gallina:madrugón|Conejo:cariño|Tortuga:juguetón|Rana:charca|Mariposa:transformación|Abeja:trabajo en equipo|Hormiga:diminuto|Araña:miedo|Mosquito:molestia|Murciélago:de noche|Ballena:cuidado al nadar|Medusa:criatura marina|Camello:resistencia|Lobo:de noche|Zorro:astucia|Ardilla:previsión|Hámster:de casa|Flamenco:colores vivos|Pavo real:presumido|Tigre:peligro|Caracol:lentitud"},
+ {name:"Lugares", words:"Playa:vacaciones|Aeropuerto:esperar|Hospital:nervios|Colegio:horario|Biblioteca:silencio|Gimnasio:sudor|Discoteca:música alta|Supermercado:cola de caja|Cine:entradas|Museo:visita tranquila|Iglesia:silencio|Cementerio:respeto|Estadio:aficionados|Piscina:chapoteo|Montaña:aventura|Desierto:calor extremo|Selva:aislamiento|Zoo:excursión familiar|Circo:aplausos|Parque de atracciones:colas largas|Cárcel:castigo|Farmacia:cita|Peluquería:espera|Restaurante:mesa reservada|Hotel:maletas|Camping:aire libre|Metro:billete|Gasolinera:parada|Banco:cola|Oficina:papeleo|Ascensor:espacio pequeño|Castillo:cuento de hadas|Faro:frío|Isla desierta:soledad|Iglú:vida polar|Pirámides:viaje soñado|Torre Eiffel:postal|Nueva York:rascacielos|Las Vegas:luces de neón|Venecia:postal romántica|La Luna:viaje espacial|Autobús:cola|Tren:ventanilla|Crucero:equipaje"},
+ {name:"Objetos", words:"Paraguas:salir de casa|Llave:no olvidarlo|Espejo:antes de salir|Reloj:antes de salir|Tijeras:bricolaje|Móvil:salir de casa|Mando a distancia:tarde de sofá|Almohada:descanso|Cepillo de dientes:cada mañana|Secador:rutina diaria|Lavadora:tarea de casa|Microondas:prisa por comer|Nevera:siempre lleno|Vela:apagón|Mechero:encender algo|Bolígrafo:no olvidarlo|Mochila:no olvidarlo|Cartera:llevarlo encima|Gafas de sol:buscarlo por todas partes|Sombrero:rutina diaria|Zapatillas:deporte|Calcetín:a juego|Bufanda:llevarlo encima|Anillo:regalo especial|Collar:joyería|Martillo:arreglo casero|Escalera:tarea pendiente|Bombilla:apagón|Cámara de fotos:recuerdo de viaje|Auriculares:buscarlo por todas partes|Guitarra:fiesta improvisada|Globo:decoración|Pelota:juego en el parque|Dado:juego de mesa|Brújula:llevarlo encima|Linterna:buscarlo por todas partes|Tenedor:poner la mesa|Sartén:cocinar|Maleta:salir de casa|Bañador:chapoteo|Pijama:antes de salir|Corbata:cada mañana|Cuchara:poner la mesa|Papel higiénico:apuro"},
+ {name:"Profesiones", words:"Médico:cita|Bombero:valentía|Policía:uniforme|Profesor:vocación|Cocinero:turno partido|Camarero:propina|Piloto:uniforme|Azafata:viajar mucho|Astronauta:entrenamiento|Dentista:nervios|Veterinario:cuidados|Abogado:investigación|Juez:sala|Fontanero:herramientas|Electricista:avería|Carpintero:obra|Albañil:planos|Arquitecto:aire libre|Peluquero:cambio de imagen|Panadero:madrugón|Cartero:reparto|Taxista:conocer la ciudad|Mecánico:manos sucias|Payaso:risas|Mago:trucos|Detective:secretos|Espía:disciplina|Periodista:noticias de última hora|Fotógrafo:buen ángulo|Youtuber:pantalla|Influencer:moda|Futbolista:fama|Socorrista:riesgo|Jardinero:manos en la tierra|Pescador:paciencia|Granjero:campo abierto|Enfermero:turno de noche|Pirata:tesoro escondido|Soldado:disciplina|Cura:ceremonia|DJ:pista de baile|Actor:aplausos|Cirujano:concentración|Basurero:trabajo físico"},
+ {name:"Deportes y hobbies", words:"Fútbol:afición|Baloncesto:domingo de partido|Tenis:torneo|Pádel:pareja de juego|Natación:entrenamiento|Surf:olas|Esquí:frío intenso|Boxeo:esfuerzo|Ciclismo:esfuerzo|Golf:campo verde|Ajedrez:concentración|Yoga:calma|Escalada:altura|Buceo:aguas profundas|Karaoke:noche con amigos|Bolos:tarde de lluvia|Dardos:puntería|Billar:bar de barrio|Póker:farol|Parchís:tarde de lluvia|Videojuegos:tardes enteras|Pesca:paciencia|Senderismo:rutas largas|Maratón:meta|Patinaje:ruedas|Paracaidismo:adrenalina|Puenting:adrenalina|Salsa:pareja de baile|Repostería:tarde en casa|Leer:tarde tranquila|Pintura:creatividad|Jardinería:manos en la tierra|Fotografía:buen momento|Acampada:noche al aire libre|Crossfit:sudor|Ping-pong:sudor|Voleibol:grada|Rugby:entrenamiento|Fórmula 1:velocidad|Sudoku:paciencia|Puzzle:piezas sueltas|Kitesurf:viento fuerte|Balonmano:rivalidad|Monopoly:noche de amigos"},
+ {name:"Cine y TV", words:"Titanic:lágrimas|Harry Potter:magia|Star Wars:otro mundo|El Rey León:sabana|Shrek:dibujos animados|Toy Story:dibujos animados|Jurassic Park:aventura peligrosa|La Casa de Papel:plan arriesgado|Juego de Tronos:batallas|Friends:tarde de sofá|Los Simpson:tarde|Stranger Things:suspense|El juego del calamar:peligro|Breaking Bad:plan arriesgado|Batman:poderes|Spider-Man:traje especial|Superman:poderes|James Bond:misión secreta|Frozen:aire helado|Buscando a Nemo:mundo submarino|Piratas del Caribe:tesoro escondido|Matrix:efectos especiales|Terminator:batalla épica|E.T.:amistad especial|Rocky:entrenamiento duro|El Padrino:familia|Gladiator:lucha|Avatar:mundo desconocido|Barbie:de moda|Mr. Bean:risas|Operación Triunfo:casting|Gran Hermano:convivencia|Supervivientes:aislamiento|Pasapalabra:concurso de tele|MasterChef:cocina en directo|Super Mario:videojuego clásico|Pokémon:coleccionable|Minecraft:construir|Fortnite:de moda entre los jóvenes|Los Vengadores:efectos especiales|Top Gun:velocidad|Indiana Jones:aventura peligrosa|Aladdín:cuento clásico|La Sirenita:cuento clásico|Cenicienta:cuento clásico"},
+ {name:"España", words:"Siesta:calor|Baile flamenco:ritmo|San Fermín:multitud|Las Fallas:fuego|La Tomatina:mancharse|Feria de Abril:baile|Semana Santa:tradición|Camino de Santiago:viaje largo|Sagrada Familia:obras eternas|Alhambra:viaje soñado|Puerta del Sol:punto de encuentro|Nochevieja:cuenta atrás|Reyes Magos:ilusión|Lotería de Navidad:suerte|Botellón:charla larga|Chiringuito:aire libre|Sobremesa:charla larga|Tapas:para picar|Vermut:aperitivo|Rebujito:feria|Castellers:altura|Ibiza:fiesta hasta el amanecer|Benidorm:vacaciones de toda la vida|Canarias:islas con sol|Mallorca:islas con sol|Galicia:paisaje verde|Madrid:capital|Barcelona:ciudad con encanto|Sevilla:calor intenso|Real Madrid:rivalidad|Barça:afición|Don Quijote:libro clásico|Mercadona:compra semanal|El Corte Inglés:compras del finde|Mus:partida de cartas|Terraza:sol de tarde|Abanico:calor intenso|Botijo:agua fresca|Toro de Osborne:icono español|Queimada:ritual nocturno|Romería:fiesta de pueblo|Turrón:mesa de Nochebuena|Puente de diciembre:viaje corto|Verbena:fiesta de pueblo"},
+ {name:"Fiesta y noche", words:"Resaca:domingo|Chupito:de un trago|Despedida de soltero:grupo de amigos|Boda:invitados|Cumpleaños:abrazos|Barbacoa:reunión al aire libre|Portero de discoteca:lista de invitados|Guardarropa:dejar el abrigo|Bola de discoteca:luces de colores|Confeti:gran celebración|Fuegos artificiales:cielo iluminado|Photocall:poses para la foto|Disfraz:cambio de personaje|Halloween:miedo divertido|Carnaval:colores y música|Nochebuena:cena en familia|After:amanecer bailando|Último metro:prisa por llegar|Reservado VIP:zona exclusiva|Beer pong:juego de beber|Verdad o reto:juego arriesgado|Ligar:mirada cómplice|Primera cita:nervios|Selfie:buena luz|Stories:compartir el momento|Cubitos de hielo:enfriar la copa|Gin tonic:copa larga|Mojito:sabor refrescante|Tequila:sabor fuerte|Champán:celebración especial|Fiesta en la piscina:día de verano con amigos|Festival:escenario y multitud|Concierto:entradas agotadas|Afterwork:después del trabajo|Perreo:baile atrevido|Tardeo:aperitivo largo|Cotillón:cuenta atrás|Pedir un taxi:fin de la noche|Borrachera:mala idea al día siguiente|Fiesta sorpresa:organización secreta|Karaoke de bar:cantar fuerte|Discoteca light:empezar temprano|Barra libre:sin límite|Brindis:momento especial"},
+ {name:"Naturaleza y espacio", words:"Volcán:furia|Arcoíris:colores en el cielo|Tormenta:rayos y truenos|Nieve:paisaje blanco|Terremoto:alerta|Tornado:viento fuerte|Cascada:sonido del agua|Río:paseo en barca|Lago:aguas tranquilas|Bosque:paseo tranquilo|Cueva:eco y oscuridad|Glaciar:hielo eterno|Aurora boreal:luces en la noche|Eclipse:oscuridad de repente|Luna llena:noche especial|Estrella fugaz:mirar hacia arriba|Sol:calor intenso|Niebla:visibilidad baja|Granizo:golpes en el tejado|Marea:sube y baja|Reloj de arena:paso del tiempo|Cactus:poca agua|Palmera:paisaje tropical|Girasol:seguir el sol|Rosa:regalo especial|Seta:bosque húmedo|Roble:árbol robusto|Hojas secas:paseo de otoño|Primavera:flores nuevas|Invierno:frío del año|Verano:vacaciones largas|Diamante:brillo especial|Oro:gran valor|Meteorito:caída del cielo|Planeta:otro mundo|Agujero negro:fuerza invisible|Iceberg:frío polar|Arrecife de coral:colores bajo el agua|Musgo:piedra húmeda|Huracán:alerta meteorológica|Ola gigante:fuera de control|Duna:paisaje de arena|Cometa:cruzar el cielo|Marte:viaje espacial"}
 ];
 CATS.forEach(c=>{
   c.list=c.words.split('|').map(s=>{const i=s.indexOf(':');return {w:s.slice(0,i).trim(),h:s.slice(i+1).trim(),c:c.name}});
@@ -2876,7 +2891,7 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 function rngFor(seed,round,salt){let h=Math.imul(seed^0x9E3779B9,2654435761)^Math.imul(round+1,40503)^Math.imul(salt+7,0x85EBCA6B);h^=h>>>16;h=Math.imul(h,0x7feb352d);h^=h>>>15;return mulberry32(h)}
 function shuffle(arr,r){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function maxK(n){return Math.min(4,Math.max(1,Math.floor((n-1)/2)))}
-function encode(c){let v=c.seed+(c.n-3)*2**18+(c.k-1)*2**22+(c.hint?1:0)*2**24+c.mask*2**25;const d=[];for(let i=0;i<7;i++){d.push(v%32);v=Math.floor(v/32)}let cs=0;d.forEach((x,i)=>cs+=x*(i+3));d.push(cs%32);return d.map(x=>ALPH[x]).join('')}
+function encode(c){let v=c.seed+(c.n-3)*2**17+(c.k-1)*2**21+c.hint*2**23+c.mask*2**25;const d=[];for(let i=0;i<7;i++){d.push(v%32);v=Math.floor(v/32)}let cs=0;d.forEach((x,i)=>cs+=x*(i+3));d.push(cs%32);return d.map(x=>ALPH[x]).join('')}
 function fmt(code){return code.slice(0,4)+'-'+code.slice(4)}
 function decode(str){
   const s=(str||'').toUpperCase().replace(/[^0-9A-Z]/g,'');
@@ -2884,8 +2899,8 @@ function decode(str){
   const d=[...s].map(ch=>ALPH.indexOf(ch));if(d.some(x=>x<0))return null;
   let cs=0;for(let i=0;i<7;i++)cs+=d[i]*(i+3);if(cs%32!==d[7])return null;
   let v=0;for(let i=6;i>=0;i--)v=v*32+d[i];
-  const seed=v%2**18;v=Math.floor(v/2**18);const n=v%16+3;v=Math.floor(v/16);const k=v%4+1;v=Math.floor(v/4);const hint=v%2===1;v=Math.floor(v/2);const mask=v;
-  if(!mask||mask>ALL_MASK||k>maxK(n))return null;
+  const seed=v%2**17;v=Math.floor(v/2**17);const n=v%16+3;v=Math.floor(v/16);const k=v%4+1;v=Math.floor(v/4);const hint=v%4;v=Math.floor(v/4);const mask=v;
+  if(!mask||mask>ALL_MASK||k>maxK(n)||hint>2)return null;
   return {seed,n,k,hint,mask};
 }
 function roundInfo(c,round){
@@ -2896,7 +2911,7 @@ function roundInfo(c,round){
   const starter=1+Math.floor(rngFor(c.seed,round,3)()*c.n);
   return {word,imps,starter};
 }
-function newSeed(){try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%2**18}catch(e){return Math.floor(Math.random()*2**18)}}
+function newSeed(){try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%2**17}catch(e){return Math.floor(Math.random()*2**17)}}
 function cleanName(x){return (x||'').replace(/[~#<>]/g,'').replace(/\s+/g,' ').trim().slice(0,14)}
 function linkFor(code,names,remote){return location.href.split('#')[0]+'#j='+code+'~'+names.map(encodeURIComponent).join('~')+(remote?'&d=1':'')}
 function parseLink(str){
@@ -2909,9 +2924,18 @@ function parseLink(str){
   if(names.length!==cfg.n||names.some(n=>!n))return null;
   return {code,cfg,names,remote};
 }
+const HINT_LABELS=['sin pista','con la categoría','con pista vaga'];
+const HINT_SUBS=['El impostor no ve ninguna pista','Ve solo el nombre de la categoría','Ve una palabra suelta y floja'];
+function renderHintSeg(segId,subId,val){
+  document.querySelectorAll('#'+segId+' button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===val)));
+  const sub=$(subId);if(sub)sub.textContent=HINT_SUBS[val]||HINT_SUBS[1];
+}
+function bindHintSeg(segId,onSet){
+  $(segId).addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(!b)return;onSet(+b.dataset.v)});
+}
 function summaryText(c){
   const cats=CATS.filter((_,i)=>c.mask&(1<<i)).length;
-  return `${c.k} ${c.k>1?'impostores':'impostor'}, ${c.hint?'con pista':'sin pista'}, ${cats===CATS.length?'todas las categorías':cats+(cats>1?' categorías':' categoría')}`;
+  return `${c.k} ${c.k>1?'impostores':'impostor'}, ${HINT_LABELS[c.hint]||HINT_LABELS[1]}, ${cats===CATS.length?'todas las categorías':cats+(cats>1?' categorías':' categoría')}`;
 }
 function listNames(a){return a.length===1?a[0]:a.slice(0,-1).join(', ')+' y '+a[a.length-1]}
 
@@ -2929,8 +2953,8 @@ const EN_LOCAL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const QS=new URLSearchParams(location.search);
 const HOST_GRACE=(EN_LOCAL&&(+QS.get('grace'))*1000)||30000; /* segundos sin anfitrión antes de relevarlo */
 
-let setup={n:0,k:1,hint:true,mask:ALL_MASK,secret:false};
-let rs={k:1,hint:true,mask:ALL_MASK,remote:false}; // ajustes de la sala en línea
+let setup={n:0,k:1,hint:1,mask:ALL_MASK,secret:false};
+let rs={k:1,hint:1,mask:ALL_MASK,remote:false}; // ajustes de la sala en línea
 let names=[];try{names=JSON.parse(localStorage.getItem('impostor-names')||'[]').map(cleanName).filter(Boolean).slice(0,18)}catch(e){names=[]}
 let game=null; // partida en marcha: {code,cfg,names,me,round,creator,remote,legacy}
 let ROOM=null; // sala en línea de este móvil: {code,name,creator,remote,joined,set}
@@ -2940,12 +2964,16 @@ function load(){try{const s=JSON.parse(localStorage.getItem('impostor-v2')||'nul
 function saveNames(){try{localStorage.setItem('impostor-names',JSON.stringify(names))}catch(e){}}
 
 const WKS=['s-game','s-lobby','s-wait']; // pantallas donde está el walkie (el panel no se cierra al pasar de una a otra)
+const EXIT_ONLINE=['s-lobby','s-wait','s-game'],EXIT_SOLO=['s-solo-hand','s-solo-card','s-solo-debate','s-solo-vote'];
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));document.body.classList.remove('red');window.scrollTo(0,0);
   const wk=WKS.includes(id)&&!!(ROOM||game);
   document.querySelector('.wrap').classList.toggle('game',WKS.includes(id));
   $('wkFab').classList.toggle('on',wk);
   if(!wk)WK.cerrar();else WK.modo();
+  const exitOn=(EXIT_ONLINE.includes(id)&&!!ROOM)||(EXIT_SOLO.includes(id)&&!!SOLO);
+  $('exitFab').classList.toggle('on',exitOn);
+  document.body.classList.toggle('has-exit',exitOn);
 }
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
 
@@ -3157,8 +3185,10 @@ function dropRoom(){
 }
 
 /* ---------- Estado de la sala (lo decide el anfitrión) ----------
-   S = {ep,sq,host(pid),ph,set,cfg,pl,ban,pend,acc,round,dead,vt,res,score}
-   ph: lobby | word | debate | vote | reveal.  ep = época (sube al cambiar de anfitrión), sq = versión dentro de la época.
+   S = {ep,sq,host(pid),ph,set,cfg,pl,ban,pend,acc,left,round,dead,vt,res,score}
+   ph: lobby | word | vote | reveal.  ep = época (sube al cambiar de anfitrión), sq = versión dentro de la época.
+   left: asientos (números de jugador) que salieron de la partida para siempre; se ignoran en el recuento
+   de vivos y en la votación, pero no se reasignan hasta la siguiente ronda para no descuadrar la semilla.
    Al empezar, el anfitrión fija pl (lista definitiva, orden = número de jugador) y cfg (semilla y ajustes).
    Los votos solo los guarda el anfitrión (HV); a los demás les llega quién ha votado, no a quién. */
 let S=null,HV=null,MYV=null,closeTm=null,lastVoteSend=0;
@@ -3167,13 +3197,13 @@ function loadS(){const o=lsGet('impostor-s-'+ROOM.code);if(o&&okState(o.S)){S=o.
 function okState(m){
   if(!m||typeof m!=='object'||!Number.isInteger(m.ep)||!Number.isInteger(m.sq)||typeof m.host!=='string'||typeof m.ph!=='string')return false;
   if(!Number.isInteger(m.round)||m.round<1||!Array.isArray(m.dead)||!m.score||typeof m.score!=='object')return false;
-  if(!m.set||typeof m.set!=='object'||!Array.isArray(m.ban)||!Array.isArray(m.pend)||!Array.isArray(m.acc))return false;
+  if(!m.set||typeof m.set!=='object'||!Array.isArray(m.ban)||!Array.isArray(m.pend)||!Array.isArray(m.acc)||!Array.isArray(m.left))return false;
   if(m.ph==='lobby')return true;
   return !!(m.cfg&&Number.isInteger(m.cfg.seed)&&Array.isArray(m.pl)&&m.pl.length>=3&&m.pl.every(p=>p&&typeof p.p==='string'&&typeof p.n==='string'));
 }
 function newer(m,c){if(!c)return true;if(m.ep!==c.ep)return m.ep>c.ep;if(m.host!==c.host)return m.host<c.host;return m.sq>c.sq}
-const defSet=()=>({k:1,hint:true,mask:ALL_MASK,remote:false});
-function lobbyState(set){return {ep:(S?S.ep:0)+1,sq:0,host:PID,ph:'lobby',set:{...defSet(),...set},cfg:null,pl:null,ban:[],pend:[],acc:[],round:1,dead:[],vt:null,res:null,score:{i:0,m:0,a:{}}}}
+const defSet=()=>({k:1,hint:1,mask:ALL_MASK,remote:false});
+function lobbyState(set){return {ep:(S?S.ep:0)+1,sq:0,host:PID,ph:'lobby',set:{...defSet(),...set},cfg:null,pl:null,ban:[],pend:[],acc:[],left:[],round:1,dead:[],vt:null,res:null,score:{i:0,m:0,a:{}}}}
 /* Construye la partida (game) a partir del estado de la sala */
 function syncGame(){
   if(!ROOM)return;
@@ -3208,6 +3238,8 @@ function onAct(m){
   if(!iAmHost()||!m)return;
   if(m.k==='vote'&&S.pl)hVote(m.from|0,m.to|0,m.vid);
   else if(m.k==='join'&&S.ph!=='lobby')hAddPending(String(m.p||'').slice(0,20),cleanName(m.n));
+  else if(m.k==='leave'&&S.pl)hLeave(String(m.p||'').slice(0,20));
+  else if(m.k==='startVote'&&S.pl&&S.ph==='word')hStartVote(aliveList(),false);
 }
 function resumeHost(){
   /* el anfitrión vuelve (recarga o reconexión): sube de época para valer más que cualquier estado viejo */
@@ -3257,7 +3289,7 @@ function tick(){
 }
 
 /* ---------- Acciones del anfitrión ---------- */
-const aliveList=()=>{const a=[];for(let i=1;i<=S.pl.length;i++)if(!S.dead.includes(i))a.push(i);return a};
+const aliveList=()=>{const a=[];for(let i=1;i<=S.pl.length;i++)if(!S.dead.includes(i)&&!S.left.includes(i))a.push(i);return a};
 const isDead=()=>!!(S&&game&&S.dead.includes(game.me));
 const mode=()=>(ROOM&&game&&netUp()&&S&&S.ph!=='lobby')?'room':'solo';
 const impsNow=()=>roundInfo(S.cfg,S.round).imps;
@@ -3269,8 +3301,8 @@ function hStart(){
   const list=connectedList(NET.R);if(!iAmHost()||S.ph!=='lobby'||list.length<3)return;
   const used=[];const pl=list.map(e=>{const n=uniqueName(e.n,used);used.push(n.toLowerCase());return {p:e.p,n}});
   const n=pl.length;
-  S.cfg={seed:newSeed(),n,k:Math.min(S.set.k,maxK(n)),hint:!!S.set.hint,mask:S.set.mask};
-  S.pl=pl;S.round=1;S.ph='word';S.dead=[];S.vt=null;S.res=null;S.pend=[];S.acc=[];S.score={i:0,m:0,a:{}};HV=null;MYV=null;
+  S.cfg={seed:newSeed(),n,k:Math.min(S.set.k,maxK(n)),hint:S.set.hint,mask:S.set.mask};
+  S.pl=pl;S.round=1;S.ph='word';S.dead=[];S.left=[];S.vt=null;S.res=null;S.pend=[];S.acc=[];S.score={i:0,m:0,a:{}};HV=null;MYV=null;
   pub();
 }
 function hAddPending(p,n){
@@ -3279,12 +3311,30 @@ function hAddPending(p,n){
 }
 function hAccept(p){const x=S.pend.find(q=>q.p===p);if(!x)return;S.pend=S.pend.filter(q=>q.p!==p);S.acc=[...S.acc,x];pub()}
 function hReject(p){S.pend=S.pend.filter(q=>q.p!==p);S.ban=[...S.ban,p];pub()}
-function hDebate(){S.ph='debate';S.vt=null;S.res=null;pub()}
+function hBackToWord(){S.ph='word';S.vt=null;S.res=null;pub()}
+function hCancelVote(){if(!iAmHost()||S.ph!=='vote')return;clearTimeout(closeTm);S.ph='word';S.vt=null;S.res=null;HV=null;pub()}
+function hEndToLobby(){if(!iAmHost())return;clearTimeout(closeTm);S=lobbyState(S.set);HV=null;MYV=null;pub()}
+/* Quita a un jugador de la partida para siempre (salió por su cuenta). No se le reasigna el hueco:
+   el resto de asientos y la semilla de la ronda no cambian. Si toca menos de 3, la ronda se corta. */
+function hLeave(pid){
+  if(!S||!S.pl)return;
+  const seat=S.pl.findIndex(p=>p.p===pid)+1;
+  if(!seat||S.left.includes(seat))return;
+  S.left=[...S.left,seat];
+  if(S.vt){
+    S.vt={...S.vt,cand:S.vt.cand.filter(c=>c!==seat),voted:S.vt.voted.filter(v=>v!==seat)};
+    if(HV&&HV.map)delete HV.map[seat];
+  }
+  if(S.pl.length-S.left.length<3){hEndToLobby();return}
+  pub();
+  clearTimeout(closeTm);
+  if(S.ph==='vote'&&S.vt&&S.vt.voted.length>=aliveList().length){const id=S.vt.id;closeTm=setTimeout(()=>{if(iAmHost()&&S.ph==='vote'&&S.vt&&S.vt.id===id)hClose()},1100)}
+}
 function hStartVote(cand,tie){S.vt={id:uid(6),cand,voted:[],tie:tie?1:0};S.ph='vote';S.res=null;HV={id:S.vt.id,map:{}};pub()}
 function hVote(from,to,vid){
   if(!S||S.ph!=='vote'||!S.vt||vid!==S.vt.id)return;
   if(!HV||HV.id!==S.vt.id)HV={id:S.vt.id,map:{}};
-  if(from<1||from>S.pl.length||S.dead.includes(from)||!S.vt.cand.includes(to)||to===from)return;
+  if(from<1||from>S.pl.length||S.dead.includes(from)||S.left.includes(from)||!S.vt.cand.includes(to)||to===from)return;
   if(HV.map[from]===to&&S.vt.voted.includes(from))return;
   HV.map[from]=to;
   S.vt.voted=Object.keys(HV.map).map(Number).filter(x=>!S.dead.includes(x)).sort((a,b)=>a-b);
@@ -3292,8 +3342,8 @@ function hVote(from,to,vid){
   clearTimeout(closeTm);
   if(S.vt.voted.length>=aliveList().length){const id=S.vt.id;closeTm=setTimeout(()=>{if(iAmHost()&&S.ph==='vote'&&S.vt&&S.vt.id===id)hClose()},1100)}
 }
-/* Cuenta los votos y decide el resultado: empate, eliminado (y si ganan inocentes/impostores o sigue el
-   debate), o nadie ha votado. Es pura (no toca S ni SOLO) para que la compartan la sala en línea y el
+/* Cuenta los votos y decide el resultado: empate, eliminado (y si ganan inocentes/impostores o sigue
+   la ronda), o nadie ha votado. Es pura (no toca S ni SOLO) para que la compartan la sala en línea y el
    modo de un solo móvil. votesMap es {desde: hacia}. */
 function computeVoteResult(alive,cand,tie,votesMap,dead,imps){
   const counts={};cand.forEach(c=>counts[c]=0);
@@ -3329,10 +3379,11 @@ function hClose(){
   S.res=res;S.ph='reveal';S.vt=null;pub();
 }
 function hAfter(){
-  const r=S.res;if(!r)return hDebate();
+  if(!iAmHost())return;
+  const r=S.res;if(!r)return hBackToWord();
   if(r.out==='tie')hStartVote(r.top,true);
   else if(r.out==='inn'||r.out==='imp')hNextRound();
-  else hDebate();
+  else hBackToWord();
 }
 function hNextRound(){
   if(S.acc.length){ /* los que esperaban entran ahora: se añaden al final, así no cambia el número de nadie */
@@ -3346,7 +3397,16 @@ function castVote(to){
   if(!S||S.ph!=='vote'||!S.vt||isDead()||!game||!S.vt.cand.includes(to)||to===game.me)return;
   MYV={vid:S.vt.id,to};lastVoteSend=Date.now();
   if(iAmHost())hVote(game.me,to,S.vt.id);else bc('act',{k:'vote',from:game.me,to,vid:S.vt.id});
-  renderPhase();
+  renderVoteSheet();
+}
+/* Cualquiera puede pasar a votar (no solo el anfitrión) */
+function castStartVote(){
+  if(!S||S.ph!=='word'||!game)return;
+  if(iAmHost())hStartVote(aliveList(),false);else bc('act',{k:'startVote'});
+}
+function castLeave(){
+  if(!game)return;
+  if(iAmHost())hLeave(PID);else bc('act',{k:'leave',p:PID});
 }
 
 /* ---------- Pintado ---------- */
@@ -3354,7 +3414,7 @@ function renderAll(){
   NET.R=roster();
   if(ROOM)routeScreen();
   if(game){renderCard();renderTop();renderNet();renderPhase();renderPlist();renderReveal();renderJoinReq()}
-  renderLobby();renderWait();WK.pinta();
+  renderVoteSheet();renderLobby();renderWait();WK.pinta();
 }
 /* En una sala en línea, la pantalla la decide el estado: sala de espera, juego o "entrarás en la siguiente ronda" */
 let entered='';
@@ -3382,9 +3442,12 @@ function paintCard(cardEl,backEl,cfg,me,round){
   cardEl.classList.remove('open','civil','imp');cardEl.classList.add(isImp?'imp':'civil');
   if(isImp){
     backEl.innerHTML=`<img class="implogo" src="${LOGO}" alt=""><div class="small">Eres el</div><div class="impword">IMPOSTOR</div>`+
-      (cfg.hint?`<div class="small">Tu pista</div><div class="hint"></div>`:`<div class="note">Sin pista. Escucha y disimula.</div>`)+
+      (cfg.hint===2?`<div class="small">Tu pista</div><div class="hint"></div>`:
+       cfg.hint===1?`<div class="small">Categoría</div><div class="hint"></div>`:
+       `<div class="note">Sin pista. Escucha y disimula.</div>`)+
       (cfg.k>1?`<div class="note">Hay ${cfg.k} impostores en la partida</div>`:'');
-    if(cfg.hint)backEl.querySelector('.hint').textContent=info.word.h;
+    if(cfg.hint===2)backEl.querySelector('.hint').textContent=info.word.h;
+    else if(cfg.hint===1)backEl.querySelector('.hint').textContent=info.word.c;
   }else{
     backEl.innerHTML=`<img class="mascot" src="${MASCOT}" alt=""><div class="small">Tu palabra</div><div class="word"></div><div class="cat"></div>`;
     const w=backEl.querySelector('.word');w.textContent=info.word.w;
@@ -3422,61 +3485,91 @@ function renderNet(){
 const hostNm=()=>{const p=S&&S.pl&&S.pl.find(x=>x.p===S.host);if(p)return p.n;const e=(NET.R||{})[S&&S.host];return e?e.n:'el anfitrión'};
 let phHtml='';
 function renderPhase(){
-  const box=$('phaseBox'),sec=$('s-game'),room=mode()==='room';
-  sec.classList.toggle('ph-vote',room&&S.ph==='vote'&&!isDead());
+  const box=$('phaseBox'),room=mode()==='room';
   let h='';
-  if(room){
-    const host=iAmHost(),dead=isDead(),nm=i=>esc(game.names[i-1]),info=roundInfo(game.cfg,S.round);
-    const alive=aliveList(),hostName=esc(hostNm());
-    const starter=`Empieza a hablar <b>${nm(info.starter)}</b>.`;
-    if(S.ph==='word'){
-      h=`<div class="phase"><div class="pt">Mirad vuestra tarjeta</div><p>Mantén pulsada la tarjeta para ver tu palabra. ${starter}</p>`+
-        (host?`<button class="act host" data-a="debate">Empezar debate</button><button class="link" data-a="skip">Saltar a la siguiente ronda</button>`:`<p class="hostnote">El anfitrión (${hostName}) empieza el debate.</p>`)+`</div>`;
-    }else if(S.ph==='debate'){
-      h=`<div class="phase"><div class="pt">Debate</div><p>Por turnos, cada uno dice algo relacionado sin ser demasiado obvio. ${S.dead.length?'':starter} Quedan <b>${alive.length}</b> con vida.</p>`+
-        (host?`<button class="act host" data-a="startVote">Empezar votación</button><button class="link" data-a="skip">Saltar a la siguiente ronda</button>`:`<p class="hostnote">El anfitrión (${hostName}) abrirá la votación.</p>`)+`</div>`;
-    }else if(S.ph==='vote'&&S.vt){
-      const vt=S.vt,voted=vt.voted.length,total=alive.length;
-      h=`<div class="phase"><div class="pt">${dead?'Están votando':'¿Quién es el impostor?'}</div>`;
-      if(dead)h+=`<p>Estás eliminado: miras, pero no votas.</p>`;
-      else{
-        h+=`<p>${vt.tie?'Hubo empate. Votad solo entre los empatados. ':''}Toca a quien votas. Puedes cambiarlo hasta que voten todos.</p><div class="vlist">`;
-        vt.cand.filter(s=>s!==game.me).forEach(s=>{
-          const on=MYV&&MYV.vid===vt.id&&MYV.to===s;
-          h+=`<button class="vbtn${on?' on':''}" data-a="vote" data-s="${s}" aria-pressed="${!!on}">${avImg(lookOf(s),'sm')}<span class="n">${nm(s)}</span><span class="chk">✓</span></button>`;
-        });
-        h+=`</div>`;
-      }
-      h+=`<div class="vprog"><span>${voted} de ${total} han votado</span><span class="bar"><i style="width:${total?Math.round(voted*100/total):0}%"></i></span></div>`;
-      if(host)h+=`<button class="act host" data-a="closeVote">Cerrar votación</button>`;
-      h+=`</div>`;
-    }
+  if(room&&S.ph==='word'){
+    const host=iAmHost(),info=roundInfo(game.cfg,S.round);
+    const starter=`Empieza a hablar <b>${esc(game.names[info.starter-1])}</b>.`;
+    h=`<div class="phase"><div class="pt">Mirad vuestra tarjeta</div><p>Mantén pulsada la tarjeta para ver tu palabra. ${starter}</p>`+
+      `<button class="act host" data-a="startVote">Pasar a votar</button>`+
+      (host?`<button class="link" data-a="skip">Saltar a la siguiente ronda</button>`:'')+`</div>`;
   }
   if(h!==phHtml){phHtml=h;box.innerHTML=h}
 }
 $('phaseBox').addEventListener('click',e=>{
   const b=e.target.closest('[data-a]');if(!b||!game||!S)return;const a=b.dataset.a;
-  if(a==='vote')castVote(+b.dataset.s);
-  else if(!iAmHost())return;
-  else if(a==='debate'&&S.ph==='word')hDebate();
-  else if(a==='startVote'&&S.ph==='debate')hStartVote(aliveList(),false);
-  else if(a==='closeVote')hClose();
-  else if(a==='skip')sheet(`<h3>¿Siguiente ronda?</h3><p>Se cierra esta ronda y todos pasan a una palabra nueva.</p>
+  if(a==='startVote')castStartVote();
+  else if(a==='skip'&&iAmHost())sheet(`<h3>¿Siguiente ronda?</h3><p>Se cierra esta ronda y todos pasan a una palabra nueva.</p>
     <button class="act" id="skYes">Siguiente ronda</button><button class="link" id="skNo">Cancelar</button>`,()=>{
     $('skNo').onclick=closeSheet;$('skYes').onclick=()=>{closeSheet();if(iAmHost())hNextRound()};
   });
+});
+/* ---------- Votación en un recuadro (hoja modal), en vez de dentro de la pantalla ---------- */
+let voteSheetShown=false,voteSheetMode='list',voteHtml='';
+function renderVoteSheet(){
+  const inVote=mode()==='room'&&S&&S.ph==='vote'&&S.vt;
+  if(!inVote){
+    if(voteSheetShown){voteSheetShown=false;voteSheetMode='list';voteHtml='';closeSheet()}
+    return;
+  }
+  voteSheetShown=true;
+  const h=voteSheetMode==='peek'?votePeekHtml():voteListHtml();
+  if(h===voteHtml)return;
+  voteHtml=h;sheet(h);
+}
+function voteListHtml(){
+  const vt=S.vt,dead=isDead(),alive=aliveList(),host=iAmHost();
+  const nm=i=>esc(game.names[i-1]),voted=vt.voted.length,total=alive.length;
+  let h=`<h3>${dead?'Están votando':'¿Quién es el impostor?'}</h3>`;
+  if(vt.tie)h+=`<p>Hubo empate. Votad solo entre los empatados.</p>`;
+  if(dead)h+=`<p>Estás eliminado: miras, pero no votas.</p>`;
+  else{
+    h+=`<p>Toca a quien votas. Puedes cambiarlo hasta que voten todos.</p><div class="vlist">`;
+    vt.cand.filter(s=>s!==game.me).forEach(s=>{
+      const on=MYV&&MYV.vid===vt.id&&MYV.to===s;
+      h+=`<button class="vbtn${on?' on':''}" data-a="vote" data-s="${s}" aria-pressed="${!!on}">${avImg(lookOf(s),'sm')}<span class="n">${nm(s)}</span><span class="chk">✓</span></button>`;
+    });
+    h+=`</div>`;
+  }
+  h+=`<div class="vprog"><span>${voted} de ${total} han votado</span><span class="bar"><i style="width:${total?Math.round(voted*100/total):0}%"></i></span></div>`;
+  h+=`<button class="link" data-a="peek">Ver mi palabra</button>`;
+  if(host)h+=`<button class="act host" data-a="closeVote">Cerrar votación</button><button class="link" data-a="cancelVote">Cancelar votación</button>`;
+  else h+=`<p class="hostnote">Esperando a que <b>${esc(hostNm())}</b> cierre la votación…</p>`;
+  return h;
+}
+function votePeekHtml(){
+  const info=roundInfo(game.cfg,S.round),isImp=info.imps.includes(game.me),cfg=game.cfg;
+  let h='<h3>Tu palabra</h3>';
+  if(isImp){
+    h+=`<p style="font-weight:900;font-size:1.8rem;color:var(--red);margin:6px 0">IMPOSTOR</p>`+
+      (cfg.hint===2?`<p>Pista: <b>${esc(info.word.h)}</b></p>`:cfg.hint===1?`<p>Categoría: <b>${esc(info.word.c)}</b></p>`:`<p>Sin pista. Escucha y disimula.</p>`);
+  }else{
+    h+=`<p style="font-weight:900;font-size:1.8rem;margin:6px 0">${esc(info.word.w)}</p><p style="color:var(--muted);letter-spacing:.06em">${esc(info.word.c).toUpperCase()}</p>`;
+  }
+  h+='<button class="act" data-a="backToVote">Volver a la votación</button>';
+  return h;
+}
+$('sheet').addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+  if(a==='vote')castVote(+b.dataset.s);
+  else if(a==='closeVote'&&iAmHost())hClose();
+  else if(a==='cancelVote'&&iAmHost())hCancelVote();
+  else if(a==='peek'){voteSheetMode='peek';renderVoteSheet()}
+  else if(a==='backToVote'){voteSheetMode='list';renderVoteSheet()}
 });
 const CROWN='<span class="tg crown" title="Anfitrión" aria-label="Anfitrión">👑</span>';
 let plHtml='';
 function renderPlist(){
   const pan=$('plistPanel'),show=netUp()&&!!S&&!!S.pl&&!game.legacy;pan.hidden=!show;if(!show)return;
-  const R=NET.R||{};let cnt=0;
+  const R=NET.R||{};let cnt=0,total=0;
   const h=game.names.map((n,i)=>{
-    const s=i+1,pid=S.pl[i].p,on=!!(R[pid]&&!R[pid].w),dead=S.dead.includes(s),isMe=s===game.me,isHost=S.host===pid;
+    const s=i+1;if(S.left.includes(s))return '';
+    total++;
+    const pid=S.pl[i].p,on=!!(R[pid]&&!R[pid].w),dead=S.dead.includes(s),isMe=s===game.me,isHost=S.host===pid;
     if(on)cnt++;
     return `<div class="pl${dead?' dead':''}${isMe?' me':''}">${avImg(lookOf(s),'')}<span class="dot${on?'':' off'}" title="${on?'Conectado':'Sin conexión'}"></span><div class="nm2"><b>${esc(n)}</b>${isMe?'<span class="tg">Tú</span>':''}${isHost?CROWN:''}${dead?'<span class="tg">Eliminado</span>':''}</div></div>`;
   }).join('');
-  $('plCount').textContent=`${cnt} de ${game.names.length} conectados`;
+  $('plCount').textContent=`${cnt} de ${total} conectados`;
   if(h!==plHtml){plHtml=h;$('plist').innerHTML=h}
 }
 /* Aviso al anfitrión: alguien quiere entrar con la partida empezada */
@@ -3549,7 +3642,7 @@ $('wtExit').onclick=()=>{dropRoom();show('s-home')};
 function fillMyName(id){const el=$(id);if(el&&!el.value)el.value=cleanName((PERFIL&&PERFIL.name)||lsGet('impostor-name','')||'')}
 function renderRoomSetup(){
   $('k2Val').textContent=rs.k;$('k2Minus').disabled=rs.k<=1;$('k2Plus').disabled=rs.k>=4;
-  $('hint2Sw').setAttribute('aria-checked',rs.hint);$('remote2Sw').setAttribute('aria-checked',rs.remote);
+  renderHintSeg('hint2Seg','hint2Sub',rs.hint);$('remote2Sw').setAttribute('aria-checked',rs.remote);
   document.querySelectorAll('#chips2 .chip').forEach((ch,i)=>{const on=!!(rs.mask&(1<<i));ch.classList.toggle('on',on);ch.setAttribute('aria-pressed',on)});
   $('allCats2').textContent=rs.mask===ALL_MASK?'Quitar todas':'Poner todas';
   const ok=!!rs.mask;$('doCreateRoom').disabled=!ok;$('doCreateRoom').style.opacity=ok?1:.4;
@@ -3557,7 +3650,7 @@ function renderRoomSetup(){
 }
 CATS.forEach((c,i)=>{const b=document.createElement('button');b.className='chip';b.textContent=c.name;b.onclick=()=>{rs.mask^=(1<<i);renderRoomSetup()};$('chips2').appendChild(b)});
 $('k2Minus').onclick=()=>{rs.k--;renderRoomSetup()};$('k2Plus').onclick=()=>{rs.k++;renderRoomSetup()};
-$('hint2Sw').onclick=()=>{rs.hint=!rs.hint;renderRoomSetup()};$('remote2Sw').onclick=()=>{rs.remote=!rs.remote;renderRoomSetup()};
+bindHintSeg('hint2Seg',v=>{rs.hint=v;renderRoomSetup()});$('remote2Sw').onclick=()=>{rs.remote=!rs.remote;renderRoomSetup()};
 $('allCats2').onclick=()=>{rs.mask=rs.mask===ALL_MASK?0:ALL_MASK;renderRoomSetup()};
 $('goCreate').onclick=()=>{$('createErr').textContent='';fillMyName('myName');renderRoomSetup();show('s-create')};
 $('doCreateRoom').onclick=async()=>{
@@ -3637,7 +3730,7 @@ function renderSetup(){
   $('addName').disabled=names.length>=18;$('nameIn').disabled=names.length>=18;
   $('kMinus').disabled=setup.k<=1;$('kPlus').disabled=setup.k>=mk;
   $('kSub').textContent=`Máximo ${mk} con ${Math.max(3,setup.n)} jugadores`;
-  $('hintSw').setAttribute('aria-checked',setup.hint);
+  renderHintSeg('hintSeg','hintSub',setup.hint);
   $('secretSw').setAttribute('aria-checked',setup.secret);
   document.querySelectorAll('#chips .chip').forEach((ch,i)=>{const on=!!(setup.mask&(1<<i));ch.classList.toggle('on',on);ch.setAttribute('aria-pressed',on)});
   $('allCats').textContent=setup.mask===ALL_MASK?'Quitar todas':'Poner todas';
@@ -3655,7 +3748,7 @@ function addName(){
 $('addName').onclick=addName;
 $('nameIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addName()}});
 $('kMinus').onclick=()=>{setup.k--;renderSetup()};$('kPlus').onclick=()=>{setup.k++;renderSetup()};
-$('hintSw').onclick=()=>{setup.hint=!setup.hint;renderSetup()};
+bindHintSeg('hintSeg',v=>{setup.hint=v;renderSetup()});
 $('allCats').onclick=()=>{setup.mask=setup.mask===ALL_MASK?0:ALL_MASK;renderSetup()};
 let autoNamed=false;
 function autoName(){ /* con sesión, tu nombre de Punto Ciego se añade solo (una vez) */
@@ -3707,16 +3800,18 @@ function reveal(on){
 bindHoldToReveal($('card'),reveal);
 
 /* ---------- Revelación ---------- */
-let REV={id:null,t0:0,tm:null,html:'',vib:false};
+let REV={id:null,t0:0,tm:null,html:'',vib:false,advanced:false};
 const seenRes=id=>{try{return (sessionStorage.getItem('impostor-seen')||'').split(',').includes(id)}catch(e){return false}};
 const markRes=id=>{try{sessionStorage.setItem('impostor-seen',((sessionStorage.getItem('impostor-seen')||'')+','+id).slice(-60))}catch(e){}};
-function outText(r,imps){
+function outText(r,imps,room){
   const n=i=>game.names[i-1];
+  const back=room?'Seguís jugando con la misma palabra.':'Se vuelve al debate con la misma palabra.';
+  const again=room?'Seguís jugando.':'A debatir otra vez.';
   switch(r.out){
-    case 'cont':return imps.includes(r.elim)?'Ha caído un impostor, pero aún queda otro. Se vuelve al debate con la misma palabra.':'Queda eliminado. Se vuelve al debate con la misma palabra.';
+    case 'cont':return (imps.includes(r.elim)?'Ha caído un impostor, pero aún queda otro. ':'Queda eliminado. ')+back;
     case 'tie':return `Empate entre ${listNames(r.top.map(n))}. Se repite la votación solo entre ellos.`;
-    case 'tie2':return 'Vuelve a haber empate: nadie queda eliminado. A debatir otra vez.';
-    case 'none':return 'Nadie ha votado. A debatir otra vez.';
+    case 'tie2':return 'Vuelve a haber empate: nadie queda eliminado. '+again;
+    case 'none':return 'Nadie ha votado. '+again;
     default:return '';
   }
 }
@@ -3727,9 +3822,12 @@ function renderReveal(){
     return;
   }
   const r=S.res,imps=impsNow(),nm=i=>esc(game.names[i-1]);
-  if(REV.id!==r.id){REV.id=r.id;REV.t0=seenRes(r.id)?Date.now()-99999:Date.now();REV.vib=false;markRes(r.id)}
+  if(REV.id!==r.id){REV.id=r.id;REV.t0=seenRes(r.id)?Date.now()-99999:Date.now();REV.vib=false;REV.advanced=false;markRes(r.id)}
   const age=Date.now()-REV.t0,stage=age<2200?0:age<4400?1:age<6000?2:3;
-  clearTimeout(REV.tm);const nx=[2200,4400,6000][stage];if(nx)REV.tm=setTimeout(renderReveal,nx-age+30);
+  const AUTO_AT=12000; /* 6s de animación + 6s de cuenta atrás visible antes de pasar solo de ronda */
+  clearTimeout(REV.tm);
+  const nx=stage<3?[2200,4400,6000][stage]:(age<AUTO_AT+500?Math.min(age+1000,AUTO_AT+30):null);
+  if(nx!=null)REV.tm=setTimeout(renderReveal,Math.max(30,nx-age));
   const isImp=r.elim!=null&&imps.includes(r.elim),host=iAmHost();
   let cls='neutral',h='';
   if(stage===0){
@@ -3752,9 +3850,12 @@ function renderReveal(){
         h+=`<div class="box"><h4>${r.out==='inn'?'Ganan los inocentes':'Ganan los impostores'}</h4><div style="font-weight:900;font-size:1.5rem;line-height:1.2" id="rvW"></div><div style="margin-top:6px">${imps.length>1?'Los impostores eran':'El impostor era'} <b>${listNames(imps.map(nm))}</b></div></div>`+
           `<div class="box"><h4>Marcador de la sesión</h4><div>Inocentes <b>${sc.i}</b> · Impostores <b>${sc.m}</b></div>`+
           (wl.length?`<div style="margin-top:4px;opacity:.85">Veces impostor: ${wl.map(s=>`${nm(s)} ${sc.a[s]}`).join(' · ')}</div>`:'')+`</div>`;
-      }else h+=`<p style="margin-top:12px">${esc(outText(r,imps))}</p>`;
-      const lab=r.out==='tie'?'Repetir votación':r.out==='inn'||r.out==='imp'?'Siguiente ronda':'Volver al debate';
-      h+=host?`<button class="act" data-a="after">${lab}</button>`:`<p class="wait">Esperando al anfitrión…</p>`;
+      }else h+=`<p style="margin-top:12px">${esc(outText(r,imps,true))}</p>`;
+      const lab=r.out==='tie'?'Repitiendo la votación':r.out==='inn'||r.out==='imp'?`Ronda ${S.round+1}`:'Seguís jugando';
+      const secs=Math.max(0,Math.ceil((AUTO_AT-age)/1000));
+      h+=`<p class="wait">${lab} en ${secs}…</p>`;
+      if(host)h+=`<button class="act" data-a="now">Ir ya</button><button class="link" data-a="endgame">Terminar partida</button>`;
+      if(age>=AUTO_AT&&host&&!REV.advanced){REV.advanced=true;hAfter();return}
     }
   }
   const html=`<div class="rv">${h}</div>`;
@@ -3764,7 +3865,14 @@ function renderReveal(){
     document.body.style.overflow='hidden';
   }
 }
-$('reveal').addEventListener('click',e=>{const b=e.target.closest('[data-a="after"]');if(b&&iAmHost()&&S.ph==='reveal')hAfter()});
+$('reveal').addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b||!iAmHost()||!S||S.ph!=='reveal')return;
+  if(b.dataset.a==='now'){REV.advanced=true;hAfter()}
+  else if(b.dataset.a==='endgame')sheet(`<h3>¿Terminar la partida?</h3><p>Todos volveréis a la sala de espera.</p>
+    <button class="act" id="egYes">Terminar partida</button><button class="link" id="egNo">Cancelar</button>`,()=>{
+    $('egNo').onclick=closeSheet;$('egYes').onclick=()=>{closeSheet();hEndToLobby()};
+  });
+});
 
 /* Modo sin conexión: cada móvil lleva su ronda y se vota en voz alta */
 function goRound(r){game.round=Math.max(1,r);save();renderAll();toast(`Ronda ${game.round}. Comprobad que todos estáis en la misma.`)}
@@ -3795,12 +3903,18 @@ $('roundBtn').onclick=()=>{
     $('rOk').onclick=()=>{closeSheet();goRound(r)};$('rNo').onclick=closeSheet;
   });
 };
-$('exitGame').onclick=()=>{
+function confirmExitOnline(){
   sheet(`<h3>¿Salir de la partida?</h3><p>${ROOM?'Podrás volver a entrar con el código de la sala.':'Podrás volver a entrar con el mismo enlace.'}</p>
     <button class="act" id="exYes">Salir</button><button class="link" id="exNo">Seguir jugando</button>`,()=>{
     $('exNo').onclick=closeSheet;
-    $('exYes').onclick=()=>{closeSheet();if(ROOM)dropRoom();else{game=null;save()}phHtml='';plHtml='';show('s-home')};
+    $('exYes').onclick=()=>{closeSheet();if(ROOM){if(game)castLeave();dropRoom()}else{game=null;save()}phHtml='';plHtml='';show('s-home')};
   });
+}
+$('exitGame').onclick=confirmExitOnline;
+$('exitFab').onclick=()=>{
+  const cur=document.querySelector('.screen.on');
+  if(cur&&EXIT_SOLO.includes(cur.id))soloConfirmQuit();
+  else if(cur&&EXIT_ONLINE.includes(cur.id))confirmExitOnline();
 };
 $('showQr').onclick=()=>{
   const room=!!ROOM;
