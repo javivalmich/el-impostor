@@ -1,6 +1,6 @@
 /* Cachea la página para que el modo "un solo móvil" abra sin cobertura tras la primera visita.
    Red primero (para recibir siempre lo último publicado) y caché como respaldo sin conexión. */
-const CACHE='impostor-1';
+const CACHE='impostor-2';
 self.addEventListener('install',()=>{self.skipWaiting()});
 self.addEventListener('activate',e=>{
   e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));

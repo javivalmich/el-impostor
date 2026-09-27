@@ -1,8 +1,8 @@
-# El impostor
+# Punto Falso
 
-Juego del impostor para jugar con el móvil, en persona o a distancia. Es una web estática: casi todo va en `index.html` (más un `sw.js` mínimo para que el modo sin conexión funcione sin cobertura).
+**El juego social del impostor**, para jugar con el móvil, en persona o a distancia. Es una web estática: casi todo va en `index.html` (más un `sw.js` mínimo para que el modo sin conexión funcione sin cobertura). Es hermano de [Punto Ciego](https://javivalmich.github.io/Punto-Ciego/).
 
-Jugar: https://javivalmich.github.io/el-impostor/
+Jugar: https://javivalmich.github.io/el-impostor/ (la URL conserva el nombre anterior del proyecto; no se ha movido para no romper enlaces, QR ya compartidos ni el alta en Supabase).
 
 ## Cómo se juega
 
