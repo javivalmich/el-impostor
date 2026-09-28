@@ -54,13 +54,21 @@ for (const size of SIZES) {
       await expect(page.locator('#s-solo-debate')).toHaveClass(/on/);
       await page.screenshot({ path: path.join(OUT, `${size.name}-04-debate.png`) });
 
+      await page.click('#sdMenu');
+      await expect(page.locator('#menuOverlay')).toHaveClass(/on/);
+      await page.screenshot({ path: path.join(OUT, `${size.name}-04b-menu.png`) });
+      await page.click('[data-a="menuClose"]');
+
       await page.click('#sdVote');
       await page.screenshot({ path: path.join(OUT, `${size.name}-05-votacion.png`) });
 
       await page.locator('#svList .vbtn', { hasText: 'Beto' }).click();
       await page.click('#svClose');
       await page.waitForSelector('#reveal.on [data-a="solo-after"]', { timeout: 9000 });
-      await page.screenshot({ path: path.join(OUT, `${size.name}-06-revelacion.png`), fullPage: true });
+      await page.screenshot({ path: path.join(OUT, `${size.name}-06-revelacion.png`) });
+      // #reveal tiene scroll propio (position:fixed): baja del todo para enseñar el ranking
+      await page.locator('#reveal').evaluate((el) => { el.scrollTop = el.scrollHeight; });
+      await page.screenshot({ path: path.join(OUT, `${size.name}-06b-revelacion-ranking.png`) });
     });
   });
 }

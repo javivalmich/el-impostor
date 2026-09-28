@@ -270,10 +270,6 @@ body.red .sheet .act{background:var(--red)}
 #wkFab svg{width:28px;height:28px}
 #wkFab b{position:absolute;top:-3px;right:-3px;min-width:22px;height:22px;border-radius:11px;background:#fff;color:#0e0e11;font-size:.78rem;display:grid;place-items:center;padding:0 6px;border:2px solid var(--red)}
 #wkFab b[hidden]{display:none}
-#exitFab{position:fixed;left:14px;top:calc(14px + env(safe-area-inset-top,0px));z-index:90;width:42px;height:42px;border-radius:50%;padding:0;border:0;background:rgba(14,14,17,.55);color:#fff;
-  display:none;place-items:center;font-size:1.1rem;font-weight:700;line-height:1}
-#exitFab.on{display:grid}
-body.has-exit .wrap{padding-top:calc(56px + env(safe-area-inset-top,0px))}
 #wkTalk{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:60;background:#fff;color:#0e0e11;font-weight:800;padding:8px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.4);white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
 #wkTalk[hidden]{display:none}
 #wk{position:fixed;inset:0;z-index:50;display:none}
@@ -333,6 +329,39 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
 .pl .kick{margin-left:2px}
 [hidden]{display:none!important}
 .roundbtn:disabled{opacity:1;color:var(--text);cursor:default}
+
+/* ---------- cabecera con menú ---------- */
+.gtop h2{margin:0}
+.gtop .right{display:flex;align-items:center;gap:8px;flex:none}
+.menubtn{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:transparent;color:var(--text);font-size:1.15rem;line-height:1;flex:none;display:grid;place-items:center;padding:0}
+
+/* ---------- menú del juego (hoja aparte, por encima de cualquier otra) ---------- */
+#menuOverlay{z-index:72}
+.menuhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.menuhead h3{margin:0}
+.xbtn{background:none;border:0;width:36px;height:36px;border-radius:50%;font-size:1.15rem;color:var(--muted);flex:none}
+.menuitem{display:block;width:100%;text-align:left;margin-top:10px;border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;background:transparent;font-weight:700;font-size:1rem;color:var(--text)}
+.menusep{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.menuitem.danger,.menuitem.exit{color:var(--red);border-color:var(--red)}
+
+/* ---------- ranking por jugador ---------- */
+.rklist{margin-top:10px}
+.rkrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.rkrow:last-child{border-bottom:0}
+.rkpos{width:20px;text-align:center;font-weight:900;color:var(--muted);flex:none;font-size:.95rem}
+.rknm{flex:1;min-width:0;display:flex;align-items:center;gap:4px 7px;font-weight:800}
+.rknm b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rknm .tg{flex:none}
+.rkmeta{text-align:right;flex:0 0 auto;max-width:42%}
+.rkpts{display:block;font-weight:900;white-space:nowrap}
+.rksub{display:block;font-size:.74rem;color:var(--muted)}
+.rv .box .rkrow{border-bottom-color:rgba(127,127,127,.3)}
+.rv .box .tg{background:rgba(127,127,127,.35);color:inherit}
+.rv .box .rksub{color:inherit;opacity:.7}
+.rv .box .rkpos{color:inherit;opacity:.7}
+
+/* ---------- propuesta de victoria del impostor (votación por mayoría) ---------- */
+.proposebar{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -398,8 +427,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   </section>
 
   <section class="screen" id="s-lobby">
-    <button class="back" id="lbBack">‹ Salir de la sala</button>
-    <h2>Sala de espera</h2>
+    <div class="gtop"><h2>Sala de espera</h2><button class="menubtn" id="lobbyMenu" aria-label="Menú">☰</button></div>
     <div class="panel codebox">
       <p style="margin:0 0 4px">Código de la sala</p>
       <div class="code" id="lbCode"></div>
@@ -415,9 +443,8 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   </section>
 
   <section class="screen" id="s-wait">
-    <h2>Entrarás en la siguiente ronda</h2>
+    <div class="gtop"><h2>Entrarás en la siguiente ronda</h2><button class="menubtn" id="waitMenu" aria-label="Menú">☰</button></div>
     <p class="hint-line" id="wtMsg"></p>
-    <button class="link" id="wtExit">Salir</button>
   </section>
 
   <section class="screen" id="s-createoff">
@@ -484,7 +511,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   </section>
 
   <section class="screen" id="s-solo-card">
-    <p class="hint-line" id="scWho"></p>
+    <div class="gtop"><p class="hint-line" id="scWho" style="margin:0"></p><button class="menubtn" id="scMenu" aria-label="Menú">☰</button></div>
     <div class="card" id="card2" tabindex="0" role="button" aria-label="Mantén pulsado para ver tu palabra">
       <div class="front">
         <div class="helmet" aria-hidden="true"><div class="visor"><i></i><i></i></div></div>
@@ -497,25 +524,25 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   </section>
 
   <section class="screen" id="s-solo-debate">
-    <h2>Debate</h2>
+    <div class="gtop"><h2>Debate</h2><button class="menubtn" id="sdMenu" aria-label="Menú">☰</button></div>
     <p class="hint-line" id="sdInfo"></p>
     <p class="starter" id="sdStarter"></p>
     <button class="act" id="sdVote">Empezar votación</button>
     <button class="link" id="sdPeek">Volver a ver mi palabra</button>
-    <button class="link" id="sdQuit">Terminar partida</button>
   </section>
 
   <section class="screen" id="s-solo-vote">
-    <h2 id="svTitle">¿Quién es el impostor?</h2>
+    <div class="gtop"><h2 id="svTitle">¿Quién es el impostor?</h2><button class="menubtn" id="svMenu" aria-label="Menú">☰</button></div>
     <p class="hint-line" id="svSub"></p>
     <div class="vlist" id="svList"></div>
     <button class="act host" id="svClose" hidden>Cerrar votación</button>
+    <div class="proposebar" id="svImpWinBar" hidden><button class="act sec" id="svImpWin">Victoria del impostor</button></div>
   </section>
 
   <section class="screen" id="s-game">
     <div class="gtop">
       <div class="who"><span id="meAv"></span><div class="me" id="meOut">Jugador 1</div></div>
-      <button class="roundbtn" id="roundBtn">Ronda 1</button>
+      <div class="right"><button class="roundbtn" id="roundBtn">Ronda 1</button><button class="menubtn" id="gameMenu" aria-label="Menú">☰</button></div>
     </div>
     <div class="netline" id="netLine"></div>
     <div class="elimban" id="elimBan" hidden>ELIMINADO<small>Puedes mirar y escuchar el walkie, pero no votas hasta la siguiente ronda.</small></div>
@@ -534,20 +561,12 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
       <button class="act" id="nextRound">Siguiente ronda</button>
       <button class="act sec" id="showSol">Ver solución</button>
     </div>
-    <div class="panel" id="plistPanel" hidden>
-      <div class="cathead"><span class="lbl">Jugadores</span><span class="sub" id="plCount"></span></div>
-      <div class="plist" id="plist"></div>
-    </div>
-    <p class="tiny" id="gameInfo"></p>
-    <button class="link" id="showQr">Mostrar el QR de la partida</button>
-    <button class="link" id="exitGame" style="margin-top:0">Salir de la partida</button>
   </section>
 
 </div>
 
 <div id="reveal" role="dialog" aria-live="polite"></div>
 <button id="wkFab" aria-label="Abrir el walkie-talkie"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg><b id="wkBadge" hidden>0</b></button>
-<button id="exitFab" aria-label="Salir de la partida">✕</button>
 <div id="wkTalk" hidden role="status"></div>
 <section id="wk" aria-hidden="false">
   <div class="fondo" id="wkFondo"></div>
@@ -562,6 +581,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   </div>
 </section>
 <div class="overlay" id="overlay"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="overlay" id="menuOverlay"><div class="sheet" id="menuSheetEl" role="dialog" aria-modal="true" aria-label="Menú"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -2938,6 +2958,48 @@ function summaryText(c){
   return `${c.k} ${c.k>1?'impostores':'impostor'}, ${HINT_LABELS[c.hint]||HINT_LABELS[1]}, ${cats===CATS.length?'todas las categorías':cats+(cats>1?' categorías':' categoría')}`;
 }
 function listNames(a){return a.length===1?a[0]:a.slice(0,-1).join(', ')+' y '+a[a.length-1]}
+function plural(n,s,p){return n===1?s:p}
+
+/* ---------- Ranking por jugador (partida en línea y un solo móvil comparten esta forma) ----------
+   rank = {clave: {n:nombre, pts:puntos, w:victorias, imp:veces impostor}}. La clave es el pid en línea
+   y el número de asiento en un solo móvil. Se reparte al cerrar una ronda con inocentes o impostores
+   ganadores: 1 punto a cada inocente vivo si ganan los inocentes, 2 puntos a cada impostor si ganan ellos;
+   "victoria" es haber recibido puntos esa ronda. */
+function ensureRankEntry(rank,key,name){
+  if(!rank[key])rank[key]={n:name||'',pts:0,w:0,imp:0};
+  else if(name)rank[key].n=name;
+  return rank[key];
+}
+function cloneRank(r){const o={};for(const k in r)o[k]={...r[k]};return o}
+function awardRound(rank,out,impKeys,innocentAliveKeys,nameOf){
+  impKeys.forEach(k=>{
+    const e=ensureRankEntry(rank,k,nameOf(k));
+    e.imp++;
+    if(out==='imp'){e.pts+=2;e.w++}
+  });
+  if(out==='inn')innocentAliveKeys.forEach(k=>{
+    const e=ensureRankEntry(rank,k,nameOf(k));
+    e.pts+=1;e.w++;
+  });
+}
+function computeStandings(rank){
+  const arr=Object.keys(rank).map(k=>({k,...rank[k]}));
+  arr.sort((a,b)=>b.pts-a.pts||a.n.localeCompare(b.n,'es'));
+  let pos=0,prevPts=null;
+  arr.forEach((e,i)=>{if(prevPts===null||e.pts!==prevPts)pos=i+1;e.pos=pos;prevPts=e.pts});
+  return arr;
+}
+const LEADER_BADGE='<span class="tg lead" title="Líder">🏆</span>';
+function rankingRows(standings,extraFn){
+  if(!standings.length)return '<p class="hint-line">Todavía no hay puntos.</p>';
+  return `<div class="rklist">`+standings.map(e=>{
+    const lead=e.pos===1&&e.pts>0?LEADER_BADGE:'';
+    const extra=extraFn?extraFn(e.k):'';
+    return `<div class="rkrow"><span class="rkpos">${e.pos}</span><div class="rknm"><b>${esc(e.n)}</b>${lead}${extra}</div>`+
+      `<div class="rkmeta"><span class="rkpts">${e.pts} ${plural(e.pts,'punto','puntos')}</span>`+
+      `<span class="rksub">${e.w} ${plural(e.w,'victoria','victorias')} · ${e.imp} ${plural(e.imp,'vez','veces')} impostor</span></div></div>`;
+  }).join('')+`</div>`;
+}
 
 /* ---------- Estado ---------- */
 const $=id=>document.getElementById(id);
@@ -2964,16 +3026,12 @@ function load(){try{const s=JSON.parse(localStorage.getItem('impostor-v2')||'nul
 function saveNames(){try{localStorage.setItem('impostor-names',JSON.stringify(names))}catch(e){}}
 
 const WKS=['s-game','s-lobby','s-wait']; // pantallas donde está el walkie (el panel no se cierra al pasar de una a otra)
-const EXIT_ONLINE=['s-lobby','s-wait','s-game'],EXIT_SOLO=['s-solo-hand','s-solo-card','s-solo-debate','s-solo-vote'];
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));document.body.classList.remove('red');window.scrollTo(0,0);
   const wk=WKS.includes(id)&&!!(ROOM||game);
   document.querySelector('.wrap').classList.toggle('game',WKS.includes(id));
   $('wkFab').classList.toggle('on',wk);
   if(!wk)WK.cerrar();else WK.modo();
-  const exitOn=(EXIT_ONLINE.includes(id)&&!!ROOM)||(EXIT_SOLO.includes(id)&&!!SOLO);
-  $('exitFab').classList.toggle('on',exitOn);
-  document.body.classList.toggle('has-exit',exitOn);
 }
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
 
@@ -3171,7 +3229,7 @@ function onPresence(){
 }
 /* Mismo móvil o navegador abierto en otro sitio: la conexión más antigua se aparta (sin borrar lo guardado) */
 function yieldTab(){
-  netLeave();WK.reset();WK.cerrar();ROOM=null;game=null;S=null;HV=null;MYV=null;phHtml='';plHtml='';
+  netLeave();WK.reset();WK.cerrar();ROOM=null;game=null;S=null;HV=null;MYV=null;phHtml='';
   show('s-home');toast('Esta partida se ha abierto en otra pestaña con tu mismo jugador.');
 }
 function nameTaken(){
@@ -3180,7 +3238,7 @@ function nameTaken(){
   $('joinErr').textContent=`Ya hay alguien llamado «${nm}» en la sala. Añade una inicial.`;
 }
 function dropRoom(){
-  const c=ROOM&&ROOM.code;netLeave();WK.reset();WK.cerrar();ROOM=null;game=null;S=null;HV=null;MYV=null;phHtml='';plHtml='';
+  const c=ROOM&&ROOM.code;netLeave();WK.reset();WK.cerrar();ROOM=null;game=null;S=null;HV=null;MYV=null;phHtml='';
   if(c)lsDel('impostor-s-'+c);saveRoom();
 }
 
@@ -3196,14 +3254,15 @@ function persistS(){if(ROOM)lsSet('impostor-s-'+ROOM.code,{S,HV})}
 function loadS(){const o=lsGet('impostor-s-'+ROOM.code);if(o&&okState(o.S)){S=o.S;HV=o.HV||null}}
 function okState(m){
   if(!m||typeof m!=='object'||!Number.isInteger(m.ep)||!Number.isInteger(m.sq)||typeof m.host!=='string'||typeof m.ph!=='string')return false;
-  if(!Number.isInteger(m.round)||m.round<1||!Array.isArray(m.dead)||!m.score||typeof m.score!=='object')return false;
+  if(!Number.isInteger(m.round)||m.round<1||!Array.isArray(m.dead)||!m.rank||typeof m.rank!=='object')return false;
   if(!m.set||typeof m.set!=='object'||!Array.isArray(m.ban)||!Array.isArray(m.pend)||!Array.isArray(m.acc)||!Array.isArray(m.left))return false;
   if(m.ph==='lobby')return true;
   return !!(m.cfg&&Number.isInteger(m.cfg.seed)&&Array.isArray(m.pl)&&m.pl.length>=3&&m.pl.every(p=>p&&typeof p.p==='string'&&typeof p.n==='string'));
 }
 function newer(m,c){if(!c)return true;if(m.ep!==c.ep)return m.ep>c.ep;if(m.host!==c.host)return m.host<c.host;return m.sq>c.sq}
 const defSet=()=>({k:1,hint:1,mask:ALL_MASK,remote:false});
-function lobbyState(set){return {ep:(S?S.ep:0)+1,sq:0,host:PID,ph:'lobby',set:{...defSet(),...set},cfg:null,pl:null,ban:[],pend:[],acc:[],left:[],round:1,dead:[],vt:null,res:null,score:{i:0,m:0,a:{}}}}
+/* rank se conserva mientras dure la sala (no se reinicia al volver a la sala de espera ni al empezar otra partida) */
+function lobbyState(set){return {ep:(S?S.ep:0)+1,sq:0,host:PID,ph:'lobby',set:{...defSet(),...set},cfg:null,pl:null,ban:[],pend:[],acc:[],left:[],round:1,dead:[],vt:null,res:null,prop:null,rank:S?cloneRank(S.rank):{}}}
 /* Construye la partida (game) a partir del estado de la sala */
 function syncGame(){
   if(!ROOM)return;
@@ -3240,6 +3299,7 @@ function onAct(m){
   else if(m.k==='join'&&S.ph!=='lobby')hAddPending(String(m.p||'').slice(0,20),cleanName(m.n));
   else if(m.k==='leave'&&S.pl)hLeave(String(m.p||'').slice(0,20));
   else if(m.k==='startVote'&&S.pl&&S.ph==='word')hStartVote(aliveList(),false);
+  else if(m.k==='proposeVote'&&S.pl&&S.prop&&m.pid===S.prop.id)hProposeVote(m.from|0,!!m.v);
 }
 function resumeHost(){
   /* el anfitrión vuelve (recarga o reconexión): sube de época para valer más que cualquier estado viejo */
@@ -3302,7 +3362,8 @@ function hStart(){
   const used=[];const pl=list.map(e=>{const n=uniqueName(e.n,used);used.push(n.toLowerCase());return {p:e.p,n}});
   const n=pl.length;
   S.cfg={seed:newSeed(),n,k:Math.min(S.set.k,maxK(n)),hint:S.set.hint,mask:S.set.mask};
-  S.pl=pl;S.round=1;S.ph='word';S.dead=[];S.left=[];S.vt=null;S.res=null;S.pend=[];S.acc=[];S.score={i:0,m:0,a:{}};HV=null;MYV=null;
+  S.pl=pl;S.round=1;S.ph='word';S.dead=[];S.left=[];S.vt=null;S.res=null;S.prop=null;S.pend=[];S.acc=[];HV=null;MYV=null;
+  pl.forEach(p=>ensureRankEntry(S.rank,p.p,p.n));
   pub();
 }
 function hAddPending(p,n){
@@ -3312,7 +3373,7 @@ function hAddPending(p,n){
 function hAccept(p){const x=S.pend.find(q=>q.p===p);if(!x)return;S.pend=S.pend.filter(q=>q.p!==p);S.acc=[...S.acc,x];pub()}
 function hReject(p){S.pend=S.pend.filter(q=>q.p!==p);S.ban=[...S.ban,p];pub()}
 function hBackToWord(){S.ph='word';S.vt=null;S.res=null;pub()}
-function hCancelVote(){if(!iAmHost()||S.ph!=='vote')return;clearTimeout(closeTm);S.ph='word';S.vt=null;S.res=null;HV=null;pub()}
+function hCancelVote(){if(!iAmHost()||S.ph!=='vote')return;clearTimeout(closeTm);S.ph='word';S.vt=null;S.res=null;S.prop=null;HV=null;pub()}
 function hEndToLobby(){if(!iAmHost())return;clearTimeout(closeTm);S=lobbyState(S.set);HV=null;MYV=null;pub()}
 /* Quita a un jugador de la partida para siempre (salió por su cuenta). No se le reasigna el hueco:
    el resto de asientos y la semilla de la ronda no cambian. Si toca menos de 3, la ronda se corta. */
@@ -3325,14 +3386,16 @@ function hLeave(pid){
     S.vt={...S.vt,cand:S.vt.cand.filter(c=>c!==seat),voted:S.vt.voted.filter(v=>v!==seat)};
     if(HV&&HV.map)delete HV.map[seat];
   }
+  if(S.host===pid)S.prop=null; /* el anfitrión sale: la propuesta de victoria del impostor se cancela */
   if(S.pl.length-S.left.length<3){hEndToLobby();return}
   pub();
   clearTimeout(closeTm);
   if(S.ph==='vote'&&S.vt&&S.vt.voted.length>=aliveList().length){const id=S.vt.id;closeTm=setTimeout(()=>{if(iAmHost()&&S.ph==='vote'&&S.vt&&S.vt.id===id)hClose()},1100)}
+  if(S.prop)evaluatePropose(); /* la mayoría se recalcula con los vivos que quedan */
 }
-function hStartVote(cand,tie){S.vt={id:uid(6),cand,voted:[],tie:tie?1:0};S.ph='vote';S.res=null;HV={id:S.vt.id,map:{}};pub()}
+function hStartVote(cand,tie){S.vt={id:uid(6),cand,voted:[],tie:tie?1:0};S.ph='vote';S.res=null;S.prop=null;HV={id:S.vt.id,map:{}};pub()}
 function hVote(from,to,vid){
-  if(!S||S.ph!=='vote'||!S.vt||vid!==S.vt.id)return;
+  if(!S||S.ph!=='vote'||!S.vt||vid!==S.vt.id||S.prop)return;
   if(!HV||HV.id!==S.vt.id)HV={id:S.vt.id,map:{}};
   if(from<1||from>S.pl.length||S.dead.includes(from)||S.left.includes(from)||!S.vt.cand.includes(to)||to===from)return;
   if(HV.map[from]===to&&S.vt.voted.includes(from))return;
@@ -3360,8 +3423,11 @@ function computeVoteResult(alive,cand,tie,votesMap,dead,imps){
   }
   return res;
 }
+/* Nombre y pid de un asiento; se usan para repartir puntos por jugador (la clave del ranking es el pid). */
+const pidForSeat=seat=>S.pl[seat-1].p;
+function nameForPid(pid){const p=S.pl&&S.pl.find(x=>x.p===pid);return p?p.n:((NET.R&&NET.R[pid]&&NET.R[pid].n)||'')}
 function hClose(){
-  if(!iAmHost()||S.ph!=='vote'||!S.vt)return;
+  if(!iAmHost()||S.ph!=='vote'||!S.vt||S.prop)return;
   clearTimeout(closeTm);
   const vt=S.vt,al=aliveList();
   const map=(HV&&HV.id===vt.id)?HV.map:{};
@@ -3370,10 +3436,9 @@ function hClose(){
   if(res.elim!=null){
     S.dead=[...S.dead,res.elim];
     if(res.out==='inn'||res.out==='imp'){
-      const sc={i:S.score.i,m:S.score.m,a:{...S.score.a}};
-      if(res.out==='inn')sc.i++;else sc.m++;
-      impsNow().forEach(p=>sc.a[p]=(sc.a[p]||0)+1);
-      S.score=sc;
+      const imps=impsNow(),rank=cloneRank(S.rank);
+      awardRound(rank,res.out,imps.map(pidForSeat),aliveList().filter(s=>!imps.includes(s)).map(pidForSeat),nameForPid);
+      S.rank=rank;
     }
   }
   S.res=res;S.ph='reveal';S.vt=null;pub();
@@ -3390,8 +3455,41 @@ function hNextRound(){
     const used=S.pl.map(p=>p.n.toLowerCase());
     S.pl=[...S.pl,...S.acc.filter(a=>!S.pl.some(p=>p.p===a.p)).map(a=>{const n=uniqueName(a.n,used);used.push(n.toLowerCase());return {p:a.p,n}})];
     S.acc=[];const n=S.pl.length;S.cfg={...S.cfg,n,k:Math.min(S.cfg.k,maxK(n))};
+    S.pl.forEach(p=>ensureRankEntry(S.rank,p.p,p.n)); /* quien entra tarde empieza a cero */
   }
-  S.round++;S.dead=[];S.ph='word';S.vt=null;S.res=null;HV=null;MYV=null;pub();
+  S.round++;S.dead=[];S.ph='word';S.vt=null;S.res=null;S.prop=null;HV=null;MYV=null;pub();
+}
+/* ---------- Propuesta del anfitrión: dar la ronda por ganada a los impostores, con el visto bueno
+   de la mayoría de los vivos (más de la mitad). Mientras esté abierta no se puede votar ni cerrar la
+   votación normal. ---------- */
+function hResolveImpostorWin(){
+  const imps=impsNow(),rank=cloneRank(S.rank);
+  awardRound(rank,'imp',imps.map(pidForSeat),[],nameForPid);
+  S.rank=rank;
+  S.res={id:uid(6),counts:{},top:[],elim:null,out:'imp',shortcut:true};
+  S.ph='reveal';S.vt=null;S.prop=null;pub();
+}
+function hPropose(){
+  if(!iAmHost()||S.ph!=='vote'||!S.vt||S.prop)return;
+  S.prop={id:uid(6),votes:{}};pub();
+}
+function hProposeCancel(){if(!iAmHost()||!S.prop)return;S.prop=null;pub()}
+function hProposeVote(seat,v){
+  if(!S||!S.prop||!aliveList().includes(seat))return;
+  S.prop={...S.prop,votes:{...S.prop.votes,[seat]:!!v}};
+  evaluatePropose();
+}
+function evaluatePropose(){
+  if(!iAmHost()||!S.prop)return;
+  const al=aliveList(),need=Math.floor(al.length/2)+1,votes=S.prop.votes;
+  const yes=al.filter(s=>votes[s]===true).length,no=al.filter(s=>votes[s]===false).length;
+  if(yes>=need){hResolveImpostorWin();return}
+  if(al.length-no<need){S.prop=null;S.propFail=uid(6);pub();return}
+  pub();
+}
+function castProposeVote(v){
+  if(!S||!S.prop||!game||isDead())return;
+  if(iAmHost())hProposeVote(game.me,v);else bc('act',{k:'proposeVote',from:game.me,v:!!v,pid:S.prop.id});
 }
 function castVote(to){
   if(!S||S.ph!=='vote'||!S.vt||isDead()||!game||!S.vt.cand.includes(to)||to===game.me)return;
@@ -3413,8 +3511,8 @@ function castLeave(){
 function renderAll(){
   NET.R=roster();
   if(ROOM)routeScreen();
-  if(game){renderCard();renderTop();renderNet();renderPhase();renderPlist();renderReveal();renderJoinReq()}
-  renderVoteSheet();renderLobby();renderWait();WK.pinta();
+  if(game){renderCard();renderTop();renderNet();renderPhase();renderReveal();renderJoinReq()}
+  renderVoteSheet();renderLobby();renderWait();checkPropose();WK.pinta();
 }
 /* En una sala en línea, la pantalla la decide el estado: sala de espera, juego o "entrarás en la siguiente ronda" */
 let entered='';
@@ -3467,7 +3565,6 @@ function renderTop(){
   $('roundBtn').textContent='Ronda '+round;$('roundBtn').disabled=room;
   $('starter').innerHTML='Empieza a hablar <b></b>';$('starter').querySelector('b').textContent=game.names[info.starter-1];
   $('starter').hidden=room;
-  $('gameInfo').textContent=`${game.names.length} jugadores, ${summaryText(cfg)}.`;
   $('legacyBox').hidden=room;
   $('elimBan').hidden=!(room&&isDead());
 }
@@ -3507,13 +3604,14 @@ $('phaseBox').addEventListener('click',e=>{
 /* ---------- Votación en un recuadro (hoja modal), en vez de dentro de la pantalla ---------- */
 let voteSheetShown=false,voteSheetMode='list',voteHtml='';
 function renderVoteSheet(){
+  if(menuOpen)return; /* el menú usa su propia hoja; no le pises el sitio a esta */
   const inVote=mode()==='room'&&S&&S.ph==='vote'&&S.vt;
   if(!inVote){
     if(voteSheetShown){voteSheetShown=false;voteSheetMode='list';voteHtml='';closeSheet()}
     return;
   }
   voteSheetShown=true;
-  const h=voteSheetMode==='peek'?votePeekHtml():voteListHtml();
+  const h=S.prop?proposeHtml():(voteSheetMode==='peek'?votePeekHtml():voteListHtml());
   if(h===voteHtml)return;
   voteHtml=h;sheet(h);
 }
@@ -3533,8 +3631,20 @@ function voteListHtml(){
   }
   h+=`<div class="vprog"><span>${voted} de ${total} han votado</span><span class="bar"><i style="width:${total?Math.round(voted*100/total):0}%"></i></span></div>`;
   h+=`<button class="link" data-a="peek">Ver mi palabra</button>`;
-  if(host)h+=`<button class="act host" data-a="closeVote">Cerrar votación</button><button class="link" data-a="cancelVote">Cancelar votación</button>`;
-  else h+=`<p class="hostnote">Esperando a que <b>${esc(hostNm())}</b> cierre la votación…</p>`;
+  if(host){
+    h+=`<button class="act host" data-a="closeVote">Cerrar votación</button><button class="link" data-a="cancelVote">Cancelar votación</button>`;
+    h+=`<div class="proposebar"><button class="act sec" data-a="propose">Victoria del impostor</button></div>`;
+  }else h+=`<p class="hostnote">Esperando a que <b>${esc(hostNm())}</b> cierre la votación…</p>`;
+  return h;
+}
+/* Propuesta del anfitrión de dar la ronda por ganada a los impostores: la aprueba la mayoría de los vivos */
+function proposeHtml(){
+  const al=aliveList(),host=iAmHost(),votes=S.prop.votes,dead=isDead(),my=game.me,voted=al.filter(s=>votes[s]!==undefined).length;
+  let h=`<h3>${esc(hostNm())} propone dar la ronda por ganada a los impostores</h3><p>¿Estás de acuerdo?</p>`;
+  if(dead)h+=`<p>Estás eliminado: no participas en esta votación.</p>`;
+  else h+=`<div class="seg" role="radiogroup" aria-label="Tu respuesta"><button type="button" data-a="propYes" aria-pressed="${votes[my]===true}">Sí</button><button type="button" data-a="propNo" aria-pressed="${votes[my]===false}">No</button></div>`;
+  h+=`<div class="vprog"><span>${voted} de ${al.length} han contestado</span></div>`;
+  if(host)h+=`<button class="link" data-a="proposeCancel">Retirar la propuesta</button>`;
   return h;
 }
 function votePeekHtml(){
@@ -3556,22 +3666,12 @@ $('sheet').addEventListener('click',e=>{
   else if(a==='cancelVote'&&iAmHost())hCancelVote();
   else if(a==='peek'){voteSheetMode='peek';renderVoteSheet()}
   else if(a==='backToVote'){voteSheetMode='list';renderVoteSheet()}
+  else if(a==='propose'&&iAmHost())hPropose();
+  else if(a==='propYes')castProposeVote(true);
+  else if(a==='propNo')castProposeVote(false);
+  else if(a==='proposeCancel'&&iAmHost())hProposeCancel();
 });
 const CROWN='<span class="tg crown" title="Anfitrión" aria-label="Anfitrión">👑</span>';
-let plHtml='';
-function renderPlist(){
-  const pan=$('plistPanel'),show=netUp()&&!!S&&!!S.pl&&!game.legacy;pan.hidden=!show;if(!show)return;
-  const R=NET.R||{};let cnt=0,total=0;
-  const h=game.names.map((n,i)=>{
-    const s=i+1;if(S.left.includes(s))return '';
-    total++;
-    const pid=S.pl[i].p,on=!!(R[pid]&&!R[pid].w),dead=S.dead.includes(s),isMe=s===game.me,isHost=S.host===pid;
-    if(on)cnt++;
-    return `<div class="pl${dead?' dead':''}${isMe?' me':''}">${avImg(lookOf(s),'')}<span class="dot${on?'':' off'}" title="${on?'Conectado':'Sin conexión'}"></span><div class="nm2"><b>${esc(n)}</b>${isMe?'<span class="tg">Tú</span>':''}${isHost?CROWN:''}${dead?'<span class="tg">Eliminado</span>':''}</div></div>`;
-  }).join('');
-  $('plCount').textContent=`${cnt} de ${total} conectados`;
-  if(h!==plHtml){plHtml=h;$('plist').innerHTML=h}
-}
 /* Aviso al anfitrión: alguien quiere entrar con la partida empezada */
 let jrHtml='';
 function renderJoinReq(){
@@ -3622,10 +3722,6 @@ $('lbList').addEventListener('click',e=>{
   });
 });
 $('lbShare').onclick=()=>shareRoom();
-$('lbBack').onclick=()=>sheet(`<h3>¿Salir de la sala?</h3><p>${iAmHost()?'Si sales, otro jugador pasará a ser el anfitrión.':'Podrás volver a entrar con el código.'}</p>
-  <button class="act" id="lxYes">Salir</button><button class="link" id="lxNo">Seguir aquí</button>`,()=>{
-  $('lxNo').onclick=closeSheet;$('lxYes').onclick=()=>{closeSheet();dropRoom();show('s-home')};
-});
 async function shareRoom(){
   const url=roomLink(ROOM.code);
   try{if(navigator.share){await navigator.share({title:'Punto Falso',text:`Entra en mi sala de Punto Falso (código ${ROOM.code}):`,url});return}}catch(e){if(e&&e.name==='AbortError')return}
@@ -3636,7 +3732,6 @@ function renderWait(){
   const acc=S&&S.acc.some(p=>p.p===PID);
   $('wtMsg').textContent=acc?'El anfitrión te ha aceptado. Entrarás en cuanto pasen a la siguiente ronda.':`La partida ya ha empezado. Esperando a que ${hostNm()} te acepte…`;
 }
-$('wtExit').onclick=()=>{dropRoom();show('s-home')};
 
 /* ---------- Crear sala en línea ---------- */
 function fillMyName(id){const el=$(id);if(el&&!el.value)el.value=cleanName((PERFIL&&PERFIL.name)||lsGet('impostor-name','')||'')}
@@ -3828,33 +3923,35 @@ function renderReveal(){
   clearTimeout(REV.tm);
   const nx=stage<3?[2200,4400,6000][stage]:(age<AUTO_AT+500?Math.min(age+1000,AUTO_AT+30):null);
   if(nx!=null)REV.tm=setTimeout(renderReveal,Math.max(30,nx-age));
-  const isImp=r.elim!=null&&imps.includes(r.elim),host=iAmHost();
+  const isImp=r.shortcut||(r.elim!=null&&imps.includes(r.elim)),host=iAmHost();
   let cls='neutral',h='';
   if(stage===0){
-    h=`<div class="k">Votación cerrada</div><div class="big">Contando los votos…</div><div class="dots" style="margin-top:14px"><span></span><span></span><span></span></div>`;
+    h=`<div class="k">${r.shortcut?'Ronda decidida':'Votación cerrada'}</div><div class="big">${r.shortcut?'Se acaba la ronda…':'Contando los votos…'}</div><div class="dots" style="margin-top:14px"><span></span><span></span><span></span></div>`;
   }else if(stage===1){
-    if(r.elim!=null)h=`<div class="k">El más votado es</div>${avImg(lookOf(r.elim),'xl')}<div class="who beat">${nm(r.elim)}</div>`;
+    if(r.shortcut)h=`<div class="k">Por decisión del grupo</div><div class="big">Se la dais por ganada a los impostores</div>`;
+    else if(r.elim!=null)h=`<div class="k">El más votado es</div>${avImg(lookOf(r.elim),'xl')}<div class="who beat">${nm(r.elim)}</div>`;
     else if(r.top.length)h=`<div class="k">Hay un empate entre</div><div class="who beat">${listNames(r.top.map(nm))}</div>`;
     else h=`<div class="big">Nadie ha votado</div>`;
   }else{
-    if(r.elim!=null&&isImp){cls='red';h=`<img class="logo2" src="${LOGO}" alt=""><div class="k">${nm(r.elim)}</div><div class="big pop">¡ERA EL IMPOSTOR!</div>`}
+    if(r.shortcut){cls='red';h=`<img class="logo2" src="${LOGO}" alt=""><div class="big pop">¡GANAN LOS IMPOSTORES!</div>`}
+    else if(r.elim!=null&&isImp){cls='red';h=`<img class="logo2" src="${LOGO}" alt=""><div class="k">${nm(r.elim)}</div><div class="big pop">¡ERA EL IMPOSTOR!</div>`}
     else if(r.elim!=null){cls='white';h=`<img class="mas" src="${MASCOT}" alt=""><div class="k" style="color:#6b6b75">${nm(r.elim)}</div><div class="big pop">NO ERA EL IMPOSTOR</div>`}
     else if(r.top.length)h=`<div class="big pop">¡EMPATE!</div><p>${listNames(r.top.map(nm))}</p>`;
     else h=`<div class="big pop">NADIE HA VOTADO</div>`;
     if(stage>=2&&!REV.vib){REV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60])}
     if(stage===3){
-      const rows=Object.keys(r.counts).map(Number).sort((a,b)=>r.counts[b]-r.counts[a]||a-b),mx=Math.max(1,...rows.map(s=>r.counts[s]));
-      h+=`<div class="box"><h4>Votos</h4><div class="counts">`+rows.map(s=>`<div class="cr">${avImg(lookOf(s),'sm')}<span class="nm">${nm(s)}</span><span class="b"><i style="width:${Math.round(r.counts[s]*100/mx)}%"></i></span><span class="v">${r.counts[s]}</span></div>`).join('')+`</div></div>`;
+      if(!r.shortcut){
+        const rows=Object.keys(r.counts).map(Number).sort((a,b)=>r.counts[b]-r.counts[a]||a-b),mx=Math.max(1,...rows.map(s=>r.counts[s]));
+        h+=`<div class="box"><h4>Votos</h4><div class="counts">`+rows.map(s=>`<div class="cr">${avImg(lookOf(s),'sm')}<span class="nm">${nm(s)}</span><span class="b"><i style="width:${Math.round(r.counts[s]*100/mx)}%"></i></span><span class="v">${r.counts[s]}</span></div>`).join('')+`</div></div>`;
+      }
       if(r.out==='inn'||r.out==='imp'){
-        const sc=S.score,wl=Object.keys(sc.a).map(Number).sort((a,b)=>sc.a[b]-sc.a[a]||a-b);
         h+=`<div class="box"><h4>${r.out==='inn'?'Ganan los inocentes':'Ganan los impostores'}</h4><div style="font-weight:900;font-size:1.5rem;line-height:1.2" id="rvW"></div><div style="margin-top:6px">${imps.length>1?'Los impostores eran':'El impostor era'} <b>${listNames(imps.map(nm))}</b></div></div>`+
-          `<div class="box"><h4>Marcador de la sesión</h4><div>Inocentes <b>${sc.i}</b> · Impostores <b>${sc.m}</b></div>`+
-          (wl.length?`<div style="margin-top:4px;opacity:.85">Veces impostor: ${wl.map(s=>`${nm(s)} ${sc.a[s]}`).join(' · ')}</div>`:'')+`</div>`;
+          `<div class="box"><h4>Ranking</h4>${rankingRows(computeStandings(S.rank),null)}</div>`;
       }else h+=`<p style="margin-top:12px">${esc(outText(r,imps,true))}</p>`;
       const lab=r.out==='tie'?'Repitiendo la votación':r.out==='inn'||r.out==='imp'?`Ronda ${S.round+1}`:'Seguís jugando';
       const secs=Math.max(0,Math.ceil((AUTO_AT-age)/1000));
       h+=`<p class="wait">${lab} en ${secs}…</p>`;
-      if(host)h+=`<button class="act" data-a="now">Ir ya</button><button class="link" data-a="endgame">Terminar partida</button>`;
+      if(host)h+=`<button class="act" data-a="now">Ir ya</button>`;
       if(age>=AUTO_AT&&host&&!REV.advanced){REV.advanced=true;hAfter();return}
     }
   }
@@ -3868,10 +3965,6 @@ function renderReveal(){
 $('reveal').addEventListener('click',e=>{
   const b=e.target.closest('[data-a]');if(!b||!iAmHost()||!S||S.ph!=='reveal')return;
   if(b.dataset.a==='now'){REV.advanced=true;hAfter()}
-  else if(b.dataset.a==='endgame')sheet(`<h3>¿Terminar la partida?</h3><p>Todos volveréis a la sala de espera.</p>
-    <button class="act" id="egYes">Terminar partida</button><button class="link" id="egNo">Cancelar</button>`,()=>{
-    $('egNo').onclick=closeSheet;$('egYes').onclick=()=>{closeSheet();hEndToLobby()};
-  });
 });
 
 /* Modo sin conexión: cada móvil lleva su ronda y se vota en voz alta */
@@ -3903,26 +3996,92 @@ $('roundBtn').onclick=()=>{
     $('rOk').onclick=()=>{closeSheet();goRound(r)};$('rNo').onclick=closeSheet;
   });
 };
-function confirmExitOnline(){
-  sheet(`<h3>¿Salir de la partida?</h3><p>${ROOM?'Podrás volver a entrar con el código de la sala.':'Podrás volver a entrar con el mismo enlace.'}</p>
-    <button class="act" id="exYes">Salir</button><button class="link" id="exNo">Seguir jugando</button>`,()=>{
-    $('exNo').onclick=closeSheet;
-    $('exYes').onclick=()=>{closeSheet();if(ROOM){if(game)castLeave();dropRoom()}else{game=null;save()}phHtml='';plHtml='';show('s-home')};
-  });
+/* ---------- Menú del juego (☰): hoja propia, independiente de la de votación/confirmaciones,
+   para que abrirlo nunca le pise el sitio a lo que ya hubiera abierto. ---------- */
+let menuOpen=false,propFailSeen=null;
+function checkPropose(){if(S&&S.propFail&&S.propFail!==propFailSeen){propFailSeen=S.propFail;toast('La propuesta no sale adelante')}}
+function closeOpenCards(){document.querySelectorAll('.card.open').forEach(c=>setCardOpen(c,false,0))}
+function menuSheet(html,bind){$('menuSheetEl').innerHTML=html;$('menuOverlay').classList.add('on');bind&&bind();const f=$('menuSheetEl').querySelector('button,input');f&&f.focus()}
+function closeMenu(fromPop){
+  menuOpen=false;$('menuOverlay').classList.remove('on');
+  if(!fromPop){try{if(history.state&&history.state.impMenu)history.back()}catch(e){}}
+  voteHtml='';renderAll();
 }
-$('exitGame').onclick=confirmExitOnline;
-$('exitFab').onclick=()=>{
-  const cur=document.querySelector('.screen.on');
-  if(cur&&EXIT_SOLO.includes(cur.id))soloConfirmQuit();
-  else if(cur&&EXIT_ONLINE.includes(cur.id))confirmExitOnline();
-};
-$('showQr').onclick=()=>{
+$('menuOverlay').addEventListener('click',e=>{if(e.target.id==='menuOverlay')closeMenu()});
+window.addEventListener('popstate',()=>{if(menuOpen)closeMenu(true)});
+function menuMainHtml(){
+  const online=!!ROOM,host=online&&iAmHost();
+  let h='<div class="menuhead"><h3>Menú</h3><button class="xbtn" data-a="menuClose" aria-label="Cerrar">✕</button></div>';
+  if(game&&!SOLO)h+='<button class="menuitem" data-a="menuQr">Código y QR de la partida</button>';
+  h+='<button class="menuitem" data-a="menuHowto">Cómo se juega</button>';
+  h+='<button class="menuitem" data-a="menuRank">Ranking de la partida</button>';
+  if(host)h+='<div class="menusep"><button class="menuitem danger" data-a="menuEndAll">Terminar la partida para todos</button></div>';
+  h+='<button class="menuitem exit" data-a="menuExit">Salir de la partida</button>';
+  return h;
+}
+function menuMain(){menuSheet(menuMainHtml())}
+function menuOpenFresh(){
+  closeOpenCards();closeSheet();voteHtml='';menuOpen=true;
+  try{history.pushState({impMenu:true},'')}catch(e){}
+  menuMain();
+}
+function menuQrHtml(){
   const room=!!ROOM;
-  sheet(`<h3>Únete a la partida</h3>${room?`<div class="code" style="text-align:center;font-size:2.4rem">${ROOM.code}</div>`:''}<div class="qr">${qrSvg(room?roomLink(ROOM.code):linkFor(game.code,game.names,game.remote))}</div>
-    <button class="act sec" id="qShare">Compartir enlace</button><button class="link" id="qClose">Cerrar</button>`,()=>{
-    $('qShare').onclick=()=>room?shareRoom():shareLink(game.code,game.names,game.remote);$('qClose').onclick=closeSheet;
-  });
-};
+  return `<h3>Únete a la partida</h3>${room?`<div class="code" style="text-align:center;font-size:2.4rem">${ROOM.code}</div>`:''}<div class="qr">${qrSvg(room?roomLink(ROOM.code):linkFor(game.code,game.names,game.remote))}</div>
+    <button class="act sec" data-a="menuShare">Compartir enlace</button><button class="link" data-a="menuBack">‹ Menú</button>`;
+}
+function menuHowtoHtml(){
+  return `<h3>Cómo se juega</h3>${document.querySelector('#s-home .steps').outerHTML}<button class="link" data-a="menuBack">‹ Menú</button>`;
+}
+function menuRankHtml(){
+  const online=!!ROOM;
+  let standings,extra;
+  if(online){
+    standings=S&&S.rank?computeStandings(S.rank):[];
+    extra=pid=>{
+      const R=NET.R||{},on=!!(R[pid]&&!R[pid].w),isHost=S.host===pid;
+      const seat=S.pl?S.pl.findIndex(p=>p.p===pid)+1:0,dead=seat>0&&S.dead.includes(seat);
+      return `<span class="dot${on?'':' off'}" title="${on?'Conectado':'Sin conexión'}"></span>${isHost?CROWN:''}${dead?'<span class="tg">Eliminado</span>':''}`;
+    };
+  }else{
+    standings=SOLO&&SOLO.rank?computeStandings(SOLO.rank):[];
+    extra=seat=>SOLO.dead.includes(+seat)?'<span class="tg">Eliminado</span>':'';
+  }
+  return `<h3>Ranking de la partida</h3>${rankingRows(standings,extra)}<button class="link" data-a="menuBack">‹ Menú</button>`;
+}
+function menuEndAllHtml(){
+  return `<h3>¿Terminar la partida para todos?</h3><p>Se acaba la partida para todos y volvéis a la sala de espera.</p>
+    <button class="act" data-a="menuEndAllYes">Terminar para todos</button><button class="link" data-a="menuBack">Cancelar</button>`;
+}
+function menuExitHtml(){
+  if(SOLO)return `<h3>¿Terminar la partida?</h3><p>Se perderá la ronda actual y el marcador de esta sesión.</p>
+    <button class="act" data-a="menuExitYes">Terminar</button><button class="link" data-a="menuBack">Seguir jugando</button>`;
+  const notes=[];
+  if(iAmHost())notes.push('Si sales, otro jugador pasará a ser el anfitrión.');
+  notes.push(ROOM?'Podrás volver a entrar con el código de la sala.':'Podrás volver a entrar con el mismo enlace.');
+  return `<h3>¿Salir de la partida?</h3><p>${notes.join(' ')}</p>
+    <button class="act" data-a="menuExitYes">Salir</button><button class="link" data-a="menuBack">Seguir jugando</button>`;
+}
+$('menuSheetEl').addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+  if(a==='menuClose')closeMenu();
+  else if(a==='menuBack')menuMain();
+  else if(a==='menuQr')menuSheet(menuQrHtml());
+  else if(a==='menuHowto')menuSheet(menuHowtoHtml());
+  else if(a==='menuRank')menuSheet(menuRankHtml());
+  else if(a==='menuShare')ROOM?shareRoom():shareLink(game.code,game.names,game.remote);
+  else if(a==='menuEndAll'&&iAmHost())menuSheet(menuEndAllHtml());
+  else if(a==='menuEndAllYes'&&iAmHost()){closeMenu();hEndToLobby()}
+  else if(a==='menuExit')menuSheet(menuExitHtml());
+  else if(a==='menuExitYes'){
+    closeMenu();
+    if(SOLO){clearReveal();SOLO=null;game=null;soloSave()}
+    else if(ROOM){if(game)castLeave();dropRoom()}
+    else{game=null;save()}
+    phHtml='';show('s-home');
+  }
+});
+['gameMenu','lobbyMenu','waitMenu','scMenu','sdMenu','svMenu'].forEach(id=>{$(id).onclick=menuOpenFresh});
 
 /* Que la pantalla no se apague durante la partida */
 let WL=null;
@@ -4250,7 +4409,8 @@ function clearReveal(){const el=$('reveal');el.className='';el.innerHTML='';docu
 
 function soloStart(nm,cfg,voteMode){
   if(ROOM)dropRoom();
-  SOLO={names:nm,cfg,round:1,dead:[],voteMode,score:{i:0,m:0,a:{}},phase:'deal',deal:{idx:0},vote:null,res:null};
+  const rank={};nm.forEach((n,i)=>ensureRankEntry(rank,String(i+1),n));
+  SOLO={names:nm,cfg,round:1,dead:[],voteMode,rank,phase:'deal',deal:{idx:0},vote:null,res:null};
   game=soloGame();vibrated=0;cardKey='';
   soloSave();lockScreen();soloDealStep();
 }
@@ -4319,7 +4479,6 @@ function soloConfirmQuit(){
   });
 }
 $('shQuit').onclick=soloConfirmQuit;
-$('sdQuit').onclick=soloConfirmQuit;
 
 /* ---------- Votación ---------- */
 function soloStartVote(cand,tie){
@@ -4332,7 +4491,7 @@ function soloStartVote(cand,tie){
 function soloRenderVoiceVote(){
   $('svTitle').textContent=SOLO.vote.tie?'Repetid la votación':'¿A quién habéis votado?';
   $('svSub').textContent='Habladlo en voz alta y toca a quien ha salido más votado.';
-  $('svClose').hidden=false;$('svClose').textContent='Cerrar votación';
+  $('svClose').hidden=false;$('svClose').textContent='Cerrar votación';$('svImpWinBar').hidden=false;
   const g=$('svList');g.innerHTML='';
   SOLO.vote.cand.forEach(s=>{
     const b=document.createElement('button');b.className='vbtn';
@@ -4351,6 +4510,21 @@ $('svClose').onclick=()=>{
   const votes={};if(SOLO.voiceChoice)votes[0]=SOLO.voiceChoice;
   soloCloseVote(votes,[0]);
 };
+$('svImpWin').onclick=()=>{
+  sheet(`<h3>¿Dar la ronda por ganada a los impostores?</h3><p>Se acaba ya: ganan los impostores, se reparten sus puntos y empieza la siguiente ronda.</p>
+    <button class="act" id="iwYes">Dar la ronda por ganada</button><button class="link" id="iwNo">Cancelar</button>`,()=>{
+    $('iwNo').onclick=closeSheet;
+    $('iwYes').onclick=()=>{closeSheet();soloImpostorWin()};
+  });
+};
+function soloImpostorWin(){
+  const imps=soloImps(),rank=cloneRank(SOLO.rank);
+  awardRound(rank,'imp',imps.map(String),[],k=>SOLO.names[+k-1]);
+  SOLO.rank=rank;
+  SOLO.res={id:'r'+Date.now()+Math.random(),counts:{},top:[],elim:null,out:'imp',shortcut:true};
+  SOLO.phase='reveal';SOLO.vote=null;soloSave();
+  soloRevealStart();
+}
 function soloVoteSecretNext(){
   if(SOLO.vote.idx>=SOLO.vote.order.length){soloCloseVote(SOLO.vote.ballots,SOLO.vote.order);return}
   soloSave();soloShowHandoff(SOLO.vote.order[SOLO.vote.idx],'vote');
@@ -4358,7 +4532,7 @@ function soloVoteSecretNext(){
 function soloVoteSecretPick(slot){
   $('svTitle').textContent=`¿Quién es el impostor, ${SOLO.names[slot-1]}?`;
   $('svSub').textContent='Elige en secreto. Nadie más lo verá hasta el resultado final.';
-  $('svClose').hidden=true;
+  $('svClose').hidden=true;$('svImpWinBar').hidden=true;
   const g=$('svList');g.innerHTML='';
   SOLO.vote.cand.filter(s=>s!==slot).forEach(s=>{
     const b=document.createElement('button');b.className='vbtn';
@@ -4375,10 +4549,9 @@ function soloCloseVote(votesMap,alive){
   if(res.elim!=null){
     SOLO.dead=[...SOLO.dead,res.elim];
     if(res.out==='inn'||res.out==='imp'){
-      const sc={i:SOLO.score.i,m:SOLO.score.m,a:{...SOLO.score.a}};
-      if(res.out==='inn')sc.i++;else sc.m++;
-      soloImps().forEach(p=>sc.a[p]=(sc.a[p]||0)+1);
-      SOLO.score=sc;
+      const imps=soloImps(),rank=cloneRank(SOLO.rank);
+      awardRound(rank,res.out,imps.map(String),soloAlive().filter(s=>!imps.includes(s)).map(String),k=>SOLO.names[+k-1]);
+      SOLO.rank=rank;
     }
   }
   SOLO.res=res;SOLO.phase='reveal';SOLO.vote=null;soloSave();
@@ -4395,28 +4568,30 @@ function soloRenderReveal(){
   const el=$('reveal'),r=SOLO.res,imps=soloImps(),nm=i=>esc(SOLO.names[i-1]);
   const age=Date.now()-SOLOREV.t0,stage=age<2200?0:age<4400?1:age<6000?2:3;
   clearTimeout(SOLOREV.tm);const nx=[2200,4400,6000][stage];if(nx)SOLOREV.tm=setTimeout(soloRenderReveal,nx-age+30);
-  const isImp=r.elim!=null&&imps.includes(r.elim);
+  const isImp=r.shortcut||(r.elim!=null&&imps.includes(r.elim));
   let cls='neutral',h='';
   if(stage===0){
-    h=`<div class="k">Votación cerrada</div><div class="big">Contando los votos…</div><div class="dots" style="margin-top:14px"><span></span><span></span><span></span></div>`;
+    h=`<div class="k">${r.shortcut?'Ronda decidida':'Votación cerrada'}</div><div class="big">${r.shortcut?'Se acaba la ronda…':'Contando los votos…'}</div><div class="dots" style="margin-top:14px"><span></span><span></span><span></span></div>`;
   }else if(stage===1){
-    if(r.elim!=null)h=`<div class="k">El más votado es</div><div class="who beat">${nm(r.elim)}</div>`;
+    if(r.shortcut)h=`<div class="k">Por decisión del grupo</div><div class="big">Se la dais por ganada a los impostores</div>`;
+    else if(r.elim!=null)h=`<div class="k">El más votado es</div><div class="who beat">${nm(r.elim)}</div>`;
     else if(r.top.length)h=`<div class="k">Hay un empate entre</div><div class="who beat">${listNames(r.top.map(nm))}</div>`;
     else h=`<div class="big">Nadie ha votado</div>`;
   }else{
-    if(r.elim!=null&&isImp){cls='red';h=`<img class="logo2" src="${LOGO}" alt=""><div class="k">${nm(r.elim)}</div><div class="big pop">¡ERA EL IMPOSTOR!</div>`}
+    if(r.shortcut){cls='red';h=`<img class="logo2" src="${LOGO}" alt=""><div class="big pop">¡GANAN LOS IMPOSTORES!</div>`}
+    else if(r.elim!=null&&isImp){cls='red';h=`<img class="logo2" src="${LOGO}" alt=""><div class="k">${nm(r.elim)}</div><div class="big pop">¡ERA EL IMPOSTOR!</div>`}
     else if(r.elim!=null){cls='white';h=`<img class="mas" src="${MASCOT}" alt=""><div class="k" style="color:#6b6b75">${nm(r.elim)}</div><div class="big pop">NO ERA EL IMPOSTOR</div>`}
     else if(r.top.length)h=`<div class="big pop">¡EMPATE!</div><p>${listNames(r.top.map(nm))}</p>`;
     else h=`<div class="big pop">NADIE HA VOTADO</div>`;
     if(stage>=2&&!SOLOREV.vib){SOLOREV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60])}
     if(stage===3){
-      const rows=Object.keys(r.counts).map(Number).sort((a,b)=>r.counts[b]-r.counts[a]||a-b),mx=Math.max(1,...rows.map(s=>r.counts[s]));
-      h+=`<div class="box"><h4>Votos</h4><div class="counts">`+rows.map(s=>`<div class="cr"><span class="nm">${nm(s)}</span><span class="b"><i style="width:${Math.round(r.counts[s]*100/mx)}%"></i></span><span class="v">${r.counts[s]}</span></div>`).join('')+`</div></div>`;
+      if(!r.shortcut){
+        const rows=Object.keys(r.counts).map(Number).sort((a,b)=>r.counts[b]-r.counts[a]||a-b),mx=Math.max(1,...rows.map(s=>r.counts[s]));
+        h+=`<div class="box"><h4>Votos</h4><div class="counts">`+rows.map(s=>`<div class="cr"><span class="nm">${nm(s)}</span><span class="b"><i style="width:${Math.round(r.counts[s]*100/mx)}%"></i></span><span class="v">${r.counts[s]}</span></div>`).join('')+`</div></div>`;
+      }
       if(r.out==='inn'||r.out==='imp'){
-        const sc=SOLO.score,wl=Object.keys(sc.a).map(Number).sort((a,b)=>sc.a[b]-sc.a[a]||a-b);
         h+=`<div class="box"><h4>${r.out==='inn'?'Ganan los inocentes':'Ganan los impostores'}</h4><div style="font-weight:900;font-size:1.5rem;line-height:1.2" id="rvW"></div><div style="margin-top:6px">${imps.length>1?'Los impostores eran':'El impostor era'} <b>${listNames(imps.map(nm))}</b></div></div>`+
-          `<div class="box"><h4>Marcador de la sesión</h4><div>Inocentes <b>${sc.i}</b> · Impostores <b>${sc.m}</b></div>`+
-          (wl.length?`<div style="margin-top:4px;opacity:.85">Veces impostor: ${wl.map(s=>`${nm(s)} ${sc.a[s]}`).join(' · ')}</div>`:'')+`</div>`;
+          `<div class="box"><h4>Ranking</h4>${rankingRows(computeStandings(SOLO.rank),null)}</div>`;
       }else h+=`<p style="margin-top:12px">${esc(outText(r,imps))}</p>`;
       const lab=r.out==='tie'?'Repetir votación':r.out==='inn'||r.out==='imp'?'Siguiente ronda':'Volver al debate';
       h+=`<button class="act" data-a="solo-after">${lab}</button>`;
@@ -4443,6 +4618,7 @@ function soloAfter(){
 function soloRestore(){
   const s=soloLoadSaved();if(!s)return false;
   SOLO=s;SOLO.voiceChoice=null;game=soloGame();vibrated=0;cardKey='';lockScreen();
+  if(!SOLO.rank){SOLO.rank={};SOLO.names.forEach((n,i)=>ensureRankEntry(SOLO.rank,String(i+1),n))}
   if(SOLO.phase==='deal')soloDealStep();
   else if(SOLO.phase==='vote'&&SOLO.vote){
     if(SOLO.voteMode==='secreta')soloVoteSecretNext();else soloRenderVoiceVote();
