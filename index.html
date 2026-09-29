@@ -3363,8 +3363,14 @@ function hStart(){
   const n=pl.length;
   S.cfg={seed:newSeed(),n,k:Math.min(S.set.k,maxK(n)),hint:S.set.hint,mask:S.set.mask};
   S.pl=pl;S.round=1;S.ph='word';S.dead=[];S.left=[];S.vt=null;S.res=null;S.prop=null;S.pend=[];S.acc=[];HV=null;MYV=null;
+  S.rank={}; /* cada partida nueva empieza el ranking a cero; dentro de la partida se mantiene entre rondas */
   pl.forEach(p=>ensureRankEntry(S.rank,p.p,p.n));
   pub();
+}
+function hResetRank(){
+  if(!iAmHost())return;
+  const rank={};if(S.pl)S.pl.forEach(p=>ensureRankEntry(rank,p.p,p.n));
+  S.rank=rank;pub();
 }
 function hAddPending(p,n){
   if(!p||!n||!S.pl||S.pl.some(x=>x.p===p)||S.pend.some(x=>x.p===p)||S.acc.some(x=>x.p===p)||S.ban.includes(p))return;
@@ -4015,6 +4021,7 @@ function menuMainHtml(){
   if(game&&!SOLO)h+='<button class="menuitem" data-a="menuQr">Código y QR de la partida</button>';
   h+='<button class="menuitem" data-a="menuHowto">Cómo se juega</button>';
   h+='<button class="menuitem" data-a="menuRank">Ranking de la partida</button>';
+  if(host)h+='<button class="menuitem" data-a="menuResetRank">Reiniciar ranking</button>';
   if(host)h+='<div class="menusep"><button class="menuitem danger" data-a="menuEndAll">Terminar la partida para todos</button></div>';
   h+='<button class="menuitem exit" data-a="menuExit">Salir de la partida</button>';
   return h;
@@ -4053,6 +4060,10 @@ function menuEndAllHtml(){
   return `<h3>¿Terminar la partida para todos?</h3><p>Se acaba la partida para todos y volvéis a la sala de espera.</p>
     <button class="act" data-a="menuEndAllYes">Terminar para todos</button><button class="link" data-a="menuBack">Cancelar</button>`;
 }
+function menuResetRankHtml(){
+  return `<h3>¿Reiniciar el ranking?</h3><p>Todos los jugadores vuelven a cero puntos, victorias y veces impostor.</p>
+    <button class="act" data-a="menuResetRankYes">Reiniciar</button><button class="link" data-a="menuBack">Cancelar</button>`;
+}
 function menuExitHtml(){
   if(SOLO)return `<h3>¿Terminar la partida?</h3><p>Se perderá la ronda actual y el marcador de esta sesión.</p>
     <button class="act" data-a="menuExitYes">Terminar</button><button class="link" data-a="menuBack">Seguir jugando</button>`;
@@ -4070,6 +4081,8 @@ $('menuSheetEl').addEventListener('click',e=>{
   else if(a==='menuHowto')menuSheet(menuHowtoHtml());
   else if(a==='menuRank')menuSheet(menuRankHtml());
   else if(a==='menuShare')ROOM?shareRoom():shareLink(game.code,game.names,game.remote);
+  else if(a==='menuResetRank'&&iAmHost())menuSheet(menuResetRankHtml());
+  else if(a==='menuResetRankYes'&&iAmHost()){closeMenu();hResetRank()}
   else if(a==='menuEndAll'&&iAmHost())menuSheet(menuEndAllHtml());
   else if(a==='menuEndAllYes'&&iAmHost()){closeMenu();hEndToLobby()}
   else if(a==='menuExit')menuSheet(menuExitHtml());
