@@ -15,10 +15,16 @@ Jugar: https://javivalmich.github.io/el-impostor/ (la URL conserva el nombre ant
 - Hay un marcador de la sesión (victorias y veces que ha sido impostor cada uno).
 - Se puede **salir de la partida en cualquier momento** con el botón (✕) fijo en la esquina. Si sales, desapareces de la sala y del recuento de la votación en curso; si erais menos de 3 tras salir tú, la ronda se corta y el resto vuelve a la sala de espera.
 - **Walkie-talkie**: botón fijo abajo, en la sala de espera y en la partida. Mantén para hablar, o toca una vez para grabar y otra para enviar. También mensajes de texto. Quien habla sale con su nombre y su avatar. Si se marcó «Jugamos a distancia», se abre solo al entrar en la sala. Al empezar la partida sigue abierto y conserva los mensajes. Los que esperan a entrar en la siguiente ronda escuchan y leen, pero no hablan hasta que el anfitrión los acepta; los eliminados escuchan hasta la siguiente ronda; a quien se saca o se rechaza se le corta. Dentro de WhatsApp/Instagram el micrófono no funciona: hay que abrir el enlace en Safari o Chrome (el texto sí va).
+  Dentro del panel se ve cuántos y quiénes están en la llamada, y hay un botón «Salir de la llamada» que corta el micrófono y deja de recibir voz y mensajes sin salir de la partida; «Entrar en la llamada» lo reconecta. Cerrar el panel (✕) no es salir de la llamada: son cosas distintas. Al salir de la partida o terminarla, la llamada se corta sola.
+- **Sonido y vibración**: pistas cortas para el ritmo de la ronda (empieza, se abre y se cierra la votación, alguien vota, revelación y victoria/derrota) y avisos por vibración (se abre la votación, te expulsan, eres el impostor al destapar la tarjeta, empieza ronda nueva, quedan 3 s para pasar solos). Nunca hay sonido mientras miras tu tarjeta, para no delatar al impostor. Los efectos bajan de volumen si alguien está hablando por el walkie. Dos interruptores en el menú (☰ → Sonido / Vibración) los apagan, guardados en ese móvil.
 
 ## Cuentas (opcional)
 
-Jugar nunca requiere cuenta. Con «Entrar con mi cuenta de Punto Ciego» se usa tu nombre y tu personaje (mismo proyecto de Supabase y misma sesión que [Punto Ciego](https://javivalmich.github.io/Punto-Ciego/)). El personaje viaja por presencia y lo ven los demás. Sin sesión se juega con la mascota.
+Jugar nunca requiere cuenta. Con «Entrar con mi cuenta de Punto Ciego» (con correo, con Google o, cuando esté activado, con Apple) se usa tu nombre y tu personaje (mismo proyecto de Supabase y misma sesión que [Punto Ciego](https://javivalmich.github.io/Punto-Ciego/)). El personaje viaja por presencia y lo ven los demás. Sin sesión se juega con la mascota.
+
+Con sesión iniciada, «Mi cuenta» (en la portada o en el menú ☰ de la partida) abre:
+- **Editar personaje y nombre**: mismo editor de capucha, sudadera, estampado, guantes y ojos, y mismo nombre de jugador, guardados en la tabla `profiles` que comparte con Punto Ciego. Si el nombre ya lo usa otra persona, avisa. Si estás en una sala, el cambio se ve al momento en la lista de jugadores, sin salir.
+- **Eliminar cuenta**: reutiliza la función `eliminar_mi_cuenta()` de Supabase (la misma de Punto Ciego, aplicada en el proyecto real). Explica que no se puede deshacer y que es la misma cuenta que Punto Ciego: se pierde también allí, con el personaje. Pide la contraseña para confirmar, o escribir BORRAR si entraste con Google o Apple. Si estás en una partida, sales de la sala antes de borrar.
 
 ## Cómo funciona por dentro
 
@@ -51,4 +57,5 @@ Para probarlo en local: `npx http-server . -p 8000` (o `python -m http.server 80
 ## Avisos
 
 - Los proyectos gratuitos de Supabase se **pausan** si no se usan durante días. Entonces las votaciones y el walkie pasan al modo sin conexión hasta que lo reactives desde el panel de Supabase.
-- Para el botón «Entrar con Google», la URL de este juego tiene que estar en *Authentication > URL Configuration > Redirect URLs* del proyecto de Supabase.
+- Para los botones «Entrar con Google»/«Iniciar sesión con Apple», la URL de este juego tiene que estar en *Authentication > URL Configuration > Redirect URLs* del proyecto de Supabase.
+- El botón de Apple solo aparece si el proveedor Apple está activado en Supabase (igual que Google). Hasta entonces el código está listo pero oculto; ver los pasos para activarlo más abajo.

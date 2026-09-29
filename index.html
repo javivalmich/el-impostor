@@ -41,6 +41,9 @@ body.red button:focus-visible{outline-color:#fff}
 .act{display:block;width:100%;margin-top:12px;border:0;border-radius:16px;padding:17px 14px;background:var(--red);color:#fff;
   font-weight:800;font-size:1.12rem;letter-spacing:.02em;box-shadow:0 8px 22px rgba(224,18,15,.28)}
 .act.sec{background:transparent;color:var(--text);border:2px solid var(--line);box-shadow:none}
+.act.google,.act.apple{display:flex;align-items:center;justify-content:center;gap:10px}
+.act.google svg,.act.apple svg{flex:none}
+.act.danger{background:transparent;color:var(--red);border:2px solid var(--red);box-shadow:none}
 .act:disabled{opacity:.4;cursor:default}
 body.red .act{background:#0e0e11;box-shadow:0 8px 22px rgba(0,0,0,.3)}
 body.red .act.sec{background:transparent;border-color:rgba(255,255,255,.55)}
@@ -156,7 +159,7 @@ input.codein::placeholder{color:var(--line)}
 /* hoja y aviso */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:10}
 .overlay.on{display:flex}
-.sheet{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:26px;padding:24px 20px 16px;width:100%;max-width:460px}
+.sheet{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:26px;padding:24px 20px 16px;width:100%;max-width:460px;max-height:calc(100vh - 32px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 body.red .sheet{--text:#f5f5f7;--muted:#9d9daa;--line:rgba(255,255,255,.1);--surface2:#24242b;background:#17171c}
 body.red .sheet .act{background:var(--red)}
 .sheet h3{font-weight:900;font-size:1.6rem;line-height:1.1;margin:0 0 6px}
@@ -222,6 +225,23 @@ body.red .sheet .act{background:var(--red)}
 .sheet .fine{font-size:.85rem;margin-top:10px}
 .sheet .fine a{color:var(--red);font-weight:700}
 .act.google{background:#fff;color:#0e0e11;border:2px solid var(--line);box-shadow:none}
+.act.apple{background:#000;color:#fff;border:2px solid #000;box-shadow:none}
+.acct{cursor:pointer}
+.acct-head{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.acct-head .av{width:46px;height:46px}
+.acct-head b{font-size:1.1rem}
+.ed-fila{margin:16px 0}
+.ed-fila .lbl{font-weight:700;font-size:.95rem;margin-bottom:8px}
+.ed-fila .lbl b{color:var(--text)}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.sw{width:38px;height:38px;min-height:0;padding:0;border-radius:50%;background:var(--c);border:2px solid var(--line);font-size:16px;color:var(--text);flex:none}
+.sw.on{border-color:var(--text);box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--red)}
+.ed-preview{display:flex;justify-content:center;margin:6px 0 4px}
+.ed-preview .av{width:min(34vw,120px);height:min(34vw,120px);border-width:3px}
+.wk-call{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:8px 12px;border:1.5px solid var(--line);border-radius:14px;font-size:.86rem;color:var(--muted)}
+.wk-call b{color:var(--text)}
+.wk-call button{border:0;background:none;color:var(--red);font-weight:800;padding:4px;flex:none}
+.wk-call button.on{color:#2fbf71}
 
 /* revelación */
 #reveal{position:fixed;inset:0;z-index:30;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0b0b0d;color:#fff}
@@ -572,6 +592,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   <div class="fondo" id="wkFondo"></div>
   <div class="wk-caja" role="dialog" aria-label="Walkie-talkie">
     <header class="wk-cab"><div><h3>Walkie-talkie</h3><p id="wkCanal"></p></div><button id="wkCerrar" aria-label="Cerrar walkie">✕</button></header>
+    <div class="wk-call"><span id="wkQuienes"></span><button id="wkCallBtn"></button></div>
     <div id="wkAviso"></div>
     <div id="wkLista"></div>
     <div class="wk-escribe"><input id="wkTxt" maxlength="200" placeholder="Escribe un mensaje" autocomplete="off" aria-label="Mensaje para el grupo"><button id="wkEnviar">Enviar</button></div>
@@ -3010,7 +3031,67 @@ const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 function uid(n){const a=crypto.getRandomValues(new Uint8Array(n));let s='';for(const b of a)s+='abcdefghijkmnpqrstuvwxyz23456789'[b&31];return s}
 function b64(u){let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)}
 function deb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
-const vibra=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+/* Sonido y vibración: interruptores guardados en este móvil (por defecto encendidos) */
+const SETTINGS={sound:lsGet('impostor-sound',1)!==0,vibra:lsGet('impostor-vibra',1)!==0};
+const vibra=p=>{if(!SETTINGS.vibra)return;try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+
+/* ---------- Sonidos cortos del juego ----------
+   Se generan con la API de audio (nunca se descargan de fuera) y se guardan como WAV en memoria.
+   Se reproducen con un <audio>, no directamente con AudioContext: así respetan el interruptor de
+   silencio del iPhone (el AudioContext lo ignora, pero <audio> no). */
+const SND={
+  bufs:{},unlocked:false,talking:false,
+  unlock(){
+    if(this.unlocked)return;this.unlocked=true;
+    try{const a=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');a.play().catch(()=>{})}catch(e){}
+  },
+  tone(c,{freq,to,start=0,dur=.16,type='sine',gain=.32}){
+    const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(freq,start);
+    if(to)o.frequency.exponentialRampToValueAtTime(Math.max(1,to),start+dur*.8);
+    g.gain.setValueAtTime(0,start);g.gain.linearRampToValueAtTime(gain,start+.012);
+    g.gain.exponentialRampToValueAtTime(.001,start+dur);
+    o.connect(g);g.connect(c.destination);o.start(start);o.stop(start+dur+.02);
+  },
+  async render(build,dur){
+    const C=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!C)return '';
+    const c=new C(1,Math.max(1,Math.ceil(44100*dur)),44100);
+    build(c);
+    let buf;try{buf=await c.startRendering()}catch(e){return ''}
+    return this.encode(buf);
+  },
+  encode(buf){
+    const d=buf.getChannelData(0),n=d.length,bytes=new Uint8Array(44+n*2),dv=new DataView(bytes.buffer);
+    const wStr=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i))};
+    wStr(0,'RIFF');dv.setUint32(4,36+n*2,true);wStr(8,'WAVE');wStr(12,'fmt ');dv.setUint32(16,16,true);
+    dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,44100,true);dv.setUint32(28,44100*2,true);
+    dv.setUint16(32,2,true);dv.setUint16(34,16,true);wStr(36,'data');dv.setUint32(40,n*2,true);
+    for(let i=0;i<n;i++){const s=Math.max(-1,Math.min(1,d[i]));dv.setInt16(44+i*2,s<0?s*32768:s*32767,true)}
+    let bin='';for(let i=0;i<bytes.length;i+=32768)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+32768));
+    return 'data:audio/wav;base64,'+btoa(bin);
+  },
+  get(name){
+    if(!this.bufs[name])this.bufs[name]=SOUNDS[name]?SOUNDS[name]():Promise.resolve('');
+    return this.bufs[name];
+  },
+  async play(name){
+    if(!SETTINGS.sound)return;
+    try{
+      const uri=await this.get(name);if(!uri)return;
+      const a=new Audio(uri);a.volume=this.talking?0.22:0.85;a.play().catch(()=>{});
+    }catch(e){}
+  }
+};
+const SOUNDS={
+  roundStart:()=>SND.render(c=>{SND.tone(c,{freq:523,dur:.11,gain:.28});SND.tone(c,{freq:659,start:.1,dur:.16,gain:.3})},.3),
+  voteOpen:()=>SND.render(c=>{SND.tone(c,{freq:440,to:660,dur:.16,type:'triangle',gain:.3})},.22),
+  vote:()=>SND.render(c=>{SND.tone(c,{freq:900,dur:.05,gain:.18})},.1),
+  voteClose:()=>SND.render(c=>{SND.tone(c,{freq:660,dur:.1,gain:.28});SND.tone(c,{freq:440,start:.09,dur:.16,gain:.26})},.3),
+  revealInn:()=>SND.render(c=>{SND.tone(c,{freq:523,dur:.14,gain:.26});SND.tone(c,{freq:659,start:.05,dur:.18,gain:.26});SND.tone(c,{freq:784,start:.12,dur:.28,gain:.3})},.45),
+  revealImp:()=>SND.render(c=>{SND.tone(c,{freq:220,dur:.3,type:'sawtooth',gain:.22});SND.tone(c,{freq:233,dur:.34,type:'sawtooth',gain:.16})},.4),
+  victory:()=>SND.render(c=>{[523,659,784,1046].forEach((f,i)=>SND.tone(c,{freq:f,start:i*.11,dur:.22,gain:.28}))},.6),
+  defeat:()=>SND.render(c=>{[392,330,262].forEach((f,i)=>SND.tone(c,{freq:f,start:i*.14,dur:.3,type:'sine',gain:.24}))},.65),
+};
+document.addEventListener('pointerdown',()=>SND.unlock(),{once:true});
 const EN_LOCAL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const QS=new URLSearchParams(location.search);
 const HOST_GRACE=(EN_LOCAL&&(+QS.get('grace'))*1000)||30000; /* segundos sin anfitrión antes de relevarlo */
@@ -3182,7 +3263,7 @@ function hardReconnect(){if(!NET.code)return;const c=NET.code;netLeave();netJoin
 const myName=()=>ROOM?ROOM.name:'';
 function netTrack(){
   if(!NET.ch||NET.st!=='up'||!ROOM)return;
-  const p={p:PID,n:ROOM.name,t:NET.t,o:ROOM.joined||0,h:iAmHost(),w:isWaiting()?1:0};
+  const p={p:PID,n:ROOM.name,t:NET.t,o:ROOM.joined||0,h:iAmHost(),w:isWaiting()?1:0,call:WK.enLlamada?1:0};
   const look=myLook();if(look)p.a=arrOfLook(look);
   const k=JSON.stringify(p);if(k===NET.lastTrack)return;NET.lastTrack=k;
   try{Promise.resolve(NET.ch.track(p)).catch(()=>{NET.lastTrack=''})}catch(e){NET.lastTrack=''}
@@ -3198,12 +3279,15 @@ function roster(){
   let st;try{st=NET.ch.presenceState()}catch(e){return R}
   for(const key in st)for(const e of st[key]){
     if(!e||typeof e.p!=='string')continue;
-    const cur=R[e.p];if(!cur||e.t>cur.t)R[e.p]={p:e.p,key,t:e.t,o:+e.o||0,h:!!e.h,w:!!e.w,n:String(e.n||'').slice(0,14),a:e.a||null};
+    const cur=R[e.p];if(!cur||e.t>cur.t)R[e.p]={p:e.p,key,t:e.t,o:+e.o||0,h:!!e.h,w:!!e.w,call:e.call===0?0:1,n:String(e.n||'').slice(0,14),a:e.a||null};
   }
   return R;
 }
 const cmpJoin=(a,b)=>a.o-b.o||(a.p<b.p?-1:a.p>b.p?1:0);
 function connectedList(R){return Object.values(R).filter(e=>!e.w&&e.n&&!(S&&S.ban&&S.ban.includes(e.p))).sort(cmpJoin)}
+/* Quién está en la llamada del walkie: a diferencia de connectedList, incluye a los que esperan o están
+   eliminados (escuchan igual), y solo deja fuera a quien ha pulsado "Salir de la llamada" o está bloqueado. */
+function wkConnectedList(R){return Object.values(R).filter(e=>e.n&&e.call!==0&&!(S&&S.ban&&S.ban.includes(e.p))).sort(cmpJoin)}
 const iAmHost=()=>!!(ROOM&&S&&S.host===PID);
 const isWaiting=()=>!!(ROOM&&S&&S.ph!=='lobby'&&Array.isArray(S.pl)&&!S.pl.some(p=>p.p===PID));
 function hostPresent(R){if(S&&R[S.host])return true;return Object.values(R).some(e=>e.h)}
@@ -3300,6 +3384,7 @@ function onAct(m){
   else if(m.k==='leave'&&S.pl)hLeave(String(m.p||'').slice(0,20));
   else if(m.k==='startVote'&&S.pl&&S.ph==='word')hStartVote(aliveList(),false);
   else if(m.k==='proposeVote'&&S.pl&&S.prop&&m.pid===S.prop.id)hProposeVote(m.from|0,!!m.v);
+  else if(m.k==='rename'&&S.pl)hRename(String(m.p||'').slice(0,20),cleanName(m.n));
 }
 function resumeHost(){
   /* el anfitrión vuelve (recarga o reconexión): sube de época para valer más que cualquier estado viejo */
@@ -3377,6 +3462,14 @@ function hAddPending(p,n){
   S.pend=[...S.pend,{p,n:uniqueName(n,takenNames())}];pub();
 }
 function hAccept(p){const x=S.pend.find(q=>q.p===p);if(!x)return;S.pend=S.pend.filter(q=>q.p!==p);S.acc=[...S.acc,x];pub()}
+/* Cambia el nombre de un jugador ya sentado (edición de personaje en marcha). Solo se aplica a sí mismo. */
+function hRename(pid,n){
+  if(!S||!S.pl||!n)return;
+  const i=S.pl.findIndex(p=>p.p===pid);if(i<0)return;
+  const taken=[...S.pl.filter(p=>p.p!==pid),...S.pend,...S.acc].map(p=>p.n.toLowerCase());
+  const nn=uniqueName(n,taken);if(nn===S.pl[i].n)return;
+  S.pl=S.pl.map((p,idx)=>idx===i?{...p,n:nn}:p);pub();
+}
 function hReject(p){S.pend=S.pend.filter(q=>q.p!==p);S.ban=[...S.ban,p];pub()}
 function hBackToWord(){S.ph='word';S.vt=null;S.res=null;pub()}
 function hCancelVote(){if(!iAmHost()||S.ph!=='vote')return;clearTimeout(closeTm);S.ph='word';S.vt=null;S.res=null;S.prop=null;HV=null;pub()}
@@ -3536,7 +3629,7 @@ function onEnterRoom(){
   if(ROOM.remote&&!lsGet('impostor-wk-'+ROOM.code)){lsSet('impostor-wk-'+ROOM.code,1);setTimeout(()=>{if(ROOM&&!WK.abierto)WK.abrir()},500)}
   if(WK.inapp())toast('Estás dentro de otra app: el micrófono no irá. Abre el enlace en Safari o Chrome.');
 }
-function onEnterGame(){cardKey='';vibrated=0;lockScreen()}
+function onEnterGame(){cardKey='';vibrated=0;lastRoomPhase='';lastVoted={id:'',n:0};lockScreen()}
 let cardKey='';
 /* Pinta una tarjeta (palabra o impostor) en el elemento dado. La usan tanto la partida en línea/legacy
    como el modo de un solo móvil, para no duplicar la asignación de palabra ni el diseño de la tarjeta. */
@@ -3586,8 +3679,25 @@ function renderNet(){
   el.innerHTML='<span class="dot'+(on?'':' off')+'"></span><span></span>';el.lastChild.textContent=t;
 }
 const hostNm=()=>{const p=S&&S.pl&&S.pl.find(x=>x.p===S.host);if(p)return p.n;const e=(NET.R||{})[S&&S.host];return e?e.n:'el anfitrión'};
+/* Sonidos de fase: se detecta el CAMBIO de S.ph (no en cada repintado) para sonar/vibrar una sola vez.
+   lastRoomPhase se reinicia en cada partida nueva (onEnterGame) para que la ronda 1 también suene. */
+let lastRoomPhase='',lastVoted={id:'',n:0};
+function watchPhaseSounds(){
+  if(mode()!=='room'||!S)return;
+  if(S.ph!==lastRoomPhase){
+    const prev=lastRoomPhase;lastRoomPhase=S.ph;
+    if(S.ph==='word'){SND.play('roundStart');if(prev)vibra(50)}
+    else if(S.ph==='vote'){SND.play('voteOpen');vibra([50,40,50])}
+    else if(S.ph==='reveal')SND.play('voteClose');
+  }
+  if(S.ph==='vote'&&S.vt){
+    if(S.vt.id!==lastVoted.id)lastVoted={id:S.vt.id,n:S.vt.voted.length};
+    else if(S.vt.voted.length>lastVoted.n){lastVoted.n=S.vt.voted.length;SND.play('vote')}
+  }
+}
 let phHtml='';
 function renderPhase(){
+  watchPhaseSounds();
   const box=$('phaseBox'),room=mode()==='room';
   let h='';
   if(room&&S.ph==='word'){
@@ -3901,7 +4011,7 @@ function reveal(on){
 bindHoldToReveal($('card'),reveal);
 
 /* ---------- Revelación ---------- */
-let REV={id:null,t0:0,tm:null,html:'',vib:false,advanced:false};
+let REV={id:null,t0:0,tm:null,html:'',vib:false,vibOut:false,vib3:false,vibEnd:false,advanced:false};
 const seenRes=id=>{try{return (sessionStorage.getItem('impostor-seen')||'').split(',').includes(id)}catch(e){return false}};
 const markRes=id=>{try{sessionStorage.setItem('impostor-seen',((sessionStorage.getItem('impostor-seen')||'')+','+id).slice(-60))}catch(e){}};
 function outText(r,imps,room){
@@ -3923,7 +4033,7 @@ function renderReveal(){
     return;
   }
   const r=S.res,imps=impsNow(),nm=i=>esc(game.names[i-1]);
-  if(REV.id!==r.id){REV.id=r.id;REV.t0=seenRes(r.id)?Date.now()-99999:Date.now();REV.vib=false;REV.advanced=false;markRes(r.id)}
+  if(REV.id!==r.id){REV.id=r.id;REV.t0=seenRes(r.id)?Date.now()-99999:Date.now();REV.vib=false;REV.vibOut=false;REV.vib3=false;REV.vibEnd=false;REV.advanced=false;markRes(r.id)}
   const age=Date.now()-REV.t0,stage=age<2200?0:age<4400?1:age<6000?2:3;
   const AUTO_AT=12000; /* 6s de animación + 6s de cuenta atrás visible antes de pasar solo de ronda */
   clearTimeout(REV.tm);
@@ -3944,18 +4054,24 @@ function renderReveal(){
     else if(r.elim!=null){cls='white';h=`<img class="mas" src="${MASCOT}" alt=""><div class="k" style="color:#6b6b75">${nm(r.elim)}</div><div class="big pop">NO ERA EL IMPOSTOR</div>`}
     else if(r.top.length)h=`<div class="big pop">¡EMPATE!</div><p>${listNames(r.top.map(nm))}</p>`;
     else h=`<div class="big pop">NADIE HA VOTADO</div>`;
-    if(stage>=2&&!REV.vib){REV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60])}
+    if(stage>=2&&!REV.vib){
+      REV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60]);
+      SND.play(isImp?'revealImp':'revealInn');
+      if(r.elim===game.me&&!REV.vibOut){REV.vibOut=true;setTimeout(()=>vibra([110,70,110,70,110,70,260]),260)}
+    }
     if(stage===3){
       if(!r.shortcut){
         const rows=Object.keys(r.counts).map(Number).sort((a,b)=>r.counts[b]-r.counts[a]||a-b),mx=Math.max(1,...rows.map(s=>r.counts[s]));
         h+=`<div class="box"><h4>Votos</h4><div class="counts">`+rows.map(s=>`<div class="cr">${avImg(lookOf(s),'sm')}<span class="nm">${nm(s)}</span><span class="b"><i style="width:${Math.round(r.counts[s]*100/mx)}%"></i></span><span class="v">${r.counts[s]}</span></div>`).join('')+`</div></div>`;
       }
       if(r.out==='inn'||r.out==='imp'){
+        if(!REV.vibEnd){REV.vibEnd=true;const iAmImp=imps.includes(game.me);SND.play((r.out==='imp')===iAmImp?'victory':'defeat')}
         h+=`<div class="box"><h4>${r.out==='inn'?'Ganan los inocentes':'Ganan los impostores'}</h4><div style="font-weight:900;font-size:1.5rem;line-height:1.2" id="rvW"></div><div style="margin-top:6px">${imps.length>1?'Los impostores eran':'El impostor era'} <b>${listNames(imps.map(nm))}</b></div></div>`+
           `<div class="box"><h4>Ranking</h4>${rankingRows(computeStandings(S.rank),null)}</div>`;
       }else h+=`<p style="margin-top:12px">${esc(outText(r,imps,true))}</p>`;
       const lab=r.out==='tie'?'Repitiendo la votación':r.out==='inn'||r.out==='imp'?`Ronda ${S.round+1}`:'Seguís jugando';
       const secs=Math.max(0,Math.ceil((AUTO_AT-age)/1000));
+      if(secs===3&&!REV.vib3){REV.vib3=true;vibra([60,50,60])}
       h+=`<p class="wait">${lab} en ${secs}…</p>`;
       if(host)h+=`<button class="act" data-a="now">Ir ya</button>`;
       if(age>=AUTO_AT&&host&&!REV.advanced){REV.advanced=true;hAfter();return}
@@ -4022,6 +4138,11 @@ function menuMainHtml(){
   h+='<button class="menuitem" data-a="menuHowto">Cómo se juega</button>';
   h+='<button class="menuitem" data-a="menuRank">Ranking de la partida</button>';
   if(host)h+='<button class="menuitem" data-a="menuResetRank">Reiniciar ranking</button>';
+  h+=`<div class="menusep">
+    <div class="row"><div class="lbl">Sonido</div><button class="switch" id="mSoundSw" data-a="toggleSound" role="switch" aria-checked="${SETTINGS.sound}" aria-label="Sonido"></button></div>
+    <div class="row" style="border-bottom:0"><div class="lbl">Vibración</div><button class="switch" id="mVibSw" data-a="toggleVibra" role="switch" aria-checked="${SETTINGS.vibra}" aria-label="Vibración"></button></div>
+  </div>`;
+  if(USER)h+='<div class="menusep"><button class="menuitem" data-a="menuAcct">Mi cuenta</button></div>';
   if(host)h+='<div class="menusep"><button class="menuitem danger" data-a="menuEndAll">Terminar la partida para todos</button></div>';
   h+='<button class="menuitem exit" data-a="menuExit">Salir de la partida</button>';
   return h;
@@ -4085,6 +4206,9 @@ $('menuSheetEl').addEventListener('click',e=>{
   else if(a==='menuResetRankYes'&&iAmHost()){closeMenu();hResetRank()}
   else if(a==='menuEndAll'&&iAmHost())menuSheet(menuEndAllHtml());
   else if(a==='menuEndAllYes'&&iAmHost()){closeMenu();hEndToLobby()}
+  else if(a==='toggleSound'){SETTINGS.sound=!SETTINGS.sound;lsSet('impostor-sound',SETTINGS.sound?1:0);if(SETTINGS.sound)SND.unlock();menuMain()}
+  else if(a==='toggleVibra'){SETTINGS.vibra=!SETTINGS.vibra;lsSet('impostor-vibra',SETTINGS.vibra?1:0);menuMain()}
+  else if(a==='menuAcct'){closeMenu();cuentaMenuSheet()}
   else if(a==='menuExit')menuSheet(menuExitHtml());
   else if(a==='menuExitYes'){
     closeMenu();
@@ -4118,7 +4242,7 @@ const wkKey=()=>ROOM?ROOM.code:'';
 const ssGet=k=>{try{return JSON.parse(sessionStorage.getItem(k)||'null')}catch(e){return null}};
 const ssSet=(k,v)=>{try{if(v==null)sessionStorage.removeItem(k);else sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const WK={
-  abierto:false,visto:0,voces:[],chat:[],ses:{},blobs:{},rec:null,modo:lsGet('imp.wkmodo','pcm'),
+  abierto:false,visto:0,voces:[],chat:[],ses:{},blobs:{},rec:null,modo:lsGet('imp.wkmodo','pcm'),enLlamada:true,
   ctx(){
     if(!this._c){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;this._c=new C();this.bus=this.radio(this._c)}
     if(this._c.state==='suspended')this._c.resume().catch(()=>{});return this._c;
@@ -4136,6 +4260,7 @@ const WK={
   noPuede(){
     if(!ROOM)return game?'Sin conexión: el walkie necesita internet':'Entra en una partida para usar el walkie';
     if(!netUp())return 'Sin conexión: el walkie necesita internet';
+    if(!this.enLlamada)return 'Has salido de la llamada: toca «Entrar en la llamada» para hablar';
     if(isWaiting()&&!S.acc.some(p=>p.p===PID))return 'Esperas a que el anfitrión te acepte: puedes escuchar y leer, pero no hablar ni escribir';
     if(isDead())return 'Estás eliminado: puedes escuchar, pero no hablar hasta la siguiente ronda';
     return '';
@@ -4150,11 +4275,36 @@ const WK={
     }
     return true;
   },
+  /* Corta la grabación en curso sin enviarla (a diferencia de para(), que manda lo grabado hasta soltar) */
+  pararGrabacion(){
+    const r=this.rec;if(!r)return;
+    r.discard=true;clearTimeout(r.lim);
+    if(r.sp)this.paraSP(r);
+    if(r.mr){try{r.mr.stop()}catch(e){}}
+    this.rec=null;this.btn(false);this.nivel(0);
+  },
+  pararMicro(){
+    if(this.stream){this.stream.getTracks().forEach(t=>t.stop());this.stream=null;this.src=null}
+  },
+  /* Sale de la llamada: corta micro y audio, y deja de recibir voz y mensajes hasta volver a entrar.
+     No es salir de la partida: el walkie se puede reabrir después. */
+  salirLlamada(){
+    if(!this.enLlamada)return;
+    this.enLlamada=false;ssSet('impostor-wkcall-'+wkKey(),0);
+    this.pararGrabacion();this.pararMicro();
+    for(const k in this.ses)clearTimeout(this.ses[k].tmo);this.ses={};this.hablando(null);
+    netTrack();this.pinta();
+  },
+  entrarLlamada(){
+    if(this.enLlamada)return;
+    this.enLlamada=true;ssSet('impostor-wkcall-'+wkKey(),1);
+    netTrack();this.pinta();
+  },
   reset(){
-    if(this.rec)this.para(true);
+    this.pararGrabacion();this.pararMicro();
     for(const k in this.ses)clearTimeout(this.ses[k].tmo);
-    this.voces=[];this.chat=[];this.ses={};this.blobs={};this.visto=0;this.hablando(null);
-    const k=wkKey();ssSet('impostor-chat-'+k,null);ssSet('impostor-wkopen-'+k,null);
+    this.voces=[];this.chat=[];this.ses={};this.blobs={};this.visto=0;this.hablando(null);this.enLlamada=true;
+    const k=wkKey();ssSet('impostor-chat-'+k,null);ssSet('impostor-wkopen-'+k,null);ssSet('impostor-wkcall-'+k,null);
   },
   estado(t){$('wkEstado').textContent=t||''},
   diag(){
@@ -4165,7 +4315,7 @@ const WK={
   },
   btn(on){$('wkPtt').classList.toggle('on',on);$('wkPttTxt').textContent=on?(this.rec&&this.rec.latch?'Grabando: toca para enviar':'Hablando… suelta para enviar'):'Mantén para hablar'},
   nivel(v){$('wkNivel').style.transform=`scaleX(${Math.min(1,v*2.5)})`},
-  hablando(p,fb){const e=$('wkTalk');if(p){e.innerHTML=avImg(lookOfPid(p),'sm')+'<span></span>';e.lastChild.textContent=pidName(p,fb)+' está hablando';e.hidden=false}else e.hidden=true},
+  hablando(p,fb){const e=$('wkTalk');SND.talking=!!p;if(p){e.innerHTML=avImg(lookOfPid(p),'sm')+'<span></span>';e.lastChild.textContent=pidName(p,fb)+' está hablando';e.hidden=false}else e.hidden=true},
   async micro(){
     if(this.stream&&this.stream.active&&this.stream.getAudioTracks().some(t=>t.readyState==='live'))return;
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('este navegador no deja usar el micro');
@@ -4203,6 +4353,7 @@ const WK={
     let mr;try{mr=new MediaRecorder(this.stream)}catch(e){this.rec=null;this.btn(false);this.estado('Este móvil no puede grabar audio. El texto sí funciona.');return}
     r.mr=mr;const partes=[];mr.ondataavailable=e=>{if(e.data&&e.data.size)partes.push(e.data)};
     mr.onstop=async()=>{
+      if(r.discard)return;
       const blob=new Blob(partes,{type:mr.mimeType||'audio/webm'});const u=new Uint8Array(await blob.arrayBuffer());
       const TAM=45000,tot=Math.max(1,Math.ceil(u.length/TAM));
       for(let i=0;i<tot;i++)bc('w',{id:uid(12),k:'blob',s:r.id,n:i,of:tot,p:PID,nm:myName(),mime:blob.type,d:b64(u.subarray(i*TAM,(i+1)*TAM))});
@@ -4223,7 +4374,7 @@ const WK={
   subir(pcm){const c=this.ctx(),sr=c.sampleRate,n=Math.max(1,Math.floor(pcm.length*sr/8000)),b=c.createBuffer(1,n,sr),d=b.getChannelData(0),k=8000/sr;
     for(let i=0;i<n;i++){const x=i*k,i0=Math.floor(x),f=x-i0;d[i]=(pcm[i0]||0)*(1-f)+(pcm[i0+1]||pcm[i0]||0)*f}return b},
   recibe(m){
-    if(!m||!ROOM||typeof m.p!=='string'||m.p.length>24||m.p===PID||!this.puedeHablar(m.p))return;
+    if(!m||!ROOM||!this.enLlamada||typeof m.p!=='string'||m.p.length>24||m.p===PID||!this.puedeHablar(m.p))return;
     const fb=String(m.nm||'').slice(0,14);
     if(m.k==='txt'){
       const t=String(m.txt||'').slice(0,200);if(!t)return;
@@ -4281,6 +4432,9 @@ const WK={
     const bd=$('wkBadge');bd.hidden=!nuevos||this.abierto;bd.textContent=nuevos;
     if(!this.abierto)return;
     $('wkCanal').textContent=ROOM?`Sala ${ROOM.code}`:'Partida sin conexión';
+    const conectados=wkConnectedList(NET.R||{});
+    $('wkQuienes').textContent=`${conectados.length} en la llamada`+(conectados.length?`: ${listNames(conectados.map(e=>e.p===PID?'Tú':e.n))}`:'');
+    const cb=$('wkCallBtn');cb.textContent=this.enLlamada?'Salir de la llamada':'Entrar en la llamada';cb.classList.toggle('on',!this.enLlamada);
     const av=$('wkAviso'),ia=this.inapp();av.classList.toggle('on',ia);
     if(ia)av.textContent='Estás dentro de otra app (WhatsApp, Instagram…) y ahí el micrófono no funciona. Abre el enlace en Safari o Chrome. Los mensajes de texto sí funcionan.';
     const no=this.noPuede();if(!this.rec){if(no)this.estado(no);else if(this._no)this.estado('')}this._no=no;
@@ -4296,6 +4450,7 @@ const WK={
   cerrar(){const era=this.abierto;this.abierto=false;$('wk').classList.remove('on');if(era)ssSet('impostor-wkopen-'+wkKey(),null);if(this.rec)this.para(true);this.hablando(null);this.modo();this.pinta()},
   init(){
     $('wkFab').onclick=()=>this.abrir();$('wkCerrar').onclick=()=>this.cerrar();$('wkFondo').onclick=()=>this.cerrar();
+    $('wkCallBtn').onclick=()=>{if(this.enLlamada)this.salirLlamada();else this.entrarLlamada()};
     const mandar=()=>{const i=$('wkTxt'),t=i.value.trim();if(!t||this.noPuede())return;
       this.chat.push({t:Date.now(),p:PID,n:myName(),txt:t});if(this.chat.length>80)this.chat.shift();this.guardaChat();bc('w',{id:uid(8),k:'txt',p:PID,nm:myName(),txt:t});i.value='';this.pinta()};
     $('wkEnviar').onclick=mandar;$('wkTxt').onkeydown=e=>{if(e.key==='Enter')mandar()};
@@ -4316,10 +4471,12 @@ const WK={
 WK.init();
 
 /* ---------- Cuenta opcional de Punto Ciego ---------- */
-let GOOGLE=false;
+let GOOGLE=false,APPLE=false;
+const G_LOGO='<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+const APPLE_LOGO='<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zm3.635-3.325c.843-1.012 1.4-2.427 1.245-3.831-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.701z"/></svg>';
 function renderAcct(){
   const html=USER?
-    `${avImg(myLook(),'sm')}<span>${PERFIL&&PERFIL.name?'Hola, <b></b>':'Sesión iniciada'}</span><button data-a="out">Salir</button>`
+    `${avImg(myLook(),'sm')}<span>${PERFIL&&PERFIL.name?'Hola, <b></b>':'Sesión iniciada'}</span><button data-a="menu">Mi cuenta</button>`
     :`<button data-a="in">Entrar con mi cuenta de Punto Ciego</button>`;
   ['acct','acct2'].forEach(id=>{
     const el=$(id);if(!el)return;
@@ -4328,7 +4485,7 @@ function renderAcct(){
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('#acct button,#acct2 button');if(!b)return;
-  if(b.dataset.a==='in')loginSheet();else logoutSheet();
+  if(b.dataset.a==='in')loginSheet();else cuentaMenuSheet();
 });
 function errorCuenta(e){
   const m=((e&&(e.code||''))+' '+(e&&e.message||'')).toLowerCase();
@@ -4341,11 +4498,13 @@ function errorCuenta(e){
 }
 function loginSheet(){
   sheet(`<h3>Tu cuenta de Punto Ciego</h3><p>Es la misma cuenta. Solo sirve para usar tu nombre y tu personaje: para jugar no hace falta.</p>
+    ${APPLE?`<button class="act apple" id="lgA">${APPLE_LOGO}<span>Iniciar sesión con Apple</span></button>`:''}
+    ${GOOGLE?`<button class="act google" id="lgG">${G_LOGO}<span>Entrar con Google</span></button>`:''}
+    ${(APPLE||GOOGLE)?'<p class="tiny" style="margin:14px 0 4px">o con tu correo</p>':''}
     <input class="field" id="lgMail" type="email" autocomplete="username" inputmode="email" placeholder="Correo" autocapitalize="off" spellcheck="false">
     <input class="field" id="lgPass" type="password" autocomplete="current-password" placeholder="Contraseña">
     <p class="err" id="lgErr" role="alert"></p>
     <button class="act" id="lgGo">Entrar</button>
-    ${GOOGLE?'<button class="act google" id="lgG">Entrar con Google</button>':''}
     <button class="link" id="lgNo">Ahora no</button>
     <p class="fine">¿Aún no tienes cuenta? Créala en <a href="https://javivalmich.github.io/Punto-Ciego/" target="_blank" rel="noopener">Punto Ciego</a>.</p>`,()=>{
     $('lgNo').onclick=closeSheet;
@@ -4359,20 +4518,154 @@ function loginSheet(){
       }catch(e){$('lgErr').textContent=errorCuenta(e);$('lgGo').disabled=false}
     };
     $('lgGo').onclick=go;$('lgPass').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
-    if($('lgG'))$('lgG').onclick=async()=>{
+    const oauth=provider=>async()=>{
       try{
         if($('s-join').classList.contains('on')&&codeFromInput($('codeIn').value))lsSet('impostor-ret',roomLink(codeFromInput($('codeIn').value)));
-        const sb=await loadSB();const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
+        const sb=await loadSB();const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+location.pathname}});
         if(error)throw error;
       }catch(e){$('lgErr').textContent=errorCuenta(e)}
     };
+    if($('lgG'))$('lgG').onclick=oauth('google');
+    if($('lgA'))$('lgA').onclick=oauth('apple');
   });
 }
 function logoutSheet(){
   sheet(`<h3>¿Salir de tu cuenta?</h3><p>Como Punto Ciego usa la misma sesión en este navegador, también saldrás de allí. Podrás jugar igual, con el nombre escrito.</p>
     <button class="act" id="loYes">Salir</button><button class="link" id="loNo">Cancelar</button>`,()=>{
-    $('loNo').onclick=closeSheet;
+    $('loNo').onclick=cuentaMenuSheet;
     $('loYes').onclick=async()=>{closeSheet();try{const sb=await loadSB();await sb.auth.signOut({scope:'local'})}catch(e){}};
+  });
+}
+/* ---------- Menú de cuenta: editar personaje, cerrar sesión, eliminar cuenta ---------- */
+function cuentaMenuSheet(){
+  if(!USER)return loginSheet();
+  sheet(`<div class="acct-head">${avImg(myLook())}<b></b></div>
+    <button class="menuitem" id="acEdit">Editar personaje y nombre</button>
+    <button class="menuitem" id="acOut">Cerrar sesión</button>
+    <div class="menusep"><button class="menuitem danger" id="acDel">Eliminar cuenta</button></div>
+    <button class="link" id="acClose">Cerrar</button>`,()=>{
+    const b=$('sheet').querySelector('.acct-head b');if(b)b.textContent=(PERFIL&&PERFIL.name)||'Sin nombre';
+    $('acClose').onclick=closeSheet;
+    $('acEdit').onclick=editCharSheet;
+    $('acOut').onclick=logoutSheet;
+    $('acDel').onclick=deleteAccountSheet;
+  });
+}
+/* ---------- Editar personaje y nombre (misma tabla profiles que Punto Ciego) ---------- */
+let EDIT=null;
+async function editCharSheet(){
+  closeSheet();sheet('<p class="hint-line">Cargando…</p>');
+  let raw=(PERFIL&&PERFIL.look)||{},name=(PERFIL&&PERFIL.name)||'';
+  try{
+    const sb=await loadSB();
+    const {data,error}=await sb.from('profiles').select('username,look').eq('id',USER.id).maybeSingle();
+    if(error)throw error;
+    if(data){raw=data.look||{};name=data.username||''}
+  }catch(e){}
+  EDIT={name,raw,look:limpiaLook(raw)};
+  renderEditChar();
+}
+function editFila(t,k,lista,sw){
+  const l=EDIT.look;
+  return `<div class="ed-fila"><p class="lbl">${esc(t)}: <b>${esc(sw(l[k]).n)}</b></p><div class="swatches">${lista.map((_,i)=>{const x=sw(i);return `<button type="button" class="sw${l[k]===i?' on':''}" data-ed="${k}" data-v="${i}" aria-label="${esc(x.n)}" style="--c:${x.c}"></button>`}).join('')}</div></div>`;
+}
+function renderEditChar(){
+  const html=`<h3>Tu personaje</h3><p>Se guarda en tu cuenta y se ve también en Punto Ciego.</p>
+    <div class="ed-preview">${avImg(EDIT.look)}</div>
+    <label class="lbl" for="edNom">Nombre de jugador</label><input class="field" id="edNom" maxlength="16" value="${esc(EDIT.name)}" autocomplete="off">
+    ${editFila('Capucha','hood',COLORES,i=>({n:COLORES[i][0],c:COLORES[i][1]}))}
+    ${editFila('Sudadera','cloth',ROPA,i=>({n:ROPA[i][0],c:ROPA[i][1]||'#141416'}))}
+    ${editFila('Estampado','pat',ESTAMPADOS,i=>({n:ESTAMPADOS[i],c:'#222226'}))}
+    ${editFila('Guantes','glove',GUANTES,i=>({n:GUANTES[i][0],c:GUANTES[i][1]||'#F1ECE3'}))}
+    ${editFila('Ojos','eye',OJOS,i=>({n:OJOS[i][0],c:OJOS[i][1]||'#F1ECE3'}))}
+    <p class="err" id="edErr" role="alert"></p>
+    <button class="act" id="edGuardar">Guardar cambios</button>
+    <button class="link" id="edCancelar">Cancelar</button>`;
+  sheet(html,()=>{
+    $('edCancelar').onclick=cuentaMenuSheet;
+    $('edGuardar').onclick=guardarPersonaje;
+    $('sheet').querySelectorAll('.sw').forEach(b=>b.onclick=()=>{
+      const nomEl=$('edNom');if(nomEl)EDIT.name=nomEl.value;
+      EDIT.look={...EDIT.look,[b.dataset.ed]:+b.dataset.v};
+      renderEditChar();
+    });
+  });
+}
+async function guardarPersonaje(){
+  const nomEl=$('edNom'),n=((nomEl?nomEl.value:EDIT.name)||'').trim().slice(0,16);
+  if(!n){$('edErr').textContent='Escribe un nombre de jugador.';return}
+  $('edGuardar').disabled=true;$('edErr').textContent='';
+  const look={...EDIT.raw,...EDIT.look};
+  try{
+    const sb=await loadSB();
+    const {error}=await sb.from('profiles').upsert({id:USER.id,username:n,look,updated_at:new Date().toISOString()});
+    if(error)throw error;
+  }catch(e){
+    $('edErr').textContent=(e&&e.code==='23505')?'Ese nombre ya lo usa otra persona. Elige otro.':errorCuenta(e);
+    $('edGuardar').disabled=false;return;
+  }
+  PERFIL={name:n,look:limpiaLook(look)};lsSet('impostor-perfil-'+USER.id,PERFIL);
+  if(ROOM){
+    ROOM.name=n;saveRoom();
+    if(S&&S.pl&&S.pl.some(p=>p.p===PID)){if(iAmHost())hRename(PID,n);else bc('act',{k:'rename',p:PID,n})}
+    netTrack();
+  }
+  renderAcct();renderAll();
+  ['myName','joinName'].forEach(fillMyName);
+  closeSheet();toast('Personaje guardado');
+}
+/* ---------- Eliminar cuenta (misma función de Supabase que Punto Ciego: eliminar_mi_cuenta) ---------- */
+function exitAnyGame(){
+  if(SOLO){clearReveal();SOLO=null;game=null;soloSave()}
+  else if(ROOM){if(game)castLeave();dropRoom()}
+  else if(game){game=null;save()}
+  phHtml='';
+}
+function deleteAccountSheet(){
+  sheet(`<h3>Eliminar tu cuenta</h3>
+    <p>Es la misma cuenta que usas en <b>Punto Ciego</b>: al eliminarla se borra también allí, con tu personaje, tu nombre y tus estadísticas de los dos juegos.</p>
+    <p><b>No se puede deshacer.</b></p>
+    <button class="act danger" id="delGo">Eliminar cuenta</button>
+    <button class="link" id="delNo">Cancelar</button>`,()=>{
+    $('delNo').onclick=cuentaMenuSheet;
+    $('delGo').onclick=deleteAccountConfirmSheet;
+  });
+}
+function deleteAccountConfirmSheet(){
+  const porEmail=!!(USER&&USER.app_metadata&&USER.app_metadata.provider==='email');
+  const proveedor=USER&&USER.app_metadata&&USER.app_metadata.provider==='apple'?'Apple':'Google';
+  sheet(`<h3>Confirma que eres tú</h3>
+    ${porEmail?`<label class="lbl" for="delPass">Tu contraseña</label><input class="field" id="delPass" type="password" autocomplete="current-password" placeholder="Contraseña">`
+      :`<p>Entraste con ${proveedor}, así que aquí no tienes contraseña: escribe <b>BORRAR</b> para confirmar.</p><input class="field" id="delWord" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="BORRAR">`}
+    <p class="err" id="delErr" role="alert"></p>
+    <button class="act danger" id="delFinal">Eliminar cuenta para siempre</button>
+    <button class="link" id="delNo2">Cancelar</button>`,()=>{
+    $('delNo2').onclick=cuentaMenuSheet;
+    $('delFinal').onclick=async()=>{
+      $('delErr').textContent='';
+      if(!porEmail){
+        const w=(($('delWord').value)||'').trim().toUpperCase();
+        if(w!=='BORRAR'){$('delErr').textContent='Escribe BORRAR (en mayúsculas) para confirmar.';return}
+      }
+      $('delFinal').disabled=true;
+      try{
+        const sb=await loadSB();
+        if(porEmail){
+          const pass=$('delPass').value;
+          if(!pass){$('delErr').textContent='Escribe tu contraseña.';$('delFinal').disabled=false;return}
+          const {error}=await sb.auth.signInWithPassword({email:USER.email,password:pass});
+          if(error)throw error;
+        }
+        const {error:rpcErr}=await sb.rpc('eliminar_mi_cuenta');
+        if(rpcErr)throw rpcErr;
+        exitAnyGame();
+        const uid=USER.id;
+        try{await sb.auth.signOut({scope:'local'})}catch(e){}
+        lsDel('impostor-perfil-'+uid);USER=null;PERFIL=null;
+        closeSheet();show('s-home');renderAcct();renderAll();
+        toast('Cuenta eliminada');
+      }catch(e){$('delErr').textContent=errorCuenta(e);$('delFinal').disabled=false}
+    };
   });
 }
 async function iniciaCuentas(){
@@ -4381,7 +4674,7 @@ async function iniciaCuentas(){
     sb.auth.onAuthStateChange((ev,ses)=>{setTimeout(()=>trasSesion(ses),0)});
     const {data}=await sb.auth.getSession();
     await trasSesion(data.session);
-    fetch(SUPA.url+'/auth/v1/settings',{headers:{apikey:SUPA.key}}).then(r=>r.json()).then(j=>{if(j&&j.external&&j.external.google)GOOGLE=true}).catch(()=>{});
+    fetch(SUPA.url+'/auth/v1/settings',{headers:{apikey:SUPA.key}}).then(r=>r.json()).then(j=>{if(j&&j.external){if(j.external.google)GOOGLE=true;if(j.external.apple)APPLE=true}}).catch(()=>{});
   }catch(e){console.warn('cuentas',e)}
 }
 async function trasSesion(ses){
@@ -4596,7 +4889,7 @@ function soloRenderReveal(){
     else if(r.elim!=null){cls='white';h=`<img class="mas" src="${MASCOT}" alt=""><div class="k" style="color:#6b6b75">${nm(r.elim)}</div><div class="big pop">NO ERA EL IMPOSTOR</div>`}
     else if(r.top.length)h=`<div class="big pop">¡EMPATE!</div><p>${listNames(r.top.map(nm))}</p>`;
     else h=`<div class="big pop">NADIE HA VOTADO</div>`;
-    if(stage>=2&&!SOLOREV.vib){SOLOREV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60])}
+    if(stage>=2&&!SOLOREV.vib){SOLOREV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60]);SND.play(isImp?'revealImp':'revealInn')}
     if(stage===3){
       if(!r.shortcut){
         const rows=Object.keys(r.counts).map(Number).sort((a,b)=>r.counts[b]-r.counts[a]||a-b),mx=Math.max(1,...rows.map(s=>r.counts[s]));
@@ -4681,7 +4974,7 @@ if(!/#(s|j)=/.test(location.hash)){const r=lsGet('impostor-ret');if(r){lsDel('im
 if(!handleLink(ret)){
   if(ROOM)renderAll();else if(soloRestored){}else if(game)enterGame();else show('s-home');
 }
-if(ROOM){WK.cargaChat();if(ssGet('impostor-wkopen-'+ROOM.code))WK.abrir();else WK.pinta()}
+if(ROOM){WK.cargaChat();WK.enLlamada=ssGet('impostor-wkcall-'+ROOM.code)!==0;if(ssGet('impostor-wkopen-'+ROOM.code))WK.abrir();else WK.pinta()}
 renderAcct();avLoad();iniciaCuentas();
 setInterval(tick,1000);
 setInterval(()=>{if(iAmHost()&&NET.resumed&&netUp()&&S)bc('st',S)},8000); /* latido: repara mensajes perdidos */
