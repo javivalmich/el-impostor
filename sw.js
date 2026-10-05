@@ -2,7 +2,7 @@
    Red primero (para recibir siempre lo último publicado) y caché como respaldo sin conexión.
    Al publicar una versión nueva, sube VERSION: el móvil descarga el sw.js nuevo, borra las cachés viejas
    y la página se recarga sola si está en la portada (ver el registro en index.html). */
-const VERSION='8';
+const VERSION='9';
 const CACHE='punto-falso-v'+VERSION;
 const SHELL=['./','index.html','manifest.json','privacidad.html','soporte.html','terminos.html','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'];
 self.addEventListener('install',e=>{
