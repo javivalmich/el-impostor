@@ -5,6 +5,7 @@
 | Campo | Texto | Límite |
 |---|---|---|
 | Nombre | **Punto Falso** | 30 (ambas) |
+| Nombre del desarrollador | **Punto Studio** | |
 | Subtítulo (App Store) | **El juego social del impostor** (28) | 30 |
 | Descripción breve (Google Play) | **Todos tienen la misma palabra menos uno. ¿Quién es el impostor?** (66) | 80 |
 | Texto promocional (App Store, opcional) | Con un móvil o con cada uno el suyo, en persona o a distancia. Gratis y sin anuncios. | 170 |
@@ -81,7 +82,7 @@ La sala de espera usa un código de sala real y temporal.
 
 - [ ] Gráfico de funciones de Google Play (1024×500): no está hecho.
 - [ ] Capturas de iPad y tablet de 7"/10" si la app va a ser compatible con ellas (si no, restringe a iPhone/teléfono).
-- [ ] Nombre del desarrollador / titular legal y dirección postal (Apple y Google los piden; en la UE, como «trader», la dirección se muestra públicamente).
+- [ ] Datos legales de las cuentas de desarrollador: el nombre visible del desarrollador en las fichas será **Punto Studio**, pero Apple y Google piden además datos verificables del titular real y, si te declaras «comerciante» (trader) en la UE, publican su dirección y teléfono. Como el juego es gratis y sin anuncios ni cobros, valora declararte como no comerciante; decídelo al abrir cada cuenta.
 - [ ] Cuentas de desarrollador: Google Play Console (25 USD, una vez) y Apple Developer Program (99 USD/año).
 - [ ] Activar Sign in with Apple en Supabase (ver `docs/APPLE_SIGNIN.md` en Punto Ciego): Apple lo exige si ofreces «Entrar con Google». Después, desplegar la revocación del token al borrar la cuenta (`docs/BORRADO_APPLE.md` en Punto Ciego; la cuenta y el proyecto Supabase son compartidos).
 - [ ] Credenciales de revisión para Apple/Google: una cuenta de prueba (correo + contraseña), y decir que jugar no la requiere.
