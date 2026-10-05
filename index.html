@@ -339,6 +339,13 @@ body.red .sheet .act{background:var(--red)}
 
 /* sala de espera y entrada tardía */
 #lbQr{margin-top:12px;width:min(58vw,220px)}
+#overlay{z-index:65}
+.blk{flex:none;margin-left:auto;border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.82rem;color:var(--muted)}
+.blk.on{color:var(--red);border-color:var(--red)}
+.pl .blk+.kick{margin-left:6px}
+.wk-m .flag{min-height:32px;width:34px;padding:0;margin-left:auto;font-size:.95rem;color:var(--muted)}
+#wkNormas{font-size:.8rem;color:var(--muted);margin:6px 0 0;text-align:center;line-height:1.35}
+#wk.compact #wkNormas{display:none}
 .kick{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--line);background:transparent;color:var(--muted);font-size:1rem;line-height:1;flex:none}
 .jr{display:flex;align-items:center;gap:8px;background:var(--surface);border:2px solid var(--red);border-radius:16px;padding:8px 10px 8px 14px;margin-bottom:10px}
 .jr span{flex:1;min-width:0}
@@ -474,6 +481,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
     <div class="panel">
       <div class="cathead"><span class="lbl">Jugadores</span><span class="sub" id="lbCount"></span></div>
       <div class="plist" id="lbList"></div>
+      <p class="sub" style="margin-top:8px">El chat es entre amigos y no está moderado. Bloquea o reporta a cualquiera desde esta lista.</p>
     </div>
     <div id="lbHost"></div>
   </section>
@@ -613,6 +621,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
     <div id="wkLista"></div>
     <div class="wk-escribe"><input id="wkTxt" maxlength="200" placeholder="Escribe un mensaje" autocomplete="off" aria-label="Mensaje para el grupo"><button id="wkEnviar">Enviar</button></div>
     <button id="wkPtt"><span id="wkPttTxt">Mantén para hablar</span><i id="wkNivel"></i></button>
+    <p id="wkNormas">El chat es entre amigos y no está moderado. Toca ⚑ junto a un mensaje para bloquear o reportar a alguien.</p>
     <p id="wkMicNota">🎤 El micrófono solo se activa mientras mantienes pulsado el botón de hablar. Tu voz se envía al grupo en directo y no se graba ni se guarda. La primera vez, tu móvil te pedirá permiso.</p>
     <p id="wkEstado" role="status"></p>
     <p id="wkDiag"></p>
@@ -3836,7 +3845,7 @@ function renderLobby(){
   }
   const rows=list.map(e=>{
     const isMe=e.p===PID,isH=S&&S.host===e.p,look=isMe?myLook():(e.a?lookOfArr(e.a):null);
-    return `<div class="pl${isMe?' me':''}">${avImg(look,'')}<span class="dot" title="Conectado"></span><div class="nm2"><b>${esc(e.n)}</b>${isMe?'<span class="tg">Tú</span>':''}${isH?CROWN:''}</div>${host&&!isMe?`<button class="kick" data-a="kick" data-p="${esc(e.p)}" aria-label="Sacar a ${esc(e.n)}">✕</button>`:''}</div>`;
+    return `<div class="pl${isMe?' me':''}">${avImg(look,'')}<span class="dot" title="Conectado"></span><div class="nm2"><b>${esc(e.n)}</b>${isMe?'<span class="tg">Tú</span>':''}${isH?CROWN:''}</div>${!isMe?`<button class="blk${BLK.has(e.p)?' on':''}" data-a="blk" data-p="${esc(e.p)}" data-n="${esc(e.n)}" aria-label="Bloquear o reportar a ${esc(e.n)}">${BLK.has(e.p)?'Bloqueado':'Bloquear'}</button>`:''}${host&&!isMe?`<button class="kick" data-a="kick" data-p="${esc(e.p)}" aria-label="Sacar a ${esc(e.n)}">✕</button>`:''}</div>`;
   }).join('');
   const all=rows+'|'+h;
   if(all!==lbHtml){lbHtml=all;$('lbList').innerHTML=rows||'<p class="empty">Nadie todavía…</p>';$('lbHost').innerHTML=h}
@@ -3847,6 +3856,7 @@ $('lbHost').addEventListener('click',e=>{
   if(a==='km')hSetK(S.set.k-1);else if(a==='kp')hSetK(S.set.k+1);else if(a==='start'){NET.R=roster();hStart()}
 });
 $('lbList').addEventListener('click',e=>{
+  const bl=e.target.closest('[data-a="blk"]');if(bl){jugadorSheet(bl.dataset.p,bl.dataset.n);return}
   const b=e.target.closest('[data-a="kick"]');if(!b||!iAmHost())return;
   const e0=connectedList(NET.R).find(x=>x.p===b.dataset.p);if(!e0)return;
   sheet(`<h3>¿Sacar a ${esc(e0.n)}?</h3><p>Saldrá de la sala y no podrá volver a entrar con este código.</p>
@@ -4256,6 +4266,38 @@ function decomp(b){const v=(Math.pow(256,(b&127)/127)-1)/255;return b&128?-v:v}
 const pidName=(p,fb)=>{const e=S&&S.pl&&S.pl.find(x=>x.p===p);if(e)return e.n;const r=NET.R&&NET.R[p];return (r&&r.n)||fb||'Alguien'};
 function lookOfPid(p){if(p===PID)return myLook();const r=NET.R&&NET.R[p];return r&&r.a?lookOfArr(r.a):null}
 const wkKey=()=>ROOM?ROOM.code:'';
+/* ---------- Bloquear y reportar jugadores: sin moderación ni servidor, solo en este móvil ---------- */
+const SUPPORT_MAIL='javivalmich@gmail.com';
+const BLK={
+  k:()=>'impostor-bloq-'+(ROOM?ROOM.code:''),
+  list(){const l=lsGet(this.k(),[]);return Array.isArray(l)?l:[]},
+  has(p){return this.list().includes(p)},
+  set(p,on){const l=this.list().filter(x=>x!==p);if(on)l.push(p);lsSet(this.k(),l.slice(-50))}
+};
+function reportarJugador(p,n){
+  const cuerpo=`Jugador: ${n}\nIdentificador: ${p}\nSala: ${ROOM?ROOM.code:'-'}\nFecha: ${new Date().toISOString()}\n\nMotivo (cuéntanos qué ha pasado):\n`;
+  const a=document.createElement('a');
+  a.href='mailto:'+SUPPORT_MAIL+'?subject='+encodeURIComponent('Reporte en Punto Falso')+'&body='+encodeURIComponent(cuerpo);
+  document.body.appendChild(a);a.click();a.remove();
+}
+function jugadorSheet(p,n){
+  const b=BLK.has(p);
+  sheet(`<h3></h3>
+    <p>${b?'Lo tienes bloqueado: no oyes su voz ni ves sus mensajes en esta sala. Solo afecta a este móvil.':'Si lo bloqueas, dejas de oír su voz y de ver sus mensajes en esta sala. Solo afecta a este móvil y puedes deshacerlo.'}</p>
+    <button class="act" id="bkGo">${b?'Desbloquear':'Bloquear'}</button>
+    <button class="act sec" id="bkRep">Reportar</button>
+    <p class="tiny">Reportar abre un correo a soporte con su nombre, el código de la sala y la fecha. El chat es entre amigos y no está moderado.</p>
+    <button class="link" id="bkNo">Cerrar</button>`,()=>{
+    $('sheet').querySelector('h3').textContent=n;
+    $('bkNo').onclick=closeSheet;
+    $('bkRep').onclick=()=>{closeSheet();reportarJugador(p,n)};
+    $('bkGo').onclick=()=>{
+      BLK.set(p,!b);
+      if(!b){for(const k in WK.ses)if(WK.ses[k].p===p){clearTimeout(WK.ses[k].tmo);delete WK.ses[k]}WK.hablando(null)}
+      closeSheet();toast(b?'Jugador desbloqueado':'Jugador bloqueado');lbHtml='';renderLobby();WK.pinta();
+    };
+  });
+}
 const ssGet=k=>{try{return JSON.parse(sessionStorage.getItem(k)||'null')}catch(e){return null}};
 const ssSet=(k,v)=>{try{if(v==null)sessionStorage.removeItem(k);else sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const WK={
@@ -4392,7 +4434,7 @@ const WK={
   subir(pcm){const c=this.ctx(),sr=c.sampleRate,n=Math.max(1,Math.floor(pcm.length*sr/8000)),b=c.createBuffer(1,n,sr),d=b.getChannelData(0),k=8000/sr;
     for(let i=0;i<n;i++){const x=i*k,i0=Math.floor(x),f=x-i0;d[i]=(pcm[i0]||0)*(1-f)+(pcm[i0+1]||pcm[i0]||0)*f}return b},
   recibe(m){
-    if(!m||!ROOM||!this.enLlamada||typeof m.p!=='string'||m.p.length>24||m.p===PID||!this.puedeHablar(m.p))return;
+    if(!m||!ROOM||!this.enLlamada||typeof m.p!=='string'||m.p.length>24||m.p===PID||BLK.has(m.p)||!this.puedeHablar(m.p))return;
     const fb=String(m.nm||'').slice(0,14);
     if(m.k==='txt'){
       const t=String(m.txt||'').slice(0,200);if(!t)return;
@@ -4438,8 +4480,8 @@ const WK={
     this.hablando(v.p,v.n);s.onended=()=>{this.ruido(.08,.12);if(!Object.keys(this.ses).length)this.hablando(null)};s.start(c.currentTime+.1);
   },
   elementos(){
-    const txt=this.chat.map(m=>({t:m.t,p:m.p,n:m.n,txt:m.txt}));
-    const voz=this.voces.map((v,i)=>({t:v.t,p:v.p,n:v.n,voz:i,dur:v.dur}));
+    const txt=this.chat.filter(m=>!BLK.has(m.p)).map(m=>({t:m.t,p:m.p,n:m.n,txt:m.txt}));
+    const voz=this.voces.map((v,i)=>({t:v.t,p:v.p,n:v.n,voz:i,dur:v.dur})).filter(v=>!BLK.has(v.p));
     return txt.concat(voz).sort((a,b)=>a.t-b.t).slice(-80);
   },
   pinta(){
@@ -4459,7 +4501,8 @@ const WK={
     $('wkPtt').disabled=!!no&&!this.rec;$('wkEnviar').disabled=!!no;$('wkTxt').disabled=!!no;
     const h=els.length?els.map(e=>{
       const nom=`${avImg(lookOfPid(e.p),'sm')} <b>${esc(pidName(e.p,e.n))}</b>`;
-      return e.txt!==undefined?`<div class="wk-m">${nom}<span class="txt">${esc(e.txt)}</span></div>`:`<div class="wk-m">${nom}<button data-i="${e.voz}">▶ ${Math.max(1,Math.round(e.dur||0))} s</button></div>`}).join('')
+      const fl=e.p!==PID?`<button class="flag" data-p="${esc(e.p)}" data-n="${esc(pidName(e.p,e.n))}" aria-label="Bloquear o reportar a ${esc(pidName(e.p,e.n))}">⚑</button>`:'';
+      return e.txt!==undefined?`<div class="wk-m">${nom}${fl}<span class="txt">${esc(e.txt)}</span></div>`:`<div class="wk-m">${nom}<button data-i="${e.voz}">▶ ${Math.max(1,Math.round(e.dur||0))} s</button>${fl}</div>`}).join('')
       :'<p class="wk-vacio">Aún no ha hablado nadie. Mantén el botón para hablar, o escribe abajo.</p>';
     const L=$('wkLista');if(L._h!==h){const abajo=L.scrollHeight-L.scrollTop-L.clientHeight<40;L._h=h;L.innerHTML=h;if(abajo||!L._ini){L.scrollTop=L.scrollHeight;L._ini=true}}
   },
@@ -4472,7 +4515,7 @@ const WK={
     const mandar=()=>{const i=$('wkTxt'),t=i.value.trim();if(!t||this.noPuede())return;
       this.chat.push({t:Date.now(),p:PID,n:myName(),txt:t});if(this.chat.length>80)this.chat.shift();this.guardaChat();bc('w',{id:uid(8),k:'txt',p:PID,nm:myName(),txt:t});i.value='';this.pinta()};
     $('wkEnviar').onclick=mandar;$('wkTxt').onkeydown=e=>{if(e.key==='Enter')mandar()};
-    $('wkLista').onclick=e=>{const b=e.target.closest('button[data-i]');if(b){const v=this.voces[+b.dataset.i];v&&this.reproduce(v)}};
+    $('wkLista').onclick=e=>{const f=e.target.closest('button.flag');if(f){jugadorSheet(f.dataset.p,f.dataset.n);return}const b=e.target.closest('button[data-i]');if(b){const v=this.voces[+b.dataset.i];v&&this.reproduce(v)}};
     const b=$('wkPtt');let abajo=0,tocaParar=false;
     b.onpointerdown=e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}
       if(this.rec){tocaParar=true;return}abajo=Date.now();this.empieza()};
@@ -4641,6 +4684,24 @@ function exitAnyGame(){
   else if(game){game=null;save()}
   phHtml='';
 }
+/* ---------- Borrado de cuenta y revocación del token de Apple ----------
+   La Edge Function `eliminar-cuenta` revoca el token de Apple (si entró con Apple y hay credenciales) y borra la cuenta.
+   Si la función no está desplegada o falla, se usa el respaldo de siempre (eliminar_mi_cuenta), que borra igual. */
+async function borrarCuentaRemota(sb){
+  try{
+    const {data,error}=await sb.functions.invoke('eliminar-cuenta',{body:{}});
+    if(!error&&data&&data.ok)return;
+  }catch(e){}
+  const {error:rpcErr}=await sb.rpc('eliminar_mi_cuenta');
+  if(rpcErr)throw rpcErr;
+}
+/* Al entrar con Apple, Supabase da el token de Apple una sola vez: se guarda (solo el servidor puede leerlo) para poder revocarlo al borrar la cuenta */
+function guardaTokenApple(sb,ses){
+  try{
+    if(!ses||!ses.provider_refresh_token||!ses.user||!ses.user.app_metadata||ses.user.app_metadata.provider!=='apple')return;
+    sb.rpc('guardar_token_apple',{p_token:ses.provider_refresh_token,p_origen:'web'}).then(()=>{},()=>{});
+  }catch(e){}
+}
 function deleteAccountSheet(){
   sheet(`<h3>Eliminar tu cuenta</h3>
     <p>Es la misma cuenta que usas en <b>Punto Ciego</b>: al eliminarla se borra también allí, con tu personaje, tu nombre y tus estadísticas de los dos juegos.</p>
@@ -4676,8 +4737,7 @@ function deleteAccountConfirmSheet(){
           const {error}=await sb.auth.signInWithPassword({email:USER.email,password:pass});
           if(error)throw error;
         }
-        const {error:rpcErr}=await sb.rpc('eliminar_mi_cuenta');
-        if(rpcErr)throw rpcErr;
+        await borrarCuentaRemota(sb);
         exitAnyGame();
         const uid=USER.id;
         try{await sb.auth.signOut({scope:'local'})}catch(e){}
@@ -4691,7 +4751,7 @@ function deleteAccountConfirmSheet(){
 async function iniciaCuentas(){
   try{
     const sb=await loadSB();
-    sb.auth.onAuthStateChange((ev,ses)=>{setTimeout(()=>trasSesion(ses),0)});
+    sb.auth.onAuthStateChange((ev,ses)=>{guardaTokenApple(sb,ses);setTimeout(()=>trasSesion(ses),0)});
     const {data}=await sb.auth.getSession();
     await trasSesion(data.session);
     fetch(SUPA.url+'/auth/v1/settings',{headers:{apikey:SUPA.key}}).then(r=>r.json()).then(j=>{if(j&&j.external){if(j.external.google)GOOGLE=true;if(j.external.apple)APPLE=true}}).catch(()=>{});

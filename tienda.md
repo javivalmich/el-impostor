@@ -60,6 +60,7 @@ Texto sugerido para iOS (`NSMicrophoneUsageDescription`): «Punto Falso usa el m
 
 - **Google Play, Seguridad de los datos**: recopila correo y nombre/ID de usuario (solo con cuenta), y «Audio: voz o sonido» solo en tránsito, no almacenado ni compartido; no se venden ni se comparten con terceros para publicidad; cifrado en tránsito; el usuario puede pedir el borrado (en la app y por URL).
 - **Apple, Privacidad de la app**: «Datos de contacto: correo» e «Identificadores/Contenido del usuario: nombre y personaje», vinculados al usuario, solo para funcionalidad de la app; sin seguimiento (no hay tracking).
+- **Moderación (Apple 1.2)**: el chat no está moderado, pero hay **bloquear** (botón en la lista de jugadores y ⚑ en el walkie; local al móvil) y **reportar** (correo a soporte con nombre, código de sala y fecha), y el aviso de que es un chat entre amigos sin moderar.
 - **Clasificación por edades**: sin violencia gráfica ni contenido adulto; hay un cuchillo de dibujos animados en el logo (violencia de fantasía leve). Chat de texto y voz entre jugadores sin moderación: marcar «interacción entre usuarios» (en Apple, 12+ recomendado; en Google, PEGI 12 / IARC aprox.).
 
 ## Capturas de pantalla (`tienda/capturas/`)
@@ -73,7 +74,7 @@ Generadas con Playwright (`npx playwright test tests/tienda.spec.js`), 8 pantall
 | `apple-6.5-1284x2778/` | 1284×2778 | App Store, iPhone 6,5" |
 | `apple-5.5-1242x2208/` | 1242×2208 | App Store, iPhone 5,5" |
 
-Iconos en `icons/`: `icon-512.png` (Google Play, 512×512) e `icon-1024.png` (App Store, 1024×1024, sin transparencia).
+Iconos en `icons/`: `icon-512.png` (Google Play, 512×512) e `icon-1024.png` (App Store, 1024×1024, sin transparencia). Ojo: salen del logo de 419 px, así que el de 1024 está ampliado; conviene redibujarlo en alta resolución como se ha hecho con Punto Ciego.
 La sala de espera usa un código de sala real y temporal.
 
 ## Pendiente de que rellenes tú
@@ -82,7 +83,7 @@ La sala de espera usa un código de sala real y temporal.
 - [ ] Capturas de iPad y tablet de 7"/10" si la app va a ser compatible con ellas (si no, restringe a iPhone/teléfono).
 - [ ] Nombre del desarrollador / titular legal y dirección postal (Apple y Google los piden; en la UE, como «trader», la dirección se muestra públicamente).
 - [ ] Cuentas de desarrollador: Google Play Console (25 USD, una vez) y Apple Developer Program (99 USD/año).
-- [ ] Activar Sign in with Apple en Supabase (ver `docs/APPLE_SIGNIN.md` en Punto Ciego): Apple lo exige si ofreces «Entrar con Google».
+- [ ] Activar Sign in with Apple en Supabase (ver `docs/APPLE_SIGNIN.md` en Punto Ciego): Apple lo exige si ofreces «Entrar con Google». Después, desplegar la revocación del token al borrar la cuenta (`docs/BORRADO_APPLE.md` en Punto Ciego; la cuenta y el proyecto Supabase son compartidos).
 - [ ] Credenciales de revisión para Apple/Google: una cuenta de prueba (correo + contraseña), y decir que jugar no la requiere.
 - [ ] Cuestionarios de clasificación por edades y de seguridad de datos (respuestas previstas arriba).
 - [ ] Revisar las capturas: usan nombres ficticios (Ana, Luis, Marta, Pablo).

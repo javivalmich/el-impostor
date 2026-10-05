@@ -24,7 +24,11 @@ Jugar nunca requiere cuenta. Con «Entrar con mi cuenta de Punto Ciego» (con co
 
 Con sesión iniciada, «Mi cuenta» (en la portada o en el menú ☰ de la partida) abre:
 - **Editar personaje y nombre**: mismo editor de capucha, sudadera, estampado, guantes y ojos, y mismo nombre de jugador, guardados en la tabla `profiles` que comparte con Punto Ciego. Si el nombre ya lo usa otra persona, avisa. Si estás en una sala, el cambio se ve al momento en la lista de jugadores, sin salir.
-- **Eliminar cuenta**: reutiliza la función `eliminar_mi_cuenta()` de Supabase (la misma de Punto Ciego, aplicada en el proyecto real). Explica que no se puede deshacer y que es la misma cuenta que Punto Ciego: se pierde también allí, con el personaje. Pide la contraseña para confirmar, o escribir BORRAR si entraste con Google o Apple. Si estás en una partida, sales de la sala antes de borrar.
+- **Eliminar cuenta**: llama a la Edge Function `eliminar-cuenta` de Supabase (revoca el token de Apple si entraste con Apple y borra la cuenta; ver `docs/BORRADO_APPLE.md` en Punto Ciego) y, si no está desplegada o falla, usa el respaldo `eliminar_mi_cuenta()` (la misma de Punto Ciego). Explica que no se puede deshacer y que es la misma cuenta que Punto Ciego: se pierde también allí, con el personaje. Pide la contraseña para confirmar, o escribir BORRAR si entraste con Google o Apple. Si estás en una partida, sales de la sala antes de borrar.
+
+## Bloquear y reportar
+
+En la sala de espera, junto a cada jugador, «Bloquear», y con ⚑ junto a los mensajes del walkie. Bloquear oculta la voz y los mensajes de ese jugador en esa sala, solo en ese móvil (`impostor-bloq-<código>` en localStorage). «Reportar» abre un correo a `SUPPORT_MAIL` con nombre, identificador, código de sala y fecha. No hay moderación ni servidor nuevo, y los textos avisan de que el chat es entre amigos y no está moderado.
 
 ## Cómo funciona por dentro
 
