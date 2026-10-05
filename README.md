@@ -50,6 +50,13 @@ GitHub Pages sirve `index.html` (y `sw.js`) desde la raíz de `main`. Para actua
 
 Para probarlo en local: `npx http-server . -p 8000` (o `python -m http.server 8000`, pero entonces no hay service worker) y abre `http://localhost:8000`. En local, `?grace=5` acorta a 5 s la espera para relevar al anfitrión.
 
+## Instalable y fichas de tienda
+
+- Es instalable (PWA): `manifest.json`, iconos en `icons/` (192, 512, maskable, `apple-touch-icon.png`, `icon-1024.png`) y etiquetas de iOS (pantalla completa, barra de estado oscura).
+- `sw.js` tiene la caché versionada (`VERSION`): **sube `VERSION` al publicar cambios**. Red primero con revalidación, precarga de la app y recarga automática si estás en la portada.
+- `privacidad.html` y `soporte.html` se enlazan desde la portada (y la política, desde «Mi cuenta»).
+- `tienda.md` y `tienda/capturas/` son el material de las fichas; las capturas se regeneran con `npx playwright test tests/tienda.spec.js`.
+
 ## Pruebas
 
 `npm test` ejecuta las pruebas de Playwright del modo de un solo móvil (`tests/`): partidas completas con voto en voz alta y voto secreto, empates, victorias de cada bando, «volver a ver mi palabra», recuperar la partida al recargar y que no haya peticiones de red durante la partida. `npx playwright test tests/screenshots.spec.js` guarda capturas de esas pantallas en varios tamaños de móvil en `test-results/screenshots/`.

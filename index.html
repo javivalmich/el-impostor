@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Punto Falso</title>
+<meta name="description" content="Punto Falso, el juego social del impostor: todos tienen la misma palabra menos uno. Con el móvil, en persona o a distancia.">
+<meta name="theme-color" content="#0b0b0d">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Punto Falso">
+<meta name="application-name" content="Punto Falso">
+<meta name="format-detection" content="telephone=no">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
@@ -25,7 +36,7 @@
   --text:#f5f5f7; --muted:#9d9daa; color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
-html{height:100%;background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
+html{height:100%;overscroll-behavior-y:none;background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;min-height:100%;color:var(--text);font:16px/1.5 Outfit,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   background:radial-gradient(ellipse at 50% -10%,var(--glow) 0,transparent 60%),var(--bg);-webkit-tap-highlight-color:transparent}
 body.red{--text:#fff;--muted:rgba(255,255,255,.8);--line:rgba(255,255,255,.3);--surface2:rgba(0,0,0,.25);
@@ -227,6 +238,8 @@ body.red .sheet .act{background:var(--red)}
 .act.google{background:#fff;color:#0e0e11;border:2px solid var(--line);box-shadow:none}
 .act.apple{background:#000;color:#fff;border:2px solid #000;box-shadow:none}
 .acct{cursor:pointer}
+.legal{text-align:center;margin:6px 0 0;font-size:.9rem;color:var(--muted)}
+.legal a{color:var(--muted);font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:8px 6px;display:inline-block}
 .acct-head{display:flex;align-items:center;gap:12px;margin-bottom:4px}
 .acct-head .av{width:46px;height:46px}
 .acct-head b{font-size:1.1rem}
@@ -320,6 +333,8 @@ body.red .sheet .act{background:var(--red)}
 #wkPtt *{pointer-events:none}
 #wkNivel{position:absolute;left:0;bottom:0;height:6px;width:100%;background:#fff;transform:scaleX(0);transform-origin:left}
 #wkEstado{font-size:.9rem;color:var(--red);font-weight:700;margin-top:8px;min-height:1.3em;text-align:center}
+#wkMicNota{font-size:.8rem;color:var(--muted);margin:8px 0 0;text-align:center;line-height:1.35}
+#wkMicNota[hidden],#wk.compact #wkMicNota{display:none}
 #wkDiag{font-size:.78rem;color:var(--muted);margin-top:2px;text-align:center}
 
 /* sala de espera y entrada tardía */
@@ -410,6 +425,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
         </ol>
       </details>
     </div>
+    <p class="legal"><a href="privacidad.html">Privacidad</a> · <a href="soporte.html">Soporte</a></p>
   </section>
 
   <section class="screen" id="s-create">
@@ -597,6 +613,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
     <div id="wkLista"></div>
     <div class="wk-escribe"><input id="wkTxt" maxlength="200" placeholder="Escribe un mensaje" autocomplete="off" aria-label="Mensaje para el grupo"><button id="wkEnviar">Enviar</button></div>
     <button id="wkPtt"><span id="wkPttTxt">Mantén para hablar</span><i id="wkNivel"></i></button>
+    <p id="wkMicNota">🎤 El micrófono solo se activa mientras mantienes pulsado el botón de hablar. Tu voz se envía al grupo en directo y no se graba ni se guarda. La primera vez, tu móvil te pedirá permiso.</p>
     <p id="wkEstado" role="status"></p>
     <p id="wkDiag"></p>
   </div>
@@ -4320,6 +4337,7 @@ const WK={
     if(this.stream&&this.stream.active&&this.stream.getAudioTracks().some(t=>t.readyState==='live'))return;
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('este navegador no deja usar el micro');
     this.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});this.src=null;
+    lsSet('impostor-micok',1);$('wkMicNota').hidden=true;
   },
   async empieza(){
     const no=this.noPuede();if(no){this.estado(no);return}
@@ -4469,6 +4487,7 @@ const WK={
   }
 };
 WK.init();
+if(lsGet('impostor-micok'))$('wkMicNota').hidden=true;
 
 /* ---------- Cuenta opcional de Punto Ciego ---------- */
 let GOOGLE=false,APPLE=false;
@@ -4542,6 +4561,7 @@ function cuentaMenuSheet(){
   sheet(`<div class="acct-head">${avImg(myLook())}<b></b></div>
     <button class="menuitem" id="acEdit">Editar personaje y nombre</button>
     <button class="menuitem" id="acOut">Cerrar sesión</button>
+    <a class="menuitem" href="privacidad.html" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">Política de privacidad</a>
     <div class="menusep"><button class="menuitem danger" id="acDel">Eliminar cuenta</button></div>
     <button class="link" id="acClose">Cerrar</button>`,()=>{
     const b=$('sheet').querySelector('.acct-head b');if(b)b.textContent=(PERFIL&&PERFIL.name)||'Sin nombre';
@@ -4978,7 +4998,18 @@ if(ROOM){WK.cargaChat();WK.enLlamada=ssGet('impostor-wkcall-'+ROOM.code)!==0;if(
 renderAcct();avLoad();iniciaCuentas();
 setInterval(tick,1000);
 setInterval(()=>{if(iAmHost()&&NET.resumed&&netUp()&&S)bc('st',S)},8000); /* latido: repara mensajes perdidos */
-if('serviceWorker' in navigator)window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
+if('serviceWorker' in navigator)window.addEventListener('load',()=>{
+  const tenia=!!navigator.serviceWorker.controller;let recargado=false;
+  /* Versión nueva instalada: si estás en la portada se recarga sola; en medio de una partida espera a la próxima apertura */
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(!tenia||recargado)return;
+    const h=$('s-home');if(h&&h.classList.contains('on')){recargado=true;location.reload()}
+  });
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+    /* Una app instalada puede pasar días abierta en segundo plano: busca versión nueva cada vez que vuelves a ella */
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update().catch(()=>{})});
+  }).catch(()=>{});
+});
 </script>
 </body>
 </html>
