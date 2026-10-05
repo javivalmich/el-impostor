@@ -10,9 +10,9 @@ const FONDO = '#0b0b0d';
 
 /* Lienzo de 1024; el logo es un círculo de radio 480 centrado. `escala` lo encoge dentro del lienzo
    (más margen para el icono «maskable», cuya zona segura es un círculo del 80 % del lado). */
-function svg(escala) {
+function svg(escala, soloLogo = false) {
   const t = `translate(${512 - 512 * escala} ${512 - 512 * escala}) scale(${escala})`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  return `<svg xmlns="http://www.w3.org/2000/svg" ${soloLogo ? 'viewBox="32 32 960 960" width="960" height="960"' : 'viewBox="0 0 1024 1024" width="1024" height="1024"'}>
   <defs>
     <radialGradient id="campo" cx="42%" cy="34%" r="80%"><stop offset="0" stop-color="#FF2D26"/><stop offset=".55" stop-color="#E0120F"/><stop offset="1" stop-color="#A30806"/></radialGradient>
     <linearGradient id="aro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF2A24"/><stop offset="1" stop-color="#C80D0A"/></linearGradient>
@@ -23,8 +23,8 @@ function svg(escala) {
     <filter id="brillo" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
     <clipPath id="interior"><circle cx="512" cy="512" r="404"/></clipPath>
   </defs>
-  <rect width="1024" height="1024" fill="${FONDO}"/>
-  <g transform="${t}">
+  ${soloLogo ? '' : `<rect width="1024" height="1024" fill="${FONDO}"/>`}
+  <g transform="${soloLogo ? '' : t}">
     <circle cx="512" cy="512" r="480" fill="#08080A"/>
     <circle cx="512" cy="512" r="456" fill="url(#aro)"/>
     <circle cx="512" cy="512" r="418" fill="none" stroke="#3A0606" stroke-width="20"/>
@@ -63,6 +63,9 @@ function svg(escala) {
   const ANY = 0.92, MASK = 0.7; // diámetro del logo: ~88 % en «any» y ~67 % en «maskable» (la zona segura es el 80 %)
   fs.writeFileSync(path.join(OUT, 'icono.svg'), svg(ANY));
   fs.writeFileSync(path.join(OUT, 'icono-maskable.svg'), svg(MASK));
+  // logo suelto (sin fondo, recortado al círculo) para usarlo dentro de la app; version compacta lista para incrustar
+  const compacto = svg(1, true).replace(/\n\s*/g, '').replace(/>\s+</g, '><');
+  fs.writeFileSync(path.join(OUT, 'logo.svg'), compacto);
   const br = await chromium.launch();
   const page = await br.newPage({ deviceScaleFactor: 1 });
   const render = async (s, size, file) => {
