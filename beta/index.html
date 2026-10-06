@@ -16,7 +16,7 @@ setTimeout(f,1500)}
 fetch(D+'manifest.json',{cache:'no-store'}).then(function(r){if(r.ok)ir()}).catch(function(){});
 if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',function(e){if(e.data==='mudanza')ir()});
 })();</script>
-<title>Punto Falso</title>
+<title>Punto Falso (beta)</title>
 <meta name="description" content="Punto Falso, el juego social del impostor: todos tienen la misma palabra menos uno. Con el móvil, en persona o a distancia.">
 <meta name="theme-color" content="#0b0b0d">
 <link rel="manifest" href="manifest.json">
@@ -5085,5 +5085,6 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   }).catch(()=>{});
 });
 </script>
+<div id="betaTag" aria-hidden="true" style="position:fixed;left:8px;bottom:calc(6px + env(safe-area-inset-bottom,0px));z-index:9999;font:700 10px/1 system-ui,sans-serif;letter-spacing:.14em;color:#fff;background:#ff4637;padding:3px 6px;border-radius:4px;opacity:.85;pointer-events:none">BETA</div>
 </body>
 </html>
