@@ -12,10 +12,10 @@
 | Palabras clave (App Store) | impostor,fiesta,amigos,palabra,votar,adivinar,grupo,party,social,mentiras | 100 |
 | Categoría | Juegos › Palabras / Fiesta (Google: Juegos › Palabras; Apple: Juegos › Palabras o Familia) | |
 | Idioma principal | Español (España) | |
-| URL de privacidad | https://javivalmich.github.io/el-impostor/privacidad.html | |
-| URL de soporte | https://javivalmich.github.io/el-impostor/soporte.html | |
-| Correo de contacto | javivalmich@gmail.com | |
-| Borrado de cuenta (Google exige URL) | https://javivalmich.github.io/el-impostor/soporte.html#borrar-cuenta | |
+| URL de privacidad | https://puntostudio.es/privacidad/ | |
+| URL de soporte | https://puntostudio.es/soporte/ | |
+| Correo de contacto | soporte@puntostudio.es | |
+| Borrado de cuenta (Google exige URL) | https://puntostudio.es/soporte/#borrar-cuenta | |
 
 ## Descripción larga (máx. 4000)
 
