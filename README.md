@@ -1,8 +1,8 @@
 # Punto Falso
 
-**El juego social del impostor**, para jugar con el móvil, en persona o a distancia. Es una web estática: casi todo va en `index.html` (más un `sw.js` mínimo para que el modo sin conexión funcione sin cobertura). Un juego de Punto Studio, hermano de [Punto Ciego](https://javivalmich.github.io/Punto-Ciego/).
+**El juego social del impostor**, para jugar con el móvil, en persona o a distancia. Es una web estática: casi todo va en `index.html` (más un `sw.js` mínimo para que el modo sin conexión funcione sin cobertura). Un juego de Punto Studio, hermano de [Punto Ciego](https://puntostudio.es/punto-ciego/).
 
-Jugar: https://javivalmich.github.io/el-impostor/ (la URL conserva el nombre anterior del proyecto; no se ha movido para no romper enlaces, QR ya compartidos ni el alta en Supabase).
+Jugar: https://puntostudio.es/punto-falso/ (portada de Punto Studio: https://puntostudio.es/). Antes vivía en `javivalmich.github.io/el-impostor/`; esa dirección es ahora un redireccionador que conserva la ruta, la query y el hash, así que los QR y enlaces antiguos siguen funcionando.
 
 ## Cómo se juega
 
@@ -20,7 +20,7 @@ Jugar: https://javivalmich.github.io/el-impostor/ (la URL conserva el nombre ant
 
 ## Cuentas (opcional)
 
-Jugar nunca requiere cuenta. Con «Entrar con mi cuenta de Punto Ciego» (con correo, con Google o, cuando esté activado, con Apple) se usa tu nombre y tu personaje (mismo proyecto de Supabase y misma sesión que [Punto Ciego](https://javivalmich.github.io/Punto-Ciego/)). El personaje viaja por presencia y lo ven los demás. Sin sesión se juega con la mascota.
+Jugar nunca requiere cuenta. Con «Entrar con mi cuenta de Punto Ciego» (con correo, con Google o, cuando esté activado, con Apple) se usa tu nombre y tu personaje (mismo proyecto de Supabase y misma sesión que [Punto Ciego](https://puntostudio.es/punto-ciego/)). El personaje viaja por presencia y lo ven los demás. Sin sesión se juega con la mascota.
 
 Con sesión iniciada, «Mi cuenta» (en la portada o en el menú ☰ de la partida) abre:
 - **Editar personaje y nombre**: mismo editor de capucha, sudadera, estampado, guantes y ojos, y mismo nombre de jugador, guardados en la tabla `profiles` que comparte con Punto Ciego. Si el nombre ya lo usa otra persona, avisa. Si estás en una sala, el cambio se ve al momento en la lista de jugadores, sin salir.
@@ -60,6 +60,15 @@ Para probarlo en local: `npx http-server . -p 8000` (o `python -m http.server 80
 - `sw.js` tiene la caché versionada (`VERSION`): **sube `VERSION` al publicar cambios**. Red primero con revalidación, precarga de la app y recarga automática si estás en la portada.
 - `privacidad.html` y `soporte.html` se enlazan desde la portada (y la política, desde «Mi cuenta»).
 - `tienda.md` y `tienda/capturas/` son el material de las fichas; las capturas se regeneran con `npx playwright test tests/tienda.spec.js`.
+
+## Beta y principal
+
+Hay dos copias de la web, igual que en Punto Ciego:
+
+- **Principal** (raíz): `https://puntostudio.es/punto-falso/`. La usan los jugadores.
+- **Beta** (`beta/`): `https://puntostudio.es/punto-falso/beta/`. Zona de pruebas permanente, con una etiqueta roja «BETA» y «(beta)» en el título; su manifest y su service worker son propios (`punto-falso-beta-v…`). Comparte cuentas y base de datos con la principal.
+
+Los cambios se hacen en `beta/`, se prueban en el móvil y, cuando están bien, se pasan a la raíz: `cp beta/index.html index.html`, y en `index.html` quita `<div id="betaTag"…>` y el «(beta)» del `<title>`. Sube `VERSION` en el `sw.js` de la copia que cambies.
 
 ## Pruebas
 

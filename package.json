@@ -8,16 +8,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/javivalmich/el-impostor.git"
+    "url": "git+https://github.com/javivalmich/punto-falso.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/javivalmich/el-impostor/issues"
+    "url": "https://github.com/javivalmich/punto-falso/issues"
   },
-  "homepage": "https://github.com/javivalmich/el-impostor#readme",
+  "homepage": "https://github.com/javivalmich/punto-falso#readme",
   "devDependencies": {
     "@playwright/test": "^1.63.0"
   }
