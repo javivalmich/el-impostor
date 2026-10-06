@@ -3231,7 +3231,7 @@ const SUPA={
   url:'https://qsmcdfyyxvqmesnbwsod.supabase.co',
   key:'sb_publishable_gS_zmhigp_Qt-h8jTyQBCg_r9WwTVU9' /* clave publicable: es pública por diseño; los datos los protege RLS */
 };
-const SB_LIB=(EN_LOCAL&&QS.get('sblib'))||'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js';
+const SB_LIB=(EN_LOCAL&&QS.get('sblib'))||'vendor/supabase-js/supabase.js';
 let SB=null,sbP=null;
 function loadSB(){
   if(SB)return Promise.resolve(SB);
