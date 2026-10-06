@@ -28,7 +28,12 @@ for (const d of DESTINOS) {
       test.setTimeout(90000);
       const out = path.join(__dirname, '..', 'tienda', 'capturas', d.dir);
       fs.mkdirSync(out, { recursive: true });
-      const shot = (n) => page.screenshot({ path: path.join(out, n + '.png') });
+      const shot = async (n) => {
+        // en las capturas de la tienda no se ve ningún correo
+        const c = await page.evaluate(() => { const t = document.body.innerText + ' ' + [...document.querySelectorAll('input,textarea')].map((i) => i.value).join(' '); const m = t.match(/\S+@\S+/); return m && m[0]; });
+        if (c) throw new Error('La captura ' + n + ' enseña un correo: ' + c);
+        await page.screenshot({ path: path.join(out, n + '.png') });
+      };
 
       await page.goto('/');
       await page.waitForSelector('#s-home.on');
