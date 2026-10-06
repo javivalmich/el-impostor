@@ -75,7 +75,7 @@ Generadas con Playwright (`npx playwright test tests/tienda.spec.js`), 8 pantall
 | `apple-6.5-1284x2778/` | 1284×2778 | App Store, iPhone 6,5" |
 | `apple-5.5-1242x2208/` | 1242×2208 | App Store, iPhone 5,5" |
 
-Iconos en `icons/`: `icon-512.png` (Google Play, 512×512) e `icon-1024.png` (App Store, 1024×1024, sin transparencia), más `icon-maskable-*.png` (con margen para recortes redondos). Están **redibujados como vector** (el fuente es `icons/icono.svg` / `icono-maskable.svg`) y se regeneran con `node icons/generar-iconos.js`, sin ampliar el logo de 419 px. `icons/vista-previa-recortes.png` (no se versiona) muestra cómo queda recortado en círculo y en cuadrado redondeado.
+Iconos en `icons/`: `icon-512.png` (Google Play, 512×512) e `icon-1024.png` (App Store, 1024×1024, sin transparencia), más `icon-maskable-*.png` (la imagen reducida al 86 % sobre el color del borde, para que el anillo quede dentro de la zona segura de los recortes redondos). Salen directamente del original `punto-falso.png` (1254 px, en `assets/marca/originales/` del repo del hub), reducido y nunca ampliado; ya no hay icono redibujado como vector. `icons/vista-previa-recortes.png` (no se versiona) muestra cómo queda recortado en círculo y en cuadrado redondeado, a tamaño grande y a 60 px, junto a Punto Ciego.
 La sala de espera usa un código de sala real y temporal.
 
 ## Pendiente de que rellenes tú
