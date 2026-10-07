@@ -35,7 +35,7 @@ if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',fu
 @font-face{font-family:'Outfit';font-style:normal;font-weight:400 900;font-display:swap;src:url(fonts/outfit-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
   --bg:#f3f3f5; --glow:rgba(224,18,15,.10); --surface:#ffffff; --surface2:#e8e8ee; --line:rgba(14,14,17,.12);
-  --text:#0e0e11; --muted:#5f5f69; --red:#e0120f; --red-d:#8f0a08; --red-press:#c4281c; --visor:#0e0e11;
+  --text:#0e0e11; --muted:#5f5f69; --red:#e0120f; --red-d:#8f0a08; --red-press:#a00907; /* su rojo base oscurecido con el mismo contraste que en Punto Ciego (#ff4637 → #c4281c: 1,69:1) */ --visor:#0e0e11;
   color-scheme:light; box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -71,7 +71,7 @@ body.red button:focus-visible{outline-color:#fff}
 .act.danger{background:transparent;color:var(--red);border:2px solid var(--red);box-shadow:none}
 .act:disabled{opacity:.4;cursor:default}
 body.red .act{background:#0e0e11;box-shadow:0 8px 22px rgba(0,0,0,.3)}
-/* Al pulsar (mismos valores y criterios que Punto Ciego): los botones rojos pasan a --red-press (#c4281c) y el resto se oscurece un 18 %.
+/* Al pulsar (mismos valores y criterios que Punto Ciego): los botones rojos pasan a --red-press (su rojo base oscurecido con el mismo contraste que en Punto Ciego) y el resto se oscurece un 18 %.
    Sin efecto: Google, Apple, enlaces de texto, chips, interruptores, − / +, pestañas (.seg), ✕ y el revelado del papel (que no es un botón).
    .prs lo pone el JS al tocar (en iOS :active no siempre se aplica con el dedo). */
 :is(.act:not(.sec,.danger,.google,.apple),.jr button:not(.no),#wkFab,#wkPtt.on,.vbtn.on):is(.prs,:active):not(:disabled){background:var(--red-press)}
@@ -5128,6 +5128,6 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   }).catch(()=>{});
 });
 </script>
-<div id="betaTag" aria-hidden="true" style="position:fixed;left:8px;bottom:calc(6px + env(safe-area-inset-bottom,0px));z-index:9999;font:700 10px/1 system-ui,sans-serif;letter-spacing:.14em;color:#fff;background:#ff4637;padding:3px 6px;border-radius:4px;opacity:.85;pointer-events:none">BETA v24</div>
+<div id="betaTag" aria-hidden="true" style="position:fixed;left:8px;bottom:calc(6px + env(safe-area-inset-bottom,0px));z-index:9999;font:700 10px/1 system-ui,sans-serif;letter-spacing:.14em;color:#fff;background:#ff4637;padding:3px 6px;border-radius:4px;opacity:.85;pointer-events:none">BETA v25</div>
 </body>
 </html>
