@@ -64,17 +64,22 @@ button:focus-visible,input:focus-visible,summary:focus-visible,.card:focus-visib
 body.red button:focus-visible{outline-color:#fff}
 
 .act{display:block;width:100%;margin-top:12px;border:0;border-radius:16px;padding:17px 14px;background:var(--red);color:#fff;
-  font-weight:800;font-size:1.12rem;letter-spacing:.02em}
-.act.sec{background:transparent;color:var(--text);border:2px solid var(--line)}
+  font-weight:800;font-size:1.12rem;letter-spacing:.02em;box-shadow:0 8px 22px rgba(224,18,15,.28)}
+.act.sec{background:transparent;color:var(--text);border:2px solid var(--line);box-shadow:none}
 .act.google,.act.apple{display:flex;align-items:center;justify-content:center;gap:10px}
 .act.google svg,.act.apple svg{flex:none}
-.act.danger{background:transparent;color:var(--red);border:2px solid var(--red)}
+.act.danger{background:transparent;color:var(--red);border:2px solid var(--red);box-shadow:none}
 .act:disabled{opacity:.4;cursor:default}
-body.red .act{background:#0e0e11}
-/* efecto 3D de los botones de acción: sombra dura gris (como Punto Ciego); al pulsar se hunde y la sombra desaparece */
-.act,.jr button,#wkEnviar,#wkPtt,.vbtn{box-shadow:4px 4px 0 #3b3a37}
-.act:active,.jr button:active,#wkEnviar:active,#wkPtt:active,#wkPtt.on,.vbtn:active{transform:translate(4px,4px);box-shadow:none}
+body.red .act{background:#0e0e11;box-shadow:0 8px 22px rgba(0,0,0,.3)}
+/* Al pulsar: los botones rojos pasan a --red-d y el resto se oscurece un poco (Google y Apple quedan como en la pública) */
+body:not(.red) .act:not(.sec):not(.danger):not(.google):not(.apple):active:not(:disabled),.jr button:not(.no):active:not(:disabled),#wkPtt.on,.vbtn.on:active:not(:disabled){background:var(--red-d)}
+.act.sec:active:not(:disabled),.act.danger:active:not(:disabled),body.red .act:not(.google):not(.apple):active:not(:disabled),.jr button.no:active:not(:disabled),#wkEnviar:active:not(:disabled),#wkPtt:not(.on):active:not(:disabled),.vbtn:not(.on):active:not(:disabled){box-shadow:inset 0 0 0 999px rgba(0,0,0,.12)}
+/* EFECTO 3D (desactivado, para volver a él): sombra dura gris y hundimiento. Para activarlo, descomenta este bloque
+   y quita las dos reglas de "Al pulsar" de arriba.
+.act:not(.google):not(.apple),.jr button,#wkEnviar,#wkPtt,.vbtn{box-shadow:4px 4px 0 #3b3a37}
+.act:not(.google):not(.apple):active,.jr button:active,#wkEnviar:active,#wkPtt:active,#wkPtt.on,.vbtn:active{transform:translate(4px,4px);box-shadow:none}
 .act:disabled,.jr button:disabled,#wkEnviar:disabled,#wkPtt:disabled,.vbtn:disabled{box-shadow:none;transform:none}
+*/
 body.red .act.sec{background:transparent;border-color:rgba(255,255,255,.55)}
 .link{display:block;margin:14px auto 0;background:none;border:0;padding:8px;color:var(--muted);font-weight:600}
 .back{background:none;border:0;padding:6px 0;color:var(--muted);font-weight:600}
@@ -250,8 +255,8 @@ body.red .sheet .act{background:var(--red)}
 .sheet .err{color:var(--red)}
 .sheet .fine{font-size:.85rem;margin-top:10px}
 .sheet .fine a{color:var(--red);font-weight:700}
-.act.google{background:#fff;color:#0e0e11;border:2px solid var(--line)}
-.act.apple{background:#000;color:#fff;border:2px solid #000}
+.act.google{background:#fff;color:#0e0e11;border:2px solid var(--line);box-shadow:none}
+.act.apple{background:#000;color:#fff;border:2px solid #000;box-shadow:none}
 .acct{cursor:pointer}
 .legal{text-align:center;margin:6px 0 0;font-size:.9rem;color:var(--muted)}
 .legal a{color:var(--muted);font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:8px 6px;display:inline-block}
