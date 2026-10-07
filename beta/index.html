@@ -72,9 +72,9 @@ body.red button:focus-visible{outline-color:#fff}
 .act:disabled{opacity:.4;cursor:default}
 body.red .act{background:#0e0e11}
 /* efecto 3D de los botones de acción: sombra dura gris (como Punto Ciego); al pulsar se hunde y la sombra desaparece */
-.act,.jr button,#wkEnviar,.wk-btn{box-shadow:4px 4px 0 #3b3a37}
-.act:active,.jr button:active,#wkEnviar:active,.wk-btn:active{transform:translate(4px,4px);box-shadow:none}
-.act:disabled,.jr button:disabled,#wkEnviar:disabled,.wk-btn:disabled{box-shadow:none;transform:none}
+.act,.jr button,#wkEnviar,#wkPtt,.vbtn{box-shadow:4px 4px 0 #3b3a37}
+.act:active,.jr button:active,#wkEnviar:active,#wkPtt:active,#wkPtt.on,.vbtn:active{transform:translate(4px,4px);box-shadow:none}
+.act:disabled,.jr button:disabled,#wkEnviar:disabled,#wkPtt:disabled,.vbtn:disabled{box-shadow:none;transform:none}
 body.red .act.sec{background:transparent;border-color:rgba(255,255,255,.55)}
 .link{display:block;margin:14px auto 0;background:none;border:0;padding:8px;color:var(--muted);font-weight:600}
 .back{background:none;border:0;padding:6px 0;color:var(--muted);font-weight:600}
@@ -268,9 +268,6 @@ body.red .sheet .act{background:var(--red)}
 .ed-preview .av{width:min(34vw,120px);height:min(34vw,120px);border-width:3px}
 .wk-call{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:8px 12px;border:1.5px solid var(--line);border-radius:14px;font-size:.86rem;color:var(--muted)}
 .wk-call b{color:var(--text)}
-.wk-acc{display:flex;gap:10px;margin-bottom:8px}
-.wk-btn{flex:1;min-width:0;border:0;border-radius:14px;padding:10px 8px;font-weight:800;font-size:.9rem;background:var(--text);color:var(--bg)}
-.wk-btn.off{background:var(--red);color:#fff}
 
 /* revelación */
 #reveal{position:fixed;inset:0;z-index:30;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0b0b0d;color:#fff}
@@ -633,7 +630,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   <div class="wk-caja" role="dialog" aria-label="Walkie-talkie">
     <header class="wk-cab"><div><h3>Walkie-talkie</h3><p id="wkCanal"></p></div><button id="wkCerrar" aria-label="Cerrar walkie">✕</button></header>
     <div class="wk-call"><span id="wkQuienes"></span></div>
-    <div class="wk-acc"><button class="wk-btn" id="wkVolver">Volver con walkie abierto</button><button class="wk-btn off" id="wkDesc">Desconectar walkie</button></div>
+    <button class="act" id="wkVolver">Volver con walkie abierto</button><button class="act sec" id="wkDesc">Desconectar walkie</button>
     <div id="wkAviso"></div>
     <div id="wkLista"></div>
     <div class="wk-escribe"><input id="wkTxt" maxlength="200" placeholder="Escribe un mensaje" autocomplete="off" aria-label="Mensaje para el grupo"><button id="wkEnviar">Enviar</button></div>
@@ -3152,7 +3149,7 @@ function saveNames(){try{localStorage.setItem('impostor-names',JSON.stringify(na
 const WKS=['s-game','s-lobby','s-wait']; // pantallas donde está el walkie (el panel no se cierra al pasar de una a otra)
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));document.body.classList.remove('red');window.scrollTo(0,0);
-  const wk=WKS.includes(id)&&!SOLO&&!!(ROOM||game); // el walkie no existe en "un solo móvil"
+  const wk=WKS.includes(id)&&!!(ROOM&&ROOM.remote); // el walkie solo existe con "Jugamos a distancia"
   document.querySelector('.wrap').classList.toggle('game',WKS.includes(id));
   $('wkFab').classList.toggle('on',wk);
   if(!wk){WK.cerrar();WK.soltar()}else WK.modo();
@@ -4405,7 +4402,7 @@ const WK={
   hablando(p,fb){const e=$('wkTalk');SND.talking=!!p;if(p){e.innerHTML=avImg(lookOfPid(p),'sm')+'<span></span>';e.lastChild.textContent=pidName(p,fb)+' está hablando';e.hidden=false}else e.hidden=true},
   async micro(){
     if(this.stream&&this.stream.active&&this.stream.getAudioTracks().some(t=>t.readyState==='live'))return;
-    if(SOLO)throw new Error('el walkie no está disponible en este modo');
+    if(!(ROOM&&ROOM.remote))throw new Error('el walkie solo está disponible a distancia');
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('este navegador no deja usar el micro');
     this.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});this.src=null;
     lsSet('impostor-micok',1);$('wkMicNota').hidden=true;
@@ -4535,7 +4532,7 @@ const WK={
     const L=$('wkLista');if(L._h!==h){const abajo=L.scrollHeight-L.scrollTop-L.clientHeight<40;L._h=h;L.innerHTML=h;if(abajo||!L._ini){L.scrollTop=L.scrollHeight;L._ini=true}}
   },
   modo(){const cur=document.querySelector('.screen.on'),c=!!(this.abierto&&cur&&cur.id!=='s-game');$('wk').classList.toggle('compact',c);document.body.classList.toggle('wk-compact',c)},
-  abrir(){if(SOLO)return;this.off=false;if(!this.enLlamada)this.entrarLlamada();this.abierto=true;$('wk').classList.add('on');ssSet('impostor-wkopen-'+wkKey(),1);this.ctx();this.diag();$('wkLista')._ini=false;this.modo();this.pinta()},
+  abrir(){if(!(ROOM&&ROOM.remote))return;this.off=false;if(!this.enLlamada)this.entrarLlamada();this.abierto=true;$('wk').classList.add('on');ssSet('impostor-wkopen-'+wkKey(),1);this.ctx();this.diag();$('wkLista')._ini=false;this.modo();this.pinta()},
   cerrar(){const era=this.abierto;this.abierto=false;$('wk').classList.remove('on');if(era)ssSet('impostor-wkopen-'+wkKey(),null);if(this.rec)this.para(true);this.hablando(null);this.modo();this.pinta()},
   init(){
     $('wkFab').onclick=()=>this.abrir();$('wkCerrar').onclick=()=>this.cerrar();$('wkFondo').onclick=()=>this.cerrar();
