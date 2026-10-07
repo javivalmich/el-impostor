@@ -35,7 +35,7 @@ if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',fu
 @font-face{font-family:'Outfit';font-style:normal;font-weight:400 900;font-display:swap;src:url(fonts/outfit-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
   --bg:#f3f3f5; --glow:rgba(224,18,15,.10); --surface:#ffffff; --surface2:#e8e8ee; --line:rgba(14,14,17,.12);
-  --text:#0e0e11; --muted:#5f5f69; --red:#e0120f; --red-d:#8f0a08; --visor:#0e0e11;
+  --text:#0e0e11; --muted:#5f5f69; --red:#e0120f; --red-d:#8f0a08; --red-press:#a00907; /* su rojo base oscurecido con el mismo contraste que en Punto Ciego (#ff4637 → #c4281c: 1,69:1) */ --visor:#0e0e11;
   color-scheme:light; box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -71,6 +71,18 @@ body.red button:focus-visible{outline-color:#fff}
 .act.danger{background:transparent;color:var(--red);border:2px solid var(--red);box-shadow:none}
 .act:disabled{opacity:.4;cursor:default}
 body.red .act{background:#0e0e11;box-shadow:0 8px 22px rgba(0,0,0,.3)}
+/* Al pulsar (mismos valores y criterios que Punto Ciego): los botones rojos pasan a --red-press (su rojo base oscurecido con el mismo contraste que en Punto Ciego) y el resto se oscurece un 18 %.
+   Sin efecto: Google, Apple, enlaces de texto, chips, interruptores, − / +, pestañas (.seg), ✕ y el revelado del papel (que no es un botón).
+   .prs lo pone el JS al tocar (en iOS :active no siempre se aplica con el dedo). */
+:is(.act:not(.sec,.danger,.google,.apple),.jr button:not(.no),#wkFab,#wkPtt.on,.vbtn.on):is(.prs,:active):not(:disabled){background:var(--red-press)}
+body.red .act:not(.sec,.danger,.google,.apple):is(.prs,:active):not(:disabled){background:#000}
+button.prs:not(:disabled):not(:is(.act:not(.sec,.danger,.google,.apple),.jr button:not(.no),#wkFab,#wkPtt.on,.vbtn.on)){box-shadow:inset 0 0 0 999px rgba(0,0,0,.18)}
+/* EFECTO 3D (desactivado, para volver a él): sombra dura gris y hundimiento. Para activarlo, descomenta este bloque
+   y quita las tres reglas de "Al pulsar" de arriba.
+.act:not(.google):not(.apple),.jr button,#wkEnviar,#wkPtt,.vbtn{box-shadow:4px 4px 0 #3b3a37}
+.act:not(.google):not(.apple):active,.jr button:active,#wkEnviar:active,#wkPtt:active,#wkPtt.on,.vbtn:active{transform:translate(4px,4px);box-shadow:none}
+.act:disabled,.jr button:disabled,#wkEnviar:disabled,#wkPtt:disabled,.vbtn:disabled{box-shadow:none;transform:none}
+*/
 body.red .act.sec{background:transparent;border-color:rgba(255,255,255,.55)}
 .link{display:block;margin:14px auto 0;background:none;border:0;padding:8px;color:var(--muted);font-weight:600}
 .back{background:none;border:0;padding:6px 0;color:var(--muted);font-weight:600}
@@ -3152,6 +3164,28 @@ function show(id){
   if(!wk)WK.cerrar();else WK.modo();
 }
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+/* Efecto al pulsar en táctil: pone .prs en el botón al tocar (iOS no siempre aplica :active) y lo mantiene 120 ms para que se vea.
+   En los botones que cambian de pantalla o abren algo, el clic se retrasa hasta que se haya visto el estado oscuro. */
+(()=>{
+  const SEL='button';
+  const NOEXC='.google,.apple,.link,.chip,.switch,.seg button,.step button,.xbtn,.names .nm button,.grid button';
+  const NODELAY='#wkPtt,.step button,.flag,.kick,.blk,.wk-m button[data-i],.names .nm button';
+  const T=120,NAV=100;let cur=null; /* visible al menos 120 ms; antes de navegar, ~100 ms de estado oscuro */
+  const quita=(b,t0)=>setTimeout(()=>b.classList.remove('prs'),Math.max(0,T-(Date.now()-t0)));
+  document.addEventListener('touchstart',()=>{},{passive:true});
+  document.addEventListener('pointerdown',e=>{
+    const b=e.target.closest&&e.target.closest(SEL);if(!b||b.disabled||b.matches(NOEXC))return;
+    b.classList.add('prs');b._t0=Date.now();cur=b;
+    const fin=()=>{removeEventListener('pointerup',fin,true);removeEventListener('pointercancel',fin,true);quita(b,b._t0)};
+    addEventListener('pointerup',fin,true);addEventListener('pointercancel',fin,true);
+  },true);
+  document.addEventListener('click',e=>{
+    const b=e.target.closest&&e.target.closest(SEL);if(!b||b._re||b.disabled||b.matches(NOEXC)||b.matches(NODELAY)||!b._t0)return;
+    const falta=NAV-(Date.now()-b._t0);if(falta<=0)return;
+    e.stopImmediatePropagation();e.preventDefault();
+    setTimeout(()=>{b._re=true;try{b.click()}finally{b._re=false}},falta);
+  },true);
+})();
 
 let toastT;
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
