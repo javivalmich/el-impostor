@@ -71,11 +71,13 @@ body.red button:focus-visible{outline-color:#fff}
 .act.danger{background:transparent;color:var(--red);border:2px solid var(--red);box-shadow:none}
 .act:disabled{opacity:.4;cursor:default}
 body.red .act{background:#0e0e11;box-shadow:0 8px 22px rgba(0,0,0,.3)}
-/* Al pulsar: los botones rojos pasan a --red-d y el resto se oscurece un poco (Google y Apple quedan como en la pública) */
-body:not(.red) .act:not(.sec):not(.danger):not(.google):not(.apple):active:not(:disabled),.jr button:not(.no):active:not(:disabled),#wkPtt.on,.vbtn.on:active:not(:disabled){background:var(--red-d)}
-.act.sec:active:not(:disabled),.act.danger:active:not(:disabled),body.red .act:not(.google):not(.apple):active:not(:disabled),.jr button.no:active:not(:disabled),#wkEnviar:active:not(:disabled),#wkPtt:not(.on):active:not(:disabled),.vbtn:not(.on):active:not(:disabled){box-shadow:inset 0 0 0 999px rgba(0,0,0,.12)}
+/* Al pulsar: los botones rojos pasan a --red-d y el resto se oscurece un poco (Google y Apple quedan como en la pública).
+   .prs lo pone el JS al tocar (en iOS :active no siempre se aplica con el dedo); :active queda por si acaso. */
+:is(.act:not(.sec,.danger,.google,.apple),.jr button:not(.no),#wkFab,#wkPtt.on,.vbtn.on):is(.prs,:active):not(:disabled){background:var(--red-d)}
+body.red .act:not(.sec,.danger,.google,.apple):is(.prs,:active):not(:disabled){background:#000}
+:is(.act:is(.sec,.danger),.jr button.no,#wkEnviar,#wkPtt:not(.on),.vbtn:not(.on),.roundbtn,.menubtn,.xbtn,.step button,.kick,.blk,.flag,.names .nm button,.back,.wk-m button[data-i]):is(.prs,:active):not(:disabled){box-shadow:inset 0 0 0 999px rgba(0,0,0,.12)}
 /* EFECTO 3D (desactivado, para volver a él): sombra dura gris y hundimiento. Para activarlo, descomenta este bloque
-   y quita las dos reglas de "Al pulsar" de arriba.
+   y quita las tres reglas de "Al pulsar" de arriba.
 .act:not(.google):not(.apple),.jr button,#wkEnviar,#wkPtt,.vbtn{box-shadow:4px 4px 0 #3b3a37}
 .act:not(.google):not(.apple):active,.jr button:active,#wkEnviar:active,#wkPtt:active,#wkPtt.on,.vbtn:active{transform:translate(4px,4px);box-shadow:none}
 .act:disabled,.jr button:disabled,#wkEnviar:disabled,#wkPtt:disabled,.vbtn:disabled{box-shadow:none;transform:none}
@@ -3160,6 +3162,28 @@ function show(id){
   if(!wk){WK.cerrar();WK.soltar()}else WK.modo();
 }
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+/* Efecto al pulsar en táctil: pone .prs en el botón al tocar (iOS no siempre aplica :active) y lo mantiene ~110 ms para que se vea.
+   En los botones que cambian de pantalla o abren algo, el clic se retrasa hasta que se haya visto el estado oscuro. */
+(()=>{
+  const SEL='.act,.jr button,#wkEnviar,#wkPtt,#wkFab,.vbtn,.roundbtn,.menubtn,.xbtn,.step button,.kick,.blk,.flag,.names .nm button,.back,.wk-m button[data-i]';
+  const NOEXC='.google,.apple,.link,.chip,.switch,.menuitem,.seg button,.sw';
+  const NODELAY='#wkPtt,.step button,.flag,.kick,.blk,.wk-m button[data-i],.names .nm button';
+  const T=110;let cur=null;
+  const quita=(b,t0)=>setTimeout(()=>b.classList.remove('prs'),Math.max(0,T-(Date.now()-t0)));
+  document.addEventListener('touchstart',()=>{},{passive:true});
+  document.addEventListener('pointerdown',e=>{
+    const b=e.target.closest&&e.target.closest(SEL);if(!b||b.disabled||b.matches(NOEXC))return;
+    b.classList.add('prs');b._t0=Date.now();cur=b;
+    const fin=()=>{removeEventListener('pointerup',fin,true);removeEventListener('pointercancel',fin,true);quita(b,b._t0)};
+    addEventListener('pointerup',fin,true);addEventListener('pointercancel',fin,true);
+  },true);
+  document.addEventListener('click',e=>{
+    const b=e.target.closest&&e.target.closest(SEL);if(!b||b._re||b.disabled||b.matches(NOEXC)||b.matches(NODELAY)||!b._t0)return;
+    const falta=T-(Date.now()-b._t0);if(falta<=20||falta>T)return;
+    e.stopImmediatePropagation();e.preventDefault();
+    setTimeout(()=>{b._re=true;try{b.click()}finally{b._re=false}},falta);
+  },true);
+})();
 
 let toastT;
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
@@ -5103,6 +5127,6 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   }).catch(()=>{});
 });
 </script>
-<div id="betaTag" aria-hidden="true" style="position:fixed;left:8px;bottom:calc(6px + env(safe-area-inset-bottom,0px));z-index:9999;font:700 10px/1 system-ui,sans-serif;letter-spacing:.14em;color:#fff;background:#ff4637;padding:3px 6px;border-radius:4px;opacity:.85;pointer-events:none">BETA</div>
+<div id="betaTag" aria-hidden="true" style="position:fixed;left:8px;bottom:calc(6px + env(safe-area-inset-bottom,0px));z-index:9999;font:700 10px/1 system-ui,sans-serif;letter-spacing:.14em;color:#fff;background:#ff4637;padding:3px 6px;border-radius:4px;opacity:.85;pointer-events:none">BETA v23</div>
 </body>
 </html>
