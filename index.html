@@ -276,8 +276,6 @@ body.red .sheet .act{background:var(--red)}
 .ed-preview .av{width:min(34vw,120px);height:min(34vw,120px);border-width:3px}
 .wk-call{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:8px 12px;border:1.5px solid var(--line);border-radius:14px;font-size:.86rem;color:var(--muted)}
 .wk-call b{color:var(--text)}
-.wk-call button{border:0;background:none;color:var(--red);font-weight:800;padding:4px;flex:none}
-.wk-call button.on{color:#2fbf71}
 
 /* revelación */
 #reveal{position:fixed;inset:0;z-index:30;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0b0b0d;color:#fff}
@@ -639,7 +637,8 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   <div class="fondo" id="wkFondo"></div>
   <div class="wk-caja" role="dialog" aria-label="Walkie-talkie">
     <header class="wk-cab"><div><h3>Walkie-talkie</h3><p id="wkCanal"></p></div><button id="wkCerrar" aria-label="Cerrar walkie">✕</button></header>
-    <div class="wk-call"><span id="wkQuienes"></span><button id="wkCallBtn"></button></div>
+    <div class="wk-call"><span id="wkQuienes"></span></div>
+    <button class="act" id="wkVolver">Volver con walkie abierto</button><button class="act sec" id="wkDesc">Desconectar walkie</button>
     <div id="wkAviso"></div>
     <div id="wkLista"></div>
     <div class="wk-escribe"><input id="wkTxt" maxlength="200" placeholder="Escribe un mensaje" autocomplete="off" aria-label="Mensaje para el grupo"><button id="wkEnviar">Enviar</button></div>
@@ -3158,10 +3157,10 @@ function saveNames(){try{localStorage.setItem('impostor-names',JSON.stringify(na
 const WKS=['s-game','s-lobby','s-wait']; // pantallas donde está el walkie (el panel no se cierra al pasar de una a otra)
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));document.body.classList.remove('red');window.scrollTo(0,0);
-  const wk=WKS.includes(id)&&!!(ROOM||game);
+  const wk=WKS.includes(id)&&!!(ROOM&&ROOM.remote); // el walkie solo existe con "Jugamos a distancia"
   document.querySelector('.wrap').classList.toggle('game',WKS.includes(id));
   $('wkFab').classList.toggle('on',wk);
-  if(!wk)WK.cerrar();else WK.modo();
+  if(!wk){WK.cerrar();WK.soltar()}else WK.modo();
 }
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
 /* Efecto al pulsar en táctil: pone .prs en el botón al tocar (iOS no siempre aplica :active) y lo mantiene 120 ms para que se vea.
@@ -4348,6 +4347,7 @@ const ssSet=(k,v)=>{try{if(v==null)sessionStorage.removeItem(k);else sessionStor
 const WK={
   abierto:false,visto:0,voces:[],chat:[],ses:{},blobs:{},rec:null,modo:lsGet('imp.wkmodo','pcm'),enLlamada:true,
   ctx(){
+    if(this.off)return null;
     if(!this._c){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;this._c=new C();this.bus=this.radio(this._c)}
     if(this._c.state==='suspended')this._c.resume().catch(()=>{});return this._c;
   },
@@ -4364,7 +4364,7 @@ const WK={
   noPuede(){
     if(!ROOM)return game?'Sin conexión: el walkie necesita internet':'Entra en una partida para usar el walkie';
     if(!netUp())return 'Sin conexión: el walkie necesita internet';
-    if(!this.enLlamada)return 'Has salido de la llamada: toca «Entrar en la llamada» para hablar';
+    if(!this.enLlamada)return 'Walkie desconectado: vuelve a abrirlo para hablar';
     if(isWaiting()&&!S.acc.some(p=>p.p===PID))return 'Esperas a que el anfitrión te acepte: puedes escuchar y leer, pero no hablar ni escribir';
     if(isDead())return 'Estás eliminado: puedes escuchar, pero no hablar hasta la siguiente ronda';
     return '';
@@ -4388,15 +4388,24 @@ const WK={
     this.rec=null;this.btn(false);this.nivel(0);
   },
   pararMicro(){
-    if(this.stream){this.stream.getTracks().forEach(t=>t.stop());this.stream=null;this.src=null}
+    if(this.stream){this.stream.getTracks().forEach(t=>t.stop());this.stream=null}
+    if(this.src){try{this.src.disconnect()}catch(e){}this.src=null}
+  },
+  /* Suelta el micro de verdad (pistas, nodos y AudioContext) para que desaparezca el punto naranja de iOS.
+     ctx() lo vuelve a crear cuando haga falta. */
+  soltar(){
+    this.pararGrabacion();this.pararMicro();
+    const c=this._c;this._c=null;this.bus=null;
+    if(c){try{c.close().catch(()=>{})}catch(e){}}
+    this.btn(false);this.nivel(0);this.diag();
   },
   /* Sale de la llamada: corta micro y audio, y deja de recibir voz y mensajes hasta volver a entrar.
      No es salir de la partida: el walkie se puede reabrir después. */
   salirLlamada(){
     if(!this.enLlamada)return;
     this.enLlamada=false;ssSet('impostor-wkcall-'+wkKey(),0);
-    this.pararGrabacion();this.pararMicro();
     for(const k in this.ses)clearTimeout(this.ses[k].tmo);this.ses={};this.hablando(null);
+    this.off=true;this.soltar();
     netTrack();this.pinta();
   },
   entrarLlamada(){
@@ -4405,7 +4414,7 @@ const WK={
     netTrack();this.pinta();
   },
   reset(){
-    this.pararGrabacion();this.pararMicro();
+    this.soltar();this.off=false;
     for(const k in this.ses)clearTimeout(this.ses[k].tmo);
     this.voces=[];this.chat=[];this.ses={};this.blobs={};this.visto=0;this.hablando(null);this.enLlamada=true;
     const k=wkKey();ssSet('impostor-chat-'+k,null);ssSet('impostor-wkopen-'+k,null);ssSet('impostor-wkcall-'+k,null);
@@ -4422,6 +4431,7 @@ const WK={
   hablando(p,fb){const e=$('wkTalk');SND.talking=!!p;if(p){e.innerHTML=avImg(lookOfPid(p),'sm')+'<span></span>';e.lastChild.textContent=pidName(p,fb)+' está hablando';e.hidden=false}else e.hidden=true},
   async micro(){
     if(this.stream&&this.stream.active&&this.stream.getAudioTracks().some(t=>t.readyState==='live'))return;
+    if(!(ROOM&&ROOM.remote))throw new Error('el walkie solo está disponible a distancia');
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('este navegador no deja usar el micro');
     this.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});this.src=null;
     lsSet('impostor-micok',1);$('wkMicNota').hidden=true;
@@ -4432,7 +4442,7 @@ const WK={
     const r=this.rec={id:uid(10),n:0,t0:Date.now(),pico:0,partes:[],arrancando:true};
     this.btn(true);this.estado('Abriendo micro…');
     try{await this.micro()}catch(e){if(this.rec===r)this.rec=null;this.btn(false);this.nivel(0);
-      this.estado(this.inapp()?'Aquí el micro está bloqueado: abre el enlace en Safari o Chrome. El texto sí funciona.':'No hay acceso al micro ('+(e.message||e.name)+'). El texto sí funciona.');this.diag();return}
+      this.estado(this.inapp()?'Aquí el micro está bloqueado: abre el enlace en Safari o Chrome. El texto sí funciona.':(e&&(e.name==='NotAllowedError'||e.name==='AbortError'))?'Toca para activar el micro. Si Safari vuelve a pedir permiso, pulsa Permitir.':'No hay acceso al micro ('+(e.message||e.name)+'). El texto sí funciona.');this.diag();return}
     if(this.rec!==r)return;
     r.arrancando=false;r.t0=Date.now();this.ruido(.07,.1);this.diag();
     this.estado(r.latch?'Grabando… toca otra vez para enviar':'Hablando… suelta para enviar');this.btn(true);
@@ -4539,7 +4549,6 @@ const WK={
     $('wkCanal').textContent=ROOM?`Sala ${ROOM.code}`:'Partida sin conexión';
     const conectados=wkConnectedList(NET.R||{});
     $('wkQuienes').textContent=`${conectados.length} en la llamada`+(conectados.length?`: ${listNames(conectados.map(e=>e.p===PID?'Tú':e.n))}`:'');
-    const cb=$('wkCallBtn');cb.textContent=this.enLlamada?'Salir de la llamada':'Entrar en la llamada';cb.classList.toggle('on',!this.enLlamada);
     const av=$('wkAviso'),ia=this.inapp();av.classList.toggle('on',ia);
     if(ia)av.textContent='Estás dentro de otra app (WhatsApp, Instagram…) y ahí el micrófono no funciona. Abre el enlace en Safari o Chrome. Los mensajes de texto sí funcionan.';
     const no=this.noPuede();if(!this.rec){if(no)this.estado(no);else if(this._no)this.estado('')}this._no=no;
@@ -4552,11 +4561,12 @@ const WK={
     const L=$('wkLista');if(L._h!==h){const abajo=L.scrollHeight-L.scrollTop-L.clientHeight<40;L._h=h;L.innerHTML=h;if(abajo||!L._ini){L.scrollTop=L.scrollHeight;L._ini=true}}
   },
   modo(){const cur=document.querySelector('.screen.on'),c=!!(this.abierto&&cur&&cur.id!=='s-game');$('wk').classList.toggle('compact',c);document.body.classList.toggle('wk-compact',c)},
-  abrir(){this.abierto=true;$('wk').classList.add('on');ssSet('impostor-wkopen-'+wkKey(),1);this.ctx();this.diag();$('wkLista')._ini=false;this.modo();this.pinta()},
+  abrir(){if(!(ROOM&&ROOM.remote))return;this.off=false;if(!this.enLlamada)this.entrarLlamada();this.abierto=true;$('wk').classList.add('on');ssSet('impostor-wkopen-'+wkKey(),1);this.ctx();this.diag();$('wkLista')._ini=false;this.modo();this.pinta()},
   cerrar(){const era=this.abierto;this.abierto=false;$('wk').classList.remove('on');if(era)ssSet('impostor-wkopen-'+wkKey(),null);if(this.rec)this.para(true);this.hablando(null);this.modo();this.pinta()},
   init(){
     $('wkFab').onclick=()=>this.abrir();$('wkCerrar').onclick=()=>this.cerrar();$('wkFondo').onclick=()=>this.cerrar();
-    $('wkCallBtn').onclick=()=>{if(this.enLlamada)this.salirLlamada();else this.entrarLlamada()};
+    $('wkVolver').onclick=()=>this.cerrar();
+    $('wkDesc').onclick=()=>{this.salirLlamada();this.cerrar()};
     const mandar=()=>{const i=$('wkTxt'),t=i.value.trim();if(!t||this.noPuede())return;
       this.chat.push({t:Date.now(),p:PID,n:myName(),txt:t});if(this.chat.length>80)this.chat.shift();this.guardaChat();bc('w',{id:uid(8),k:'txt',p:PID,nm:myName(),txt:t});i.value='';this.pinta()};
     $('wkEnviar').onclick=mandar;$('wkTxt').onkeydown=e=>{if(e.key==='Enter')mandar()};
