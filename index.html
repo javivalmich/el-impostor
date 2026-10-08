@@ -53,6 +53,9 @@ if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',fu
 html{height:100%;overscroll-behavior-y:none;background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;min-height:100%;color:var(--text);font:16px/1.5 Outfit,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   background:radial-gradient(ellipse at 50% -10%,var(--glow) 0,transparent 60%),var(--bg);-webkit-tap-highlight-color:transparent}
+/* Cabecera opaca: tapa la barra de estado para que el contenido no se vea pasar por debajo al desplazar (altura 0 donde no hay muesca) */
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:15;pointer-events:none}
+body.red::before{background:var(--red-d)}
 body.red{--text:#fff;--muted:rgba(255,255,255,.8);--line:rgba(255,255,255,.3);--surface2:rgba(0,0,0,.25);
   background:radial-gradient(circle at 50% 35%,#ff2a24 0,var(--red) 38%,var(--red-d) 100%)}
 .wrap{max-width:460px;margin:0 auto;padding:18px 18px 30px}
@@ -453,7 +456,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
         </ol>
       </details>
     </div>
-    <p class="legal"><a href="/privacidad/">Privacidad</a> · <a href="terminos.html">Términos</a> · <a href="/soporte/">Soporte</a></p>
+    <p class="legal"><a href="/privacidad/" data-ext="https://puntostudio.es/privacidad/">Privacidad</a> · <a href="terminos.html" data-ext="https://puntostudio.es/punto-falso/terminos.html">Términos</a> · <a href="/soporte/" data-ext="https://puntostudio.es/soporte/">Soporte</a></p>
   </section>
 
   <section class="screen" id="s-create">
@@ -3002,7 +3005,7 @@ function roundInfo(c,round){
 }
 function newSeed(){try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%2**17}catch(e){return Math.floor(Math.random()*2**17)}}
 function cleanName(x){return (x||'').replace(/[~#<>]/g,'').replace(/\s+/g,' ').trim().slice(0,14)}
-function linkFor(code,names,remote){return location.href.split('#')[0]+'#j='+code+'~'+names.map(encodeURIComponent).join('~')+(remote?'&d=1':'')}
+function linkFor(code,names,remote){return (EN_APP?WEB_BASE:location.href.split('#')[0])+'#j='+code+'~'+names.map(encodeURIComponent).join('~')+(remote?'&d=1':'')}
 function parseLink(str){
   const i=(str||'').indexOf('#j=');if(i<0)return null;
   let body=str.slice(i+3),remote=false;
@@ -3141,6 +3144,18 @@ const SOUNDS={
 };
 document.addEventListener('pointerdown',()=>SND.unlock(),{once:true});
 const EN_LOCAL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+/* App nativa (Capacitor, iOS). El puente nativo ya inyecta window.Capacitor: los plugins se registran por nombre, sin bundler.
+   En la app la página va en capacitor://localhost: lo que se comparta o abra fuera (enlaces de sala, correos de Supabase) tiene que llevar a la web pública,
+   y las páginas externas (privacidad, términos, soporte…) se abren con @capacitor/browser y su URL absoluta (atributo data-ext). */
+const EN_APP=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const WEB_BASE='https://puntostudio.es/punto-falso/';
+const APPLE_BUNDLE_ID='es.puntostudio.puntofalso';
+const baseWeb=()=>EN_APP?WEB_BASE:location.origin+location.pathname;
+document.addEventListener('click',e=>{
+  const a=EN_APP&&e.target.closest&&e.target.closest('a[data-ext]');if(!a)return;
+  e.preventDefault();
+  try{window.Capacitor.registerPlugin('Browser').open({url:a.dataset.ext})}catch(x){console.warn('browser',x)}
+});
 const QS=new URLSearchParams(location.search);
 const HOST_GRACE=(EN_LOCAL&&(+QS.get('grace'))*1000)||30000; /* segundos sin anfitrión antes de relevarlo */
 
@@ -3289,7 +3304,7 @@ const RALPH='23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 function newRoomCode(){const a=crypto.getRandomValues(new Uint8Array(5));let s='';for(const b of a)s+=RALPH[b%RALPH.length];return s}
 function cleanRoomCode(x){const s=String(x||'').toUpperCase().replace(/[^0-9A-Z]/g,'');return s.length===5&&[...s].every(c=>RALPH.includes(c))?s:''}
 function codeFromInput(str){const m=String(str||'').match(/#s=([0-9A-Za-z]{5})/);return cleanRoomCode(m?m[1]:str)}
-const roomLink=code=>location.href.split('#')[0]+'#s='+code;
+const roomLink=code=>(EN_APP?WEB_BASE:location.href.split('#')[0])+'#s='+code;
 function saveRoom(){if(ROOM)lsSet('impostor-room',ROOM);else lsDel('impostor-room')}
 function loadRoom(){const r=lsGet('impostor-room');return r&&cleanRoomCode(r.code)&&typeof r.name==='string'&&r.name?r:null}
 
@@ -4613,17 +4628,35 @@ function errorCuenta(e){
   if(m.includes('fetch')||m.includes('network'))return 'No hay conexión con el servidor de cuentas.';
   return (e&&e.message)||'Algo ha fallado. Prueba otra vez.';
 }
+/* App nativa: Sign in with Apple con @capacitor-community/apple-sign-in + signInWithIdToken (sin redirección ni secret de 6 meses) */
+async function sha256Hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('')}
+function appleCancelado(e){return /1001|cancel/i.test((e&&(e.code||e.message))||'')}
+async function entraConAppleNativo(){
+  const plugin=window.Capacitor.registerPlugin('SignInWithApple');
+  const sb=await loadSB();
+  const raw=Array.from(crypto.getRandomValues(new Uint8Array(32)),x=>x.toString(16).padStart(2,'0')).join('');
+  /* a Apple se le da el nonce con hash; a Supabase, el original (así lo verifica contra el token) */
+  const r=await plugin.authorize({clientId:APPLE_BUNDLE_ID,redirectURI:SUPA.url+'/auth/v1/callback',scopes:'email name',nonce:await sha256Hex(raw)});
+  const tok=r&&r.response&&r.response.identityToken;
+  if(!tok)throw new Error('Apple no devolvió el token');
+  const {error}=await sb.auth.signInWithIdToken({provider:'apple',token:tok,nonce:raw});
+  if(error)throw error;
+  closeSheet();toast('Sesión iniciada');
+  /* El authorizationCode caduca a los 5 min y vale una vez: se canjea ya en el servidor (con este Bundle ID como client_id) para poder revocar el token al borrar la cuenta. No bloquea el acceso si falla. */
+  const code=r.response.authorizationCode;
+  if(code)try{await sb.functions.invoke('apple-canjear-codigo',{body:{authorizationCode:code,clientId:APPLE_BUNDLE_ID}})}catch(e){console.warn('apple-canjear',e)}
+}
 function loginSheet(){
   sheet(`<h3>Tu cuenta de Punto Ciego</h3><p>Es la misma cuenta. Solo sirve para usar tu nombre y tu personaje: para jugar no hace falta.</p>
     ${APPLE?`<button class="act apple" id="lgA">${APPLE_LOGO}<span>Iniciar sesión con Apple</span></button>`:''}
-    ${GOOGLE?`<button class="act google" id="lgG">${G_LOGO}<span>Entrar con Google</span></button>`:''}
-    ${(APPLE||GOOGLE)?'<p class="tiny" style="margin:14px 0 4px">o con tu correo</p>':''}
+    ${GOOGLE&&!EN_APP?`<button class="act google" id="lgG">${G_LOGO}<span>Entrar con Google</span></button>`:''}
+    ${(APPLE||(GOOGLE&&!EN_APP))?'<p class="tiny" style="margin:14px 0 4px">o con tu correo</p>':''}
     <input class="field" id="lgMail" type="email" autocomplete="username" inputmode="email" placeholder="Correo" autocapitalize="off" spellcheck="false">
     <input class="field" id="lgPass" type="password" autocomplete="current-password" placeholder="Contraseña">
     <p class="err" id="lgErr" role="alert"></p>
     <button class="act" id="lgGo">Entrar</button>
     <button class="link" id="lgNo">Ahora no</button>
-    <p class="fine">¿Aún no tienes cuenta? Créala en <a href="/punto-ciego/" target="_blank" rel="noopener">Punto Ciego</a>.</p>`,()=>{
+    <p class="fine">¿Aún no tienes cuenta? Créala en <a href="/punto-ciego/" data-ext="https://puntostudio.es/punto-ciego/" target="_blank" rel="noopener">Punto Ciego</a>.</p>`,()=>{
     $('lgNo').onclick=closeSheet;
     const go=async()=>{
       const email=$('lgMail').value.trim(),password=$('lgPass').value;
@@ -4638,12 +4671,12 @@ function loginSheet(){
     const oauth=provider=>async()=>{
       try{
         if($('s-join').classList.contains('on')&&codeFromInput($('codeIn').value))lsSet('impostor-ret',roomLink(codeFromInput($('codeIn').value)));
-        const sb=await loadSB();const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+location.pathname}});
+        const sb=await loadSB();const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:baseWeb()}});
         if(error)throw error;
       }catch(e){$('lgErr').textContent=errorCuenta(e)}
     };
     if($('lgG'))$('lgG').onclick=oauth('google');
-    if($('lgA'))$('lgA').onclick=oauth('apple');
+    if($('lgA'))$('lgA').onclick=EN_APP?async()=>{try{await entraConAppleNativo()}catch(e){if(!appleCancelado(e)){console.warn('apple',e);$('lgErr').textContent=errorCuenta(e)}}}:oauth('apple');
   });
 }
 function logoutSheet(){
@@ -4659,8 +4692,8 @@ function cuentaMenuSheet(){
   sheet(`<div class="acct-head">${avImg(myLook())}<b></b></div>
     <button class="menuitem" id="acEdit">Editar personaje y nombre</button>
     <button class="menuitem" id="acOut">Cerrar sesión</button>
-    <a class="menuitem" href="/privacidad/" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">Política de privacidad</a>
-    <a class="menuitem" href="terminos.html" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">Términos y condiciones</a>
+    <a class="menuitem" href="/privacidad/" data-ext="https://puntostudio.es/privacidad/" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">Política de privacidad</a>
+    <a class="menuitem" href="terminos.html" data-ext="https://puntostudio.es/punto-falso/terminos.html" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">Términos y condiciones</a>
     <div class="menusep"><button class="menuitem danger" id="acDel">Eliminar cuenta</button></div>
     <button class="link" id="acClose">Cerrar</button>`,()=>{
     const b=$('sheet').querySelector('.acct-head b');if(b)b.textContent=(PERFIL&&PERFIL.name)||'Sin nombre';
@@ -5114,7 +5147,7 @@ if(ROOM){WK.cargaChat();WK.enLlamada=ssGet('impostor-wkcall-'+ROOM.code)!==0;if(
 renderAcct();avLoad();iniciaCuentas();
 setInterval(tick,1000);
 setInterval(()=>{if(iAmHost()&&NET.resumed&&netUp()&&S)bc('st',S)},8000); /* latido: repara mensajes perdidos */
-if('serviceWorker' in navigator)window.addEventListener('load',()=>{
+if(!EN_APP&&'serviceWorker' in navigator)window.addEventListener('load',()=>{
   const tenia=!!navigator.serviceWorker.controller;let recargado=false;
   /* Versión nueva instalada: si estás en la portada se recarga sola; en medio de una partida espera a la próxima apertura */
   navigator.serviceWorker.addEventListener('controllerchange',()=>{

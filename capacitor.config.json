@@ -1,0 +1,9 @@
+{
+  "appId": "es.puntostudio.puntofalso",
+  "appName": "Punto Falso",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0b0b0d"
+  }
+}

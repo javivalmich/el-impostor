@@ -4,3 +4,14 @@ playwright-report/
 blob-report/
 icons/vista-previa-recortes.png
 .claude/
+
+# App iOS (Capacitor): www/ se genera con scripts/preparar-www.mjs
+www/
+.cap/
+ios/App/Pods/
+ios/App/build/
+ios/DerivedData/
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/capacitor-cordova-ios-plugins/
+*.p8

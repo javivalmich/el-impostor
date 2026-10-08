@@ -4,7 +4,10 @@
   "description": "Juego del impostor para jugar con el móvil, en persona o a distancia. Es una web estática servida por GitHub Pages.",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test"
+    "test": "playwright test",
+    "web": "node scripts/preparar-www.mjs",
+    "cap:sync": "node scripts/preparar-www.mjs && cap sync ios",
+    "cap:abrir": "npm run cap:sync && cap open ios"
   },
   "repository": {
     "type": "git",
@@ -19,6 +22,14 @@
   },
   "homepage": "https://github.com/javivalmich/punto-falso#readme",
   "devDependencies": {
+    "@capacitor/cli": "8.5.3",
+    "@capacitor/ios": "8.5.3",
     "@playwright/test": "^1.63.0"
-  }
+  },
+  "dependencies": {
+    "@capacitor-community/apple-sign-in": "7.1.0",
+    "@capacitor/browser": "8.0.5",
+    "@capacitor/core": "8.5.3"
+  },
+  "private": true
 }
