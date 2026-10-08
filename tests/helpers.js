@@ -13,6 +13,8 @@ async function addPlayers(page, names) {
   for (const n of names) {
     await page.fill('#nameIn', n);
     await page.click('#addName');
+    // el efecto al pulsar retrasa ~100 ms el clic de "Añadir": se espera a que el nombre esté en la lista antes de escribir el siguiente
+    await page.locator('.names .nm', { hasText: n }).first().waitFor();
   }
 }
 
@@ -40,6 +42,7 @@ async function startSolo(page, names, { k = 1, secret = false } = {}) {
 // Mantiene pulsada la tarjeta un instante (como un dedo real) y dice si era el impostor.
 async function peekCard(page, cardSel = '#card2') {
   const card = page.locator(cardSel);
+  await card.waitFor(); // la pantalla llega ~100 ms después del clic (efecto al pulsar)
   const box = await card.boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();

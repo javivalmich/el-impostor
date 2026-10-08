@@ -14,6 +14,7 @@ const DESTINOS = [
 const NAMES = ['Ana', 'Luis', 'Marta', 'Pablo'];
 
 async function pressCard(page) {
+  await page.locator('#card2').waitFor(); // la pantalla llega ~100 ms después del clic (efecto al pulsar)
   const box = await page.locator('#card2').boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
