@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>/* Tema elegido en Ajustes: se aplica antes del primer pintado para que no parpadee */
+try{var t=JSON.parse(localStorage.getItem('impostor-theme'));if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <script>/* Mudanza a puntostudio.es: solo actúa en github.io y solo cuando el destino nuevo ya responde */
 (function(){
 var M={'/el-impostor/':'/punto-falso/','/Punto-Ciego/':'/punto-ciego/','/Punto-Ciego/beta/':'/punto-ciego/beta/','/el-impostor/beta/':'/punto-falso/beta/'};
@@ -91,7 +93,9 @@ body.red .act.sec{background:transparent;border-color:rgba(255,255,255,.55)}
 .back{background:none;border:0;padding:6px 0;color:var(--muted);font-weight:600}
 
 /* portada */
-.hero{text-align:center;padding-top:6px}
+.hero{text-align:center;padding-top:6px;position:relative}
+.gear{position:absolute;top:0;right:0;width:44px;height:44px;border:0;border-radius:50%;background:none;color:var(--muted);display:flex;align-items:center;justify-content:center;padding:0}
+.gear svg{width:26px;height:26px}
 .logo{width:min(62vw,250px);aspect-ratio:1;border-radius:28%;background:#0c0c0c;display:block;margin:4px auto 10px;filter:drop-shadow(0 12px 30px rgba(224,18,15,.35))}
 .title{font-weight:900;font-size:clamp(2.5rem,12vw,3.3rem);line-height:1;letter-spacing:.06em}
 .tag{color:var(--red);font-weight:600;letter-spacing:.04em;font-size:clamp(.68rem,3.6vw,.82rem);margin-top:8px;white-space:nowrap}
@@ -262,7 +266,11 @@ body.red .sheet .act{background:var(--red)}
 .sheet .fine{font-size:.85rem;margin-top:10px}
 .sheet .fine a{color:var(--red);font-weight:700}
 .act.google{background:#fff;color:#0e0e11;border:2px solid var(--line);box-shadow:none}
-.act.apple{background:#000;color:#fff;border:2px solid #000;box-shadow:none}
+.act.apple{background:#000;color:#fff;border:2px solid #000;box-shadow:none;min-height:48px}
+/* Guías de Apple: negro con logo blanco sobre claro; blanco con logo negro sobre oscuro (tema oscuro, tema del sistema oscuro y hojas sobre el reveal rojo) */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .act.apple{background:#fff;color:#000;border-color:#fff}}
+:root[data-theme="dark"] .act.apple,body.red .sheet .act.apple{background:#fff;color:#000;border-color:#fff}
+.act.apple:active{opacity:.85}
 .acct{cursor:pointer}
 .legal{text-align:center;margin:6px 0 0;font-size:.9rem;color:var(--muted)}
 .legal a{color:var(--muted);font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:8px 6px;display:inline-block}
@@ -435,6 +443,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
 
   <section class="screen" id="s-home">
     <div class="hero">
+      <button class="gear" id="goSettings" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="6.3" stroke-width="2.6"/><circle cx="12" cy="12" r="9.3" stroke-width="3.4" stroke-dasharray="3 4.3"/></svg></button>
       <img class="logo" src="img/logo.webp" width="250" height="250" alt="Punto Falso">
       <h1 class="title">PUNTO FALSO</h1>
       <p class="tag">EL JUEGO SOCIAL DEL IMPOSTOR</p>
@@ -3005,6 +3014,22 @@ function roundInfo(c,round){
 }
 function newSeed(){try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%2**17}catch(e){return Math.floor(Math.random()*2**17)}}
 function cleanName(x){return (x||'').replace(/[~#<>]/g,'').replace(/\s+/g,' ').trim().slice(0,14)}
+/* Filtro de nombres (Apple 1.2): lista corta de insultos y términos de odio en español. Se compara sin tildes ni mayúsculas, con las sustituciones
+   típicas (0→o, 1→i, 3→e, 4→a, 5→s, @→a, $→s) y colapsando letras repetidas (puuuta). Las palabras cortas solo cuentan enteras, para no vetar
+   nombres como «Computadora»; las largas y claras, también dentro de otra palabra. */
+const VETADAS=new Set(['puta','puto','putas','putos','putita','putito','zorra','zorras','polla','pollas','coño','verga','pene','culo','culos','cojones','mierda','mierdas','idiota','idiotas','imbecil','imbeciles','gilipollas','gilipolla','capullo','capullos','cabron','cabrona','cabrones','maricon','maricona','maricones','marica','mamon','mamona','hdp','joputa','hijoputa','hijodeputa','follar','follador','violador','violadores','violacion','nazi','nazis','hitler','pedofilo','pederasta','retrasado','retrasada','subnormal','mongolo','mongola','negrata','sudaca']);
+const VETADAS_TROZO=['hijoputa','hijodeputa','gilipollas','mierda','cabron','maricon','pedofilo','pederasta','violador','subnormal','retrasado','negrata','hitler','sudaca','follar'];
+const MSG_NOMBRE='Ese nombre no está permitido. Elige otro.';
+function nombreOfensivo(n){
+  const t=String(n||'').toLowerCase().replace(/ñ/g,'\u0001').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\u0001/g,'ñ')
+    .replace(/0/g,'o').replace(/@/g,'a').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/7/g,'t').replace(/\$/g,'s');
+  const colapsa=w=>w.replace(/(.)\1{2,}/g,'$1');
+  const juntas=t.replace(/[^a-zñ]/g,'');
+  if(VETADAS.has(juntas)||VETADAS.has(colapsa(juntas)))return true;
+  if(t.split(/[^a-zñ]+/).filter(Boolean).some(w=>VETADAS.has(w)||VETADAS.has(colapsa(w))))return true;
+  const c=colapsa(juntas);
+  return VETADAS_TROZO.some(x=>juntas.includes(x)||c.includes(x));
+}
 function linkFor(code,names,remote){return (EN_APP?WEB_BASE:location.href.split('#')[0])+'#j='+code+'~'+names.map(encodeURIComponent).join('~')+(remote?'&d=1':'')}
 function parseLink(str){
   const i=(str||'').indexOf('#j=');if(i<0)return null;
@@ -3082,9 +3107,35 @@ const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 function uid(n){const a=crypto.getRandomValues(new Uint8Array(n));let s='';for(const b of a)s+='abcdefghijkmnpqrstuvwxyz23456789'[b&31];return s}
 function b64(u){let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)}
 function deb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
-/* Sonido y vibración: interruptores guardados en este móvil (por defecto encendidos) */
-const SETTINGS={sound:lsGet('impostor-sound',1)!==0,vibra:lsGet('impostor-vibra',1)!==0};
-const vibra=p=>{if(!SETTINGS.vibra)return;try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+/* Sonido, vibración y tema: guardados en este móvil (por defecto, sonido y vibración encendidos y tema automático).
+   Los comparten la pantalla de Ajustes de la portada y el menú ☰ de la partida. */
+const TEMAS=['auto','light','dark'];
+const SETTINGS={sound:lsGet('impostor-sound',1)!==0,vibra:lsGet('impostor-vibra',1)!==0,theme:(t=>TEMAS.includes(t)?t:'auto')(lsGet('impostor-theme','auto'))};
+function aplicaTema(t){const r=document.documentElement;if(t==='light'||t==='dark')r.setAttribute('data-theme',t);else r.removeAttribute('data-theme')}
+aplicaTema(SETTINGS.theme);
+function setSetting(k,v){
+  SETTINGS[k]=v;
+  lsSet({sound:'impostor-sound',vibra:'impostor-vibra',theme:'impostor-theme'}[k],k==='theme'?v:(v?1:0));
+  if(k==='theme')aplicaTema(v);
+  if(k==='sound'&&v)SND.unlock();
+}
+/* Vibración. En iOS no existe navigator.vibrate: en la app se usa el motor háptico con @capacitor/haptics (window.Capacitor.Plugins.Haptics,
+   sin registerPlugin) y en la web, navigator.vibrate. El patrón (ms de vibración y pausa, alternados) llega ya decidido: aquí no se mira el papel
+   de nadie, así que impostor e inocentes notan exactamente lo mismo. */
+const hapticos=()=>{try{return(EN_APP&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Haptics)||null}catch(e){return null}};
+const puedeVibrar=()=>EN_APP?!!hapticos():typeof navigator.vibrate==='function';
+function vibraNativa(H,p){
+  let t=0;
+  [].concat(p).forEach((ms,i)=>{
+    if(i%2===0){ /* cada tramo de vibración es un golpe: suave (<60 ms), medio (<140 ms) o fuerte */
+      const style=ms<60?'LIGHT':ms<140?'MEDIUM':'HEAVY';
+      const golpe=()=>{try{Promise.resolve(H.impact({style})).catch(()=>{})}catch(e){}};
+      if(t)setTimeout(golpe,t);else golpe();
+    }
+    t+=ms;
+  });
+}
+const vibra=p=>{if(!SETTINGS.vibra)return;try{const H=hapticos();if(H)vibraNativa(H,p);else if(!EN_APP&&navigator.vibrate)navigator.vibrate(p)}catch(e){}};
 
 /* ---------- Sonidos cortos del juego ----------
    Se generan con la API de audio (nunca se descargan de fuera) y se guardan como WAV en memoria.
@@ -3143,13 +3194,15 @@ const SOUNDS={
   defeat:()=>SND.render(c=>{[392,330,262].forEach((f,i)=>SND.tone(c,{freq:f,start:i*.14,dur:.3,type:'sine',gain:.24}))},.65),
 };
 document.addEventListener('pointerdown',()=>SND.unlock(),{once:true});
-const EN_LOCAL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 /* App nativa (Capacitor, iOS). El puente nativo ya inyecta window.Capacitor: los plugins se registran por nombre, sin bundler.
    En la app la página va en capacitor://localhost: lo que se comparta o abra fuera (enlaces de sala, correos de Supabase) tiene que llevar a la web pública,
    y las páginas externas (privacidad, términos, soporte…) se abren con @capacitor/browser y su URL absoluta (atributo data-ext). */
 const EN_APP=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+/* En la app el WebView se sirve desde capacitor://localhost: sin el !EN_APP, localhost valdría también ahí y los parámetros de pruebas (?sblib, ?grace) tendrían efecto */
+const EN_LOCAL=!EN_APP&&/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const WEB_BASE='https://puntostudio.es/punto-falso/';
 const APPLE_BUNDLE_ID='es.puntostudio.puntofalso';
+const APP_VERSION='1.0'; /* = MARKETING_VERSION del proyecto de Xcode */
 const baseWeb=()=>EN_APP?WEB_BASE:location.origin+location.pathname;
 document.addEventListener('click',e=>{
   const a=EN_APP&&e.target.closest&&e.target.closest('a[data-ext]');if(!a)return;
@@ -3951,7 +4004,7 @@ function renderWait(){
 }
 
 /* ---------- Crear sala en línea ---------- */
-function fillMyName(id){const el=$(id);if(el&&!el.value)el.value=cleanName((PERFIL&&PERFIL.name)||lsGet('impostor-name','')||'')}
+function fillMyName(id){const el=$(id);if(el&&!el.value){const v=cleanName((PERFIL&&PERFIL.name)||lsGet('impostor-name','')||'');el.value=nombreOfensivo(v)?'':v}}
 function renderRoomSetup(){
   $('k2Val').textContent=rs.k;$('k2Minus').disabled=rs.k<=1;$('k2Plus').disabled=rs.k>=4;
   renderHintSeg('hint2Seg','hint2Sub',rs.hint);$('remote2Sw').setAttribute('aria-checked',rs.remote);
@@ -3968,6 +4021,7 @@ $('goCreate').onclick=()=>{$('createErr').textContent='';fillMyName('myName');re
 $('doCreateRoom').onclick=async()=>{
   const name=cleanName($('myName').value),err=$('createErr'),btn=$('doCreateRoom');
   if(!name){err.textContent='Escribe tu nombre (de 1 a 14 caracteres).';return}
+  if(nombreOfensivo(name)){err.textContent=MSG_NOMBRE;return}
   if(!rs.mask)return;
   err.textContent='';btn.disabled=true;btn.textContent='Creando la sala…';
   try{
@@ -4003,6 +4057,7 @@ async function doJoinRoom(codeRaw,nameRaw){
   if(!code)return 'Ese código no es válido. Son 5 letras o números (sin 0, O, 1, I ni L).';
   let name=cleanName(nameRaw);
   if(!name)return 'Escribe tu nombre (de 1 a 14 caracteres).';
+  if(nombreOfensivo(name))return MSG_NOMBRE;
   if(ROOM)dropRoom();
   S=null;
   if(!await netJoinWait(code)){netLeave();return 'No hay conexión con el servidor. Prueba otra vez.'}
@@ -4053,6 +4108,7 @@ function renderSetup(){
 CATS.forEach((c,i)=>{const b=document.createElement('button');b.className='chip';b.textContent=c.name;b.onclick=()=>{setup.mask^=(1<<i);renderSetup()};$('chips').appendChild(b)});
 function addName(){
   const n=cleanName($('nameIn').value);if(!n)return;
+  if(nombreOfensivo(n)){toast(MSG_NOMBRE);return}
   if(names.some(x=>x.toLowerCase()===n.toLowerCase())){toast('Ese nombre ya está. Añade una inicial para distinguirlos.');return}
   if(names.length>=18){toast('Máximo 18 jugadores');return}
   names.push(n);saveNames();$('nameIn').value='';renderSetup();$('nameIn').focus();
@@ -4065,7 +4121,7 @@ $('allCats').onclick=()=>{setup.mask=setup.mask===ALL_MASK?0:ALL_MASK;renderSetu
 let autoNamed=false;
 function autoName(){ /* con sesión, tu nombre de Punto Ciego se añade solo (una vez) */
   if(autoNamed||!PERFIL||!PERFIL.name)return;autoNamed=true;
-  const n=cleanName(PERFIL.name);if(!n||names.some(x=>x.toLowerCase()===n.toLowerCase())||names.length>=18)return;
+  const n=cleanName(PERFIL.name);if(!n||nombreOfensivo(n)||names.some(x=>x.toLowerCase()===n.toLowerCase())||names.length>=18)return;
   names.unshift(n);saveNames();
 }
 $('goCreateOff').onclick=()=>{autoName();renderSetup();show('s-createoff')};
@@ -4239,9 +4295,10 @@ function menuMainHtml(){
   h+='<button class="menuitem" data-a="menuHowto">Cómo se juega</button>';
   h+='<button class="menuitem" data-a="menuRank">Ranking de la partida</button>';
   if(host)h+='<button class="menuitem" data-a="menuResetRank">Reiniciar ranking</button>';
+  const vib=puedeVibrar();
   h+=`<div class="menusep">
-    <div class="row"><div class="lbl">Sonido</div><button class="switch" id="mSoundSw" data-a="toggleSound" role="switch" aria-checked="${SETTINGS.sound}" aria-label="Sonido"></button></div>
-    <div class="row" style="border-bottom:0"><div class="lbl">Vibración</div><button class="switch" id="mVibSw" data-a="toggleVibra" role="switch" aria-checked="${SETTINGS.vibra}" aria-label="Vibración"></button></div>
+    <div class="row"${vib?'':' style="border-bottom:0"'}><div class="lbl">Sonido</div><button class="switch" id="mSoundSw" data-a="toggleSound" role="switch" aria-checked="${SETTINGS.sound}" aria-label="Sonido"></button></div>
+    ${vib?`<div class="row" style="border-bottom:0"><div class="lbl">Vibración</div><button class="switch" id="mVibSw" data-a="toggleVibra" role="switch" aria-checked="${SETTINGS.vibra}" aria-label="Vibración"></button></div>`:''}
   </div>`;
   if(USER)h+='<div class="menusep"><button class="menuitem" data-a="menuAcct">Mi cuenta</button></div>';
   if(host)h+='<div class="menusep"><button class="menuitem danger" data-a="menuEndAll">Terminar la partida para todos</button></div>';
@@ -4307,8 +4364,8 @@ $('menuSheetEl').addEventListener('click',e=>{
   else if(a==='menuResetRankYes'&&iAmHost()){closeMenu();hResetRank()}
   else if(a==='menuEndAll'&&iAmHost())menuSheet(menuEndAllHtml());
   else if(a==='menuEndAllYes'&&iAmHost()){closeMenu();hEndToLobby()}
-  else if(a==='toggleSound'){SETTINGS.sound=!SETTINGS.sound;lsSet('impostor-sound',SETTINGS.sound?1:0);if(SETTINGS.sound)SND.unlock();menuMain()}
-  else if(a==='toggleVibra'){SETTINGS.vibra=!SETTINGS.vibra;lsSet('impostor-vibra',SETTINGS.vibra?1:0);menuMain()}
+  else if(a==='toggleSound'){setSetting('sound',!SETTINGS.sound);menuMain()}
+  else if(a==='toggleVibra'){setSetting('vibra',!SETTINGS.vibra);menuMain()}
   else if(a==='menuAcct'){closeMenu();cuentaMenuSheet()}
   else if(a==='menuExit')menuSheet(menuExitHtml());
   else if(a==='menuExitYes'){
@@ -4348,11 +4405,32 @@ const BLK={
   has(p){return this.list().includes(p)},
   set(p,on){const l=this.list().filter(x=>x!==p);if(on)l.push(p);lsSet(this.k(),l.slice(-50))}
 };
+async function copiaTexto(t){
+  try{await navigator.clipboard.writeText(t);return true}catch(e){}
+  try{const x=document.createElement('textarea');x.value=t;x.style.cssText='position:fixed;opacity:0';document.body.appendChild(x);x.select();const ok=document.execCommand('copy');x.remove();return ok}catch(e){return false}
+}
 function reportarJugador(p,n){
+  const asunto='Reporte en Punto Falso';
   const cuerpo=`Jugador: ${n}\nIdentificador: ${p}\nSala: ${ROOM?ROOM.code:'-'}\nFecha: ${new Date().toISOString()}\n\nMotivo (cuéntanos qué ha pasado):\n`;
+  /* Si abre la app de correo, esta página pasa a segundo plano (o pierde el foco). Si en 1,5 s no ha pasado, se ofrece copiar la dirección y los datos. */
+  let salio=false;const marca=()=>{salio=true};
+  document.addEventListener('visibilitychange',marca);window.addEventListener('blur',marca);window.addEventListener('pagehide',marca);
   const a=document.createElement('a');
-  a.href='mailto:'+SUPPORT_MAIL+'?subject='+encodeURIComponent('Reporte en Punto Falso')+'&body='+encodeURIComponent(cuerpo);
+  a.href='mailto:'+SUPPORT_MAIL+'?subject='+encodeURIComponent(asunto)+'&body='+encodeURIComponent(cuerpo);
   document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>{
+    document.removeEventListener('visibilitychange',marca);window.removeEventListener('blur',marca);window.removeEventListener('pagehide',marca);
+    if(!salio)reporteSinCorreoSheet(`Para: ${SUPPORT_MAIL}\nAsunto: ${asunto}\n\n${cuerpo}`);
+  },1500);
+}
+function reporteSinCorreoSheet(texto){
+  sheet(`<h3>No se ha abierto el correo</h3><p id="rpMsg">Envía este mensaje a <b>${SUPPORT_MAIL}</b> desde tu correo: toca «Copiar» y pégalo en un mensaje nuevo.</p>
+    <textarea class="field" id="rpTxt" rows="7" readonly aria-label="Datos del reporte"></textarea>
+    <button class="act" id="rpCopy">Copiar</button><button class="link" id="rpNo">Cerrar</button>`,()=>{
+    $('rpTxt').value=texto;$('rpNo').onclick=closeSheet;
+    $('rpCopy').onclick=async()=>{toast(await copiaTexto(texto)?'Copiado':'No se ha podido copiar: mantén pulsado el texto para copiarlo')};
+    copiaTexto(texto).then(ok=>{const m=$('rpMsg');if(ok&&m&&$('rpTxt'))m.innerHTML='He copiado la dirección y los datos. Pégalos en un correo a <b>'+SUPPORT_MAIL+'</b>.'});
+  });
 }
 function jugadorSheet(p,n){
   const b=BLK.has(p);
@@ -4618,9 +4696,9 @@ WK.init();
 if(lsGet('impostor-micok'))$('wkMicNota').hidden=true;
 
 /* ---------- Cuenta opcional de Punto Ciego ---------- */
-let GOOGLE=false,APPLE=false;
+let GOOGLE=false,APPLE=EN_APP; /* en la app, el botón de Apple va siempre; en la web, solo si Supabase lo tiene activado */
 const G_LOGO='<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
-const APPLE_LOGO='<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zm3.635-3.325c.843-1.012 1.4-2.427 1.245-3.831-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.701z"/></svg>';
+const APPLE_LOGO='<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.365 1.43c0 1.14-.416 2.06-1.25 2.79-.905.79-1.998 1.24-3.017 1.16-.12-1.11.42-2.1 1.24-2.85.86-.79 2.03-1.26 3.02-1.1zM20.6 17.06c-.44 1.02-.96 2.02-1.63 2.94-.9 1.26-1.83 2.5-3.3 2.53-1.44.03-1.9-.86-3.55-.86-1.65 0-2.16.83-3.53.89-1.4.06-2.47-1.36-3.38-2.6C3.42 17.4 2 12.79 3.87 9.66c.93-1.55 2.6-2.53 4.4-2.55 1.38-.03 2.68.93 3.53.93.84 0 2.43-1.15 4.1-.98.7.03 2.66.28 3.92 2.1-.1.06-2.34 1.37-2.32 4.08.03 3.24 2.84 4.32 2.87 4.33-.03.09-.44 1.53-1.47 2.99z"/></svg>';
 function renderAcct(){
   const html=USER?
     `${avImg(myLook(),'sm')}<span>${PERFIL&&PERFIL.name?'Hola, <b></b>':'Sesión iniciada'}</span><button data-a="menu">Mi cuenta</button>`
@@ -4657,9 +4735,15 @@ async function entraConAppleNativo(){
   const {error}=await sb.auth.signInWithIdToken({provider:'apple',token:tok,nonce:raw});
   if(error)throw error;
   closeSheet();toast('Sesión iniciada');
-  /* El authorizationCode caduca a los 5 min y vale una vez: se canjea ya en el servidor (con este Bundle ID como client_id) para poder revocar el token al borrar la cuenta. No bloquea el acceso si falla. */
-  const code=r.response.authorizationCode;
-  if(code)try{await sb.functions.invoke('apple-canjear-codigo',{body:{authorizationCode:code,clientId:APPLE_BUNDLE_ID}})}catch(e){console.warn('apple-canjear',e)}
+  /* El authorizationCode caduca a los 5 min y vale una vez: se canjea ya en el servidor (con este Bundle ID como client_id) para poder revocar el token al borrar la cuenta.
+     No bloquea el acceso si falla, pero se avisa: sin el canje no se podrá revocar el acceso de Apple al eliminar la cuenta. */
+  const code=r.response.authorizationCode;let canje=false;
+  if(code)try{const {data,error:ec}=await sb.functions.invoke('apple-canjear-codigo',{body:{authorizationCode:code,clientId:APPLE_BUNDLE_ID}});if(ec)throw ec;canje=!!(data&&data.ok)}catch(e){console.warn('apple-canjear',e)}
+  if(!canje)avisoAppleSheet();
+}
+function avisoAppleSheet(){
+  sheet(`<h3>Has entrado, con un aviso</h3><p>No hemos podido enlazar tu acceso con Apple en nuestro servidor. Puedes jugar con normalidad, pero para poder eliminar tu cuenta revocando también tu acceso con Apple, cierra sesión y vuelve a entrar con Apple cuando tengas buena conexión.</p>
+    <button class="act" id="apOk">Entendido</button>`,()=>{$('apOk').onclick=closeSheet});
 }
 function loginSheet(){
   sheet(`<h3>Tu cuenta de Punto Ciego</h3><p>Es la misma cuenta. Solo sirve para usar tu nombre y tu personaje: para jugar no hace falta.</p>
@@ -4668,6 +4752,7 @@ function loginSheet(){
     ${(APPLE||(GOOGLE&&!EN_APP))?'<p class="tiny" style="margin:14px 0 4px">o con tu correo</p>':''}
     <input class="field" id="lgMail" type="email" autocomplete="username" inputmode="email" placeholder="Correo" autocapitalize="off" spellcheck="false">
     <input class="field" id="lgPass" type="password" autocomplete="current-password" placeholder="Contraseña">
+    <p class="fine" style="margin:8px 2px 0;text-align:right"><a href="/punto-ciego/" data-ext="https://puntostudio.es/punto-ciego/" target="_blank" rel="noopener">¿Has olvidado tu contraseña?</a></p>
     <p class="err" id="lgErr" role="alert"></p>
     <button class="act" id="lgGo">Entrar</button>
     <button class="link" id="lgNo">Ahora no</button>
@@ -4701,6 +4786,25 @@ function logoutSheet(){
     $('loYes').onclick=async()=>{closeSheet();try{const sb=await loadSB();await sb.auth.signOut({scope:'local'})}catch(e){}};
   });
 }
+/* ---------- Ajustes (desde la portada): tema, sonido y vibración, versión y enlaces legales ---------- */
+function ajustesSheet(){
+  const fila=(id,k,t,ult)=>`<div class="row"${ult?' style="border-bottom:0"':''}><div class="lbl">${t}</div><button class="switch" id="${id}" role="switch" aria-checked="${SETTINGS[k]}" aria-label="${t}"></button></div>`;
+  const temas=[['auto','Automático'],['light','Claro'],['dark','Oscuro']];
+  const vib=puedeVibrar();
+  sheet(`<div class="menuhead"><h3>Ajustes</h3><button class="xbtn" id="ajX" aria-label="Cerrar">✕</button></div>
+    <div class="row" style="flex-direction:column;align-items:stretch;gap:10px"><div><div class="lbl">Tema</div><div class="sub">Automático sigue el de tu dispositivo</div></div>
+      <div class="seg" id="ajTema" role="radiogroup" aria-label="Tema">${temas.map(([v,t])=>`<button type="button" data-v="${v}" aria-pressed="${SETTINGS.theme===v}">${t}</button>`).join('')}</div></div>
+    ${fila('ajSound','sound','Sonido',!vib)}
+    ${vib?fila('ajVibra','vibra','Vibración',true):''}
+    <p class="tiny" style="margin-top:14px">Punto Falso · versión ${APP_VERSION}</p>
+    <p class="legal"><a href="/privacidad/" data-ext="https://puntostudio.es/privacidad/" target="_blank" rel="noopener">Privacidad</a> · <a href="terminos.html" data-ext="https://puntostudio.es/punto-falso/terminos.html" target="_blank" rel="noopener">Términos</a> · <a href="/soporte/" data-ext="https://puntostudio.es/soporte/" target="_blank" rel="noopener">Soporte</a></p>`,()=>{
+    $('ajX').onclick=closeSheet;
+    $('ajTema').querySelectorAll('button').forEach(b=>b.onclick=()=>{setSetting('theme',b.dataset.v);ajustesSheet()});
+    $('ajSound').onclick=()=>{setSetting('sound',!SETTINGS.sound);ajustesSheet()};
+    if($('ajVibra'))$('ajVibra').onclick=()=>{setSetting('vibra',!SETTINGS.vibra);ajustesSheet()};
+  });
+}
+$('goSettings').onclick=ajustesSheet;
 /* ---------- Menú de cuenta: editar personaje, cerrar sesión, eliminar cuenta ---------- */
 function cuentaMenuSheet(){
   if(!USER)return loginSheet();
@@ -4761,6 +4865,7 @@ function renderEditChar(){
 async function guardarPersonaje(){
   const nomEl=$('edNom'),n=((nomEl?nomEl.value:EDIT.name)||'').trim().slice(0,16);
   if(!n){$('edErr').textContent='Escribe un nombre de jugador.';return}
+  if(nombreOfensivo(n)){$('edErr').textContent=MSG_NOMBRE;return}
   $('edGuardar').disabled=true;$('edErr').textContent='';
   const look={...EDIT.raw,...EDIT.look};
   try{
@@ -4791,11 +4896,13 @@ function exitAnyGame(){
 /* ---------- Borrado de cuenta y revocación del token de Apple ----------
    La Edge Function `eliminar-cuenta` revoca el token de Apple (si entró con Apple y hay credenciales) y borra la cuenta.
    Si la función no está desplegada o falla, se usa el respaldo de siempre (eliminar_mi_cuenta), que borra igual. */
-async function borrarCuentaRemota(sb){
+async function borrarCuentaRemota(sb,esApple){
   try{
     const {data,error}=await sb.functions.invoke('eliminar-cuenta',{body:{}});
     if(!error&&data&&data.ok)return;
   }catch(e){}
+  /* Con una cuenta de Apple no se usa el respaldo: borraría sin revocar el token y el acceso de Apple seguiría enlazado. Se avisa y se deja reintentar. */
+  if(esApple)throw Object.assign(new Error('No hemos podido eliminar tu cuenta ni revocar tu acceso con Apple. Comprueba la conexión y pulsa Reintentar. Si sigue fallando, escribe a '+SUPPORT_MAIL+'.'),{apple:true});
   const {error:rpcErr}=await sb.rpc('eliminar_mi_cuenta');
   if(rpcErr)throw rpcErr;
 }
@@ -4818,7 +4925,8 @@ function deleteAccountSheet(){
 }
 function deleteAccountConfirmSheet(){
   const porEmail=!!(USER&&USER.app_metadata&&USER.app_metadata.provider==='email');
-  const proveedor=USER&&USER.app_metadata&&USER.app_metadata.provider==='apple'?'Apple':'Google';
+  const esApple=!!(USER&&USER.app_metadata&&(USER.app_metadata.provider==='apple'||(USER.app_metadata.providers||[]).includes('apple')));
+  const proveedor=esApple?'Apple':'Google';
   sheet(`<h3>Confirma que eres tú</h3>
     ${porEmail?`<label class="lbl" for="delPass">Tu contraseña</label><input class="field" id="delPass" type="password" autocomplete="current-password" placeholder="Contraseña">`
       :`<p>Entraste con ${proveedor}, así que aquí no tienes contraseña: escribe <b>BORRAR</b> para confirmar.</p><input class="field" id="delWord" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="BORRAR">`}
@@ -4841,14 +4949,14 @@ function deleteAccountConfirmSheet(){
           const {error}=await sb.auth.signInWithPassword({email:USER.email,password:pass});
           if(error)throw error;
         }
-        await borrarCuentaRemota(sb);
+        await borrarCuentaRemota(sb,esApple);
         exitAnyGame();
         const uid=USER.id;
         try{await sb.auth.signOut({scope:'local'})}catch(e){}
         lsDel('impostor-perfil-'+uid);USER=null;PERFIL=null;
         closeSheet();show('s-home');renderAcct();renderAll();
         toast('Cuenta eliminada');
-      }catch(e){$('delErr').textContent=errorCuenta(e);$('delFinal').disabled=false}
+      }catch(e){$('delErr').textContent=e&&e.apple?e.message:errorCuenta(e);$('delFinal').disabled=false;if(e&&e.apple)$('delFinal').textContent='Reintentar'}
     };
   });
 }

@@ -60,3 +60,59 @@ test('en la web (sin puente), los enlaces legales siguen siendo normales', async
   expect(await page.evaluate(() => [EN_APP, roomLink('ABCDE').startsWith(location.origin)])).toEqual([false, true]);
   await ctx.close();
 });
+
+test('en la app, Ajustes enseña la versión y abre los enlaces legales con Browser', async ({ page }) => {
+  await page.goto('/');
+  await page.click('#goSettings');
+  await expect(page.locator('#sheet')).toContainText('versión 1.0');
+  const legal = page.locator('#sheet .legal a');
+  await expect(legal).toHaveCount(3);
+  for (const t of ['Privacidad', 'Términos', 'Soporte']) await page.locator('#sheet .legal a', { hasText: t }).click();
+  expect(await page.evaluate(() => window.__abiertos)).toEqual([
+    'https://puntostudio.es/privacidad/',
+    'https://puntostudio.es/punto-falso/terminos.html',
+    'https://puntostudio.es/soporte/',
+  ]);
+});
+
+test('en la app, el botón de Apple está siempre y sigue las guías en claro y en oscuro', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/');
+  await page.click('#acct button');
+  const apple = page.locator('#lgA');
+  await expect(apple).toBeVisible();
+  await expect(apple).toContainText('Apple');
+  const est = () => apple.evaluate((el) => { const s = getComputedStyle(el); return { bg: s.backgroundColor, color: s.color, h: el.getBoundingClientRect().height }; });
+  let e = await est();
+  expect(e.bg).toBe('rgb(0, 0, 0)'); // claro: negro con logo blanco
+  expect(e.color).toBe('rgb(255, 255, 255)');
+  expect(e.h).toBeGreaterThanOrEqual(48);
+  await page.emulateMedia({ colorScheme: 'dark' });
+  e = await est();
+  expect(e.bg).toBe('rgb(255, 255, 255)'); // oscuro: blanco con logo negro
+  expect(e.color).toBe('rgb(0, 0, 0)');
+  expect(await apple.locator('svg path').getAttribute('fill')).toBe('currentColor');
+  // con el tema forzado a claro en Ajustes manda el tema, no el del sistema
+  await page.evaluate(() => setSetting('theme', 'light'));
+  expect((await est()).bg).toBe('rgb(0, 0, 0)');
+});
+
+test('en la app, el inicio de sesión ofrece recuperar la contraseña con Browser', async ({ page }) => {
+  await page.goto('/');
+  await page.click('#acct button');
+  await page.getByText('¿Has olvidado tu contraseña?').click();
+  expect(await page.evaluate(() => window.__abiertos)).toEqual(['https://puntostudio.es/punto-ciego/']);
+});
+
+test('en la app, EN_LOCAL no vale aunque el host sea localhost (los parámetros de pruebas no actúan)', async ({ page }) => {
+  await page.goto('/?grace=1&sblib=https://example.com/x.js');
+  expect(await page.evaluate(() => [EN_APP, EN_LOCAL, HOST_GRACE, SB_LIB])).toEqual([true, false, 30000, 'vendor/supabase-js/supabase.js']);
+});
+
+test('en la web, localhost sigue siendo local para las pruebas', async ({ browser }) => {
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  await page.goto('http://127.0.0.1:8383/?grace=1');
+  expect(await page.evaluate(() => [EN_APP, EN_LOCAL, HOST_GRACE])).toEqual([false, true, 1000]);
+  await ctx.close();
+});

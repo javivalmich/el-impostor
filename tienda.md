@@ -51,7 +51,6 @@ Reúne a tu grupo y descubre quién miente mejor.
 |---|---|---|
 | Micrófono (`RECORD_AUDIO` / `NSMicrophoneUsageDescription`) | Hablar por el walkie-talkie con el resto de la sala | Solo al pulsar el botón de hablar por primera vez; se abre solo mientras hablas. La voz no se graba ni se guarda. Hay una nota explicativa en el panel antes de pedirlo |
 | Internet (`INTERNET`) | Salas en línea (Supabase Realtime) y cuentas | Siempre; el modo «un solo móvil» no usa red durante la partida |
-| Vibración (`VIBRATE`) | Avisos de la partida (se abre la votación, eres impostor...) | Sin diálogo de permiso; se puede apagar en ☰ → Vibración |
 
 No usa: ubicación, cámara, contactos, fotos, notificaciones push, publicidad ni analítica.
 
@@ -84,7 +83,6 @@ La sala de espera usa un código de sala real y temporal.
 - [ ] Capturas de iPad y tablet de 7"/10" si la app va a ser compatible con ellas (si no, restringe a iPhone/teléfono).
 - [ ] Datos legales de las cuentas de desarrollador: el nombre visible del desarrollador en las fichas será **Punto Studio**, pero Apple y Google piden además datos verificables del titular real y, si te declaras «comerciante» (trader) en la UE, publican su dirección y teléfono. Como el juego es gratis y sin anuncios ni cobros, valora declararte como no comerciante; decídelo al abrir cada cuenta.
 - [ ] Cuentas de desarrollador: Google Play Console (25 USD, una vez) y Apple Developer Program (99 USD/año).
-- [ ] Activar Sign in with Apple en Supabase (ver `docs/APPLE_SIGNIN.md` en Punto Ciego): Apple lo exige si ofreces «Entrar con Google». Después, desplegar la revocación del token al borrar la cuenta (`docs/BORRADO_APPLE.md` en Punto Ciego; la cuenta y el proyecto Supabase son compartidos).
 - [ ] Credenciales de revisión para Apple/Google: una cuenta de prueba (correo + contraseña), y decir que jugar no la requiere.
 - [ ] Cuestionarios de clasificación por edades y de seguridad de datos (respuestas previstas arriba).
 - [ ] Revisar las capturas: usan nombres ficticios (Ana, Luis, Marta, Pablo).
