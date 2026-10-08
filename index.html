@@ -3156,6 +3156,21 @@ document.addEventListener('click',e=>{
   e.preventDefault();
   try{window.Capacitor.registerPlugin('Browser').open({url:a.dataset.ext})}catch(x){console.warn('browser',x)}
 });
+/* Texto de la barra de estado (iOS) según el tema: claro sobre fondo oscuro o sobre la pantalla roja del reveal, oscuro sobre fondo claro.
+   Sin la app (web/PWA) no hace nada. Se recalcula al cambiar el tema del sistema o el data-theme, y al abrir o cerrar el #reveal rojo. */
+if(EN_APP){
+  const BARRA=window.Capacitor.registerPlugin('StatusBar'),mq=matchMedia('(prefers-color-scheme: dark)');let ult=null;
+  const barra=()=>{
+    const t=document.documentElement.dataset.theme,rv=document.getElementById('reveal');
+    const claro=(rv&&rv.classList.contains('red'))||t==='dark'||(t!=='light'&&mq.matches); /* texto claro */
+    if(claro===ult)return;ult=claro;
+    try{BARRA.setStyle({style:claro?'DARK':'LIGHT'})}catch(x){console.warn('statusbar',x)}
+  };
+  mq.addEventListener('change',barra);
+  new MutationObserver(barra).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  const rv0=document.getElementById('reveal');if(rv0)new MutationObserver(barra).observe(rv0,{attributes:true,attributeFilter:['class']});
+  barra();
+}
 const QS=new URLSearchParams(location.search);
 const HOST_GRACE=(EN_LOCAL&&(+QS.get('grace'))*1000)||30000; /* segundos sin anfitrión antes de relevarlo */
 
