@@ -3154,12 +3154,12 @@ const baseWeb=()=>EN_APP?WEB_BASE:location.origin+location.pathname;
 document.addEventListener('click',e=>{
   const a=EN_APP&&e.target.closest&&e.target.closest('a[data-ext]');if(!a)return;
   e.preventDefault();
-  try{window.Capacitor.registerPlugin('Browser').open({url:a.dataset.ext})}catch(x){console.warn('browser',x)}
+  try{window.Capacitor.Plugins.Browser.open({url:a.dataset.ext})}catch(x){console.warn('browser',x)}
 });
 /* Texto de la barra de estado (iOS) según el tema: claro sobre fondo oscuro o sobre la pantalla roja del reveal, oscuro sobre fondo claro.
    Sin la app (web/PWA) no hace nada. Se recalcula al cambiar el tema del sistema o el data-theme, y al abrir o cerrar el #reveal rojo. */
-if(EN_APP){
-  const BARRA=window.Capacitor.registerPlugin('StatusBar'),mq=matchMedia('(prefers-color-scheme: dark)');let ult=null;
+try{if(EN_APP){
+  const BARRA=window.Capacitor.Plugins.StatusBar,mq=matchMedia('(prefers-color-scheme: dark)');let ult=null;
   const barra=()=>{
     const t=document.documentElement.dataset.theme,rv=document.getElementById('reveal');
     const claro=(rv&&rv.classList.contains('red'))||t==='dark'||(t!=='light'&&mq.matches); /* texto claro */
@@ -3170,7 +3170,7 @@ if(EN_APP){
   new MutationObserver(barra).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
   const rv0=document.getElementById('reveal');if(rv0)new MutationObserver(barra).observe(rv0,{attributes:true,attributeFilter:['class']});
   barra();
-}
+}}catch(x){console.warn('statusbar',x)}
 const QS=new URLSearchParams(location.search);
 const HOST_GRACE=(EN_LOCAL&&(+QS.get('grace'))*1000)||30000; /* segundos sin anfitrión antes de relevarlo */
 
@@ -4647,7 +4647,7 @@ function errorCuenta(e){
 async function sha256Hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('')}
 function appleCancelado(e){return /1001|cancel/i.test((e&&(e.code||e.message))||'')}
 async function entraConAppleNativo(){
-  const plugin=window.Capacitor.registerPlugin('SignInWithApple');
+  const plugin=window.Capacitor.Plugins.SignInWithApple;
   const sb=await loadSB();
   const raw=Array.from(crypto.getRandomValues(new Uint8Array(32)),x=>x.toString(16).padStart(2,'0')).join('');
   /* a Apple se le da el nonce con hash; a Supabase, el original (así lo verifica contra el token) */

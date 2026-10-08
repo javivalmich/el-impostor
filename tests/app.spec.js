@@ -3,13 +3,28 @@ const { test, expect } = require('@playwright/test');
 
 const puente = () => {
   window.__abiertos = [];
+  window.__barra = [];
+  /* Como en la app real: sin @capacitor/core, solo existe Capacitor.Plugins (no registerPlugin) */
   window.Capacitor = {
     isNativePlatform: () => true,
-    registerPlugin: (n) => (n === 'Browser' ? { open: (o) => { window.__abiertos.push(o.url); return Promise.resolve(); } } : {}),
+    Plugins: {
+      Browser: { open: (o) => { window.__abiertos.push(o.url); return Promise.resolve(); } },
+      StatusBar: { setStyle: (o) => { window.__barra.push(o.style); return Promise.resolve(); } },
+      SignInWithApple: { authorize: () => Promise.reject(new Error('cancel')) },
+    },
   };
 };
 
 test.beforeEach(async ({ page }) => { await page.addInitScript(puente); });
+
+test('en la app, el juego arranca sin errores y ajusta la barra de estado', async ({ page }) => {
+  const errores = [];
+  page.on('pageerror', (e) => errores.push(e.message));
+  await page.goto('/');
+  await expect(page.locator('#s-home')).toBeVisible();
+  expect(errores).toEqual([]);
+  expect(await page.evaluate(() => window.__barra.length)).toBeGreaterThan(0);
+});
 
 test('en la app, Privacidad/Términos/Soporte se abren con Browser y URL absoluta', async ({ page }) => {
   await page.goto('/');
