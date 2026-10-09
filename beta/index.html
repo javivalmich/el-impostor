@@ -3935,7 +3935,7 @@ CATS.forEach((c,i)=>{const b=document.createElement('button');b.className='chip'
 $('k2Minus').onclick=()=>{rs.k--;renderRoomSetup()};$('k2Plus').onclick=()=>{rs.k++;renderRoomSetup()};
 bindHintSeg('hint2Seg',v=>{rs.hint=v;renderRoomSetup()});$('remote2Sw').onclick=()=>{rs.remote=!rs.remote;renderRoomSetup()};
 $('allCats2').onclick=()=>{rs.mask=rs.mask===ALL_MASK?0:ALL_MASK;renderRoomSetup()};
-$('goCreate').onclick=()=>{$('createErr').textContent='';fillMyName('myName');renderRoomSetup();show('s-create')};
+$('goCreate').onclick=()=>{rs.remote=false;$('createErr').textContent='';fillMyName('myName');renderRoomSetup();show('s-create')};
 $('doCreateRoom').onclick=async()=>{
   const name=cleanName($('myName').value),err=$('createErr'),btn=$('doCreateRoom');
   if(!name){err.textContent='Escribe tu nombre (de 1 a 14 caracteres).';return}

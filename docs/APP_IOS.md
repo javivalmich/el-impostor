@@ -27,3 +27,8 @@ En Supabase → Providers → Apple, el Bundle ID de Falso debe estar en *Client
 - Ajustes (⚙ en la portada) y el menú ☰ comparten `SETTINGS` (`impostor-sound`, `impostor-vibra`, `impostor-theme` en localStorage). La versión que enseña Ajustes es `APP_VERSION` en `index.html`: ponla igual que `MARKETING_VERSION` al subir versión.
 - `EN_LOCAL` no vale dentro de la app (`!EN_APP`): `?sblib` y `?grace` no actúan en el WebView (`capacitor://localhost`).
 - Antes de archivar: `npm install && npm run cap:sync` y, en `ios/App`, `pod install` (el Podfile ya incluye `CapacitorHaptics`).
+
+## Sonido y silencio
+- `AudioSesion.swift`: sesión de audio nativa. Al arrancar (`AppDelegate`) queda en `AVAudioSession.Category.ambient`: los sonidos del juego se silencian solos con el iPhone en modo silencio (no se detecta el interruptor). La vibración no depende de esto.
+- Plugin local `AudioSesion` (registrado en `PuntoViewController`, que usa `SceneDelegate` en vez de `CAPBridgeViewController`). La web lo llama con `audioModo('walkie' | 'ambient')`: `WK.abrir()` → `playAndRecord` (`defaultToSpeaker`, `allowBluetooth`, `mixWithOthers`) y `WK.cerrar()` → `ambient`. Se reaplica tras interrupciones y reinicios del audio del sistema.
+- Cada cambio escribe en la consola de Xcode `AUDIO sesión … ok (categoría real: …)`.

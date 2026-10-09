@@ -3135,6 +3135,8 @@ function vibraNativa(H,p,fuerte){
     t+=ms;
   });
 }
+/* Sesión de audio nativa: .ambient (los sonidos respetan el interruptor de silencio) y .playAndRecord mientras el walkie está abierto */
+const audioModo=m=>{try{const A=EN_APP&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AudioSesion;if(A)Promise.resolve(A.modo({modo:m})).catch(()=>{})}catch(e){}};
 const vibra=(p,fuerte)=>{if(!SETTINGS.vibra)return;try{const H=hapticos();if(H)vibraNativa(H,p,fuerte);else if(!EN_APP&&navigator.vibrate)navigator.vibrate(p)}catch(e){}};
 
 /* ---------- Sonidos cortos del juego ----------
@@ -4017,7 +4019,7 @@ CATS.forEach((c,i)=>{const b=document.createElement('button');b.className='chip'
 $('k2Minus').onclick=()=>{rs.k--;renderRoomSetup()};$('k2Plus').onclick=()=>{rs.k++;renderRoomSetup()};
 bindHintSeg('hint2Seg',v=>{rs.hint=v;renderRoomSetup()});$('remote2Sw').onclick=()=>{rs.remote=!rs.remote;renderRoomSetup()};
 $('allCats2').onclick=()=>{rs.mask=rs.mask===ALL_MASK?0:ALL_MASK;renderRoomSetup()};
-$('goCreate').onclick=()=>{$('createErr').textContent='';fillMyName('myName');renderRoomSetup();show('s-create')};
+$('goCreate').onclick=()=>{rs.remote=false;$('createErr').textContent='';fillMyName('myName');renderRoomSetup();show('s-create')};
 $('doCreateRoom').onclick=async()=>{
   const name=cleanName($('myName').value),err=$('createErr'),btn=$('doCreateRoom');
   if(!name){err.textContent='Escribe tu nombre (de 1 a 14 caracteres).';return}
@@ -4669,8 +4671,8 @@ const WK={
     const L=$('wkLista');if(L._h!==h){const abajo=L.scrollHeight-L.scrollTop-L.clientHeight<40;L._h=h;L.innerHTML=h;if(abajo||!L._ini){L.scrollTop=L.scrollHeight;L._ini=true}}
   },
   modo(){const cur=document.querySelector('.screen.on'),c=!!(this.abierto&&cur&&cur.id!=='s-game');$('wk').classList.toggle('compact',c);document.body.classList.toggle('wk-compact',c)},
-  abrir(){if(!(ROOM&&ROOM.remote))return;this.off=false;if(!this.enLlamada)this.entrarLlamada();this.abierto=true;$('wk').classList.add('on');ssSet('impostor-wkopen-'+wkKey(),1);this.ctx();this.diag();$('wkLista')._ini=false;this.modo();this.pinta()},
-  cerrar(){const era=this.abierto;this.abierto=false;$('wk').classList.remove('on');if(era)ssSet('impostor-wkopen-'+wkKey(),null);if(this.rec)this.para(true);this.hablando(null);this.modo();this.pinta()},
+  abrir(){if(!(ROOM&&ROOM.remote))return;this.off=false;if(!this.enLlamada)this.entrarLlamada();this.abierto=true;audioModo('walkie');$('wk').classList.add('on');ssSet('impostor-wkopen-'+wkKey(),1);this.ctx();this.diag();$('wkLista')._ini=false;this.modo();this.pinta()},
+  cerrar(){const era=this.abierto;this.abierto=false;audioModo('ambient');$('wk').classList.remove('on');if(era)ssSet('impostor-wkopen-'+wkKey(),null);if(this.rec)this.para(true);this.hablando(null);this.modo();this.pinta()},
   init(){
     $('wkFab').onclick=()=>this.abrir();$('wkCerrar').onclick=()=>this.cerrar();$('wkFondo').onclick=()=>this.cerrar();
     $('wkVolver').onclick=()=>this.cerrar();
