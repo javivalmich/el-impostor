@@ -19,46 +19,61 @@ const puenteApp = () => {
 
 const NOMBRES = ['Ana', 'Beto', 'Cris'];
 
-/* Reparte la partida de un solo móvil: cada jugador mantiene pulsada su tarjeta y se recogen los golpes que notó */
+/* Empieza la partida de un solo móvil y reparte: devuelve lo que vibró al empezar y, por jugador, lo que vibró al abrir su tarjeta */
 async function golpesPorJugador(page) {
   await startSolo(page, NOMBRES, { k: 1 });
+  await page.waitForTimeout(500); // el patrón de inicio dura ~220 ms
+  const inicio = await page.evaluate(() => ({ golpes: window.__golpes, vib: window.__vib }));
   const res = [];
   for (const nombre of NOMBRES) {
     await expect(page.locator('#shName')).toHaveText(nombre);
     await page.click('#shGo');
     await page.evaluate(() => { window.__golpes = []; window.__vib = []; });
     const { isImp } = await peekCard(page);
-    await page.waitForTimeout(500); // el patrón dura ~300 ms
+    await page.waitForTimeout(500);
     const golpes = await page.evaluate(() => window.__golpes);
     const vib = await page.evaluate(() => window.__vib);
     res.push({ nombre, isImp, golpes, vib });
     await page.click('#scNext');
   }
-  return res;
+  return { inicio, res };
 }
 
 test.describe('Vibración en la app (Haptics)', () => {
   test.beforeEach(async ({ page }) => { await page.addInitScript(puenteApp); });
 
-  test('al destapar la tarjeta, impostor e inocentes notan exactamente lo mismo', async ({ page }) => {
+  test('al empezar vibra una vez (3 zumbidos) y abrir la tarjeta no vibra, para impostor e inocentes', async ({ page }) => {
     test.setTimeout(40000);
-    const res = await golpesPorJugador(page);
+    const { inicio, res } = await golpesPorJugador(page);
+    // [80,60,80] → dos zumbidos reales (Haptics.vibrate), antes de ver ninguna tarjeta
+    expect(inicio.golpes.map((g) => g.s)).toEqual(['vibrate', 'vibrate']);
     expect(res.some((r) => r.isImp)).toBe(true);
     expect(res.some((r) => !r.isImp)).toBe(true);
-    for (const r of res) {
-      // [90,60,90,60,220] → tres zumbidos reales (Haptics.vibrate), la misma secuencia para todos
-      expect(r.golpes.map((g) => g.s)).toEqual(['vibrate', 'vibrate', 'vibrate']);
-    }
-    // y con los mismos tiempos (±80 ms) entre el primer golpe y los siguientes
-    const rel = (r) => r.golpes.map((g) => g.t - r.golpes[0].t);
-    const ref = rel(res[0]);
-    for (const r of res) rel(r).forEach((t, i) => expect(Math.abs(t - ref[i])).toBeLessThan(80));
+    for (const r of res) expect(r.golpes, r.nombre).toEqual([]);
+  });
+
+  test('al abrirse la votación vibra (zumbido); al revelar, impostor y no impostor tienen su patrón', async ({ page }) => {
+    test.setTimeout(60000);
+    await startSolo(page, NOMBRES, { k: 1 });
+    for (const nombre of NOMBRES) { await page.click('#shGo'); await peekCard(page); await page.waitForTimeout(150); await page.click('#scNext'); }
+    await page.evaluate(() => { window.__golpes = []; });
+    await page.click('#sdVote');
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.__golpes.map((g) => g.s))).toEqual(['vibrate', 'vibrate']);
+    // se vota a un inocente: no es el impostor → un solo zumbido
+    const inocente = await page.evaluate(() => SOLO.names.find((_, i) => !soloImps().includes(i + 1)));
+    await page.evaluate(() => { window.__golpes = []; });
+    await page.locator('#svList .vbtn', { hasText: inocente }).click();
+    await page.click('#svClose');
+    await page.waitForTimeout(5500);
+    expect(await page.evaluate(() => window.__golpes.map((g) => g.s))).toEqual(['vibrate']);
   });
 
   test('con la vibración apagada en Ajustes no hay ningún golpe', async ({ page }) => {
     test.setTimeout(40000);
     await page.addInitScript(() => localStorage.setItem('impostor-vibra', '0'));
-    const res = await golpesPorJugador(page);
+    const { inicio, res } = await golpesPorJugador(page);
+    expect(inicio.golpes).toEqual([]);
     for (const r of res) expect(r.golpes).toEqual([]);
   });
 
@@ -101,10 +116,11 @@ test.describe('Vibración en la web (navigator.vibrate)', () => {
     await page.addInitScript(() => { window.__vib = []; Navigator.prototype.vibrate = function (p) { window.__vib.push(p); return true; }; });
   });
 
-  test('al destapar la tarjeta, todos reciben el mismo patrón', async ({ page }) => {
+  test('al empezar vibra el mismo patrón y abrir la tarjeta no vibra', async ({ page }) => {
     test.setTimeout(40000);
-    const res = await golpesPorJugador(page);
+    const { inicio, res } = await golpesPorJugador(page);
+    expect(inicio.vib).toEqual([[80, 60, 80]]);
     expect(res.some((r) => r.isImp)).toBe(true);
-    for (const r of res) expect(r.vib).toEqual([[90, 60, 90, 60, 220]]);
+    for (const r of res) expect(r.vib, r.nombre).toEqual([]);
   });
 });
