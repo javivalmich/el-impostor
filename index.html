@@ -3129,7 +3129,7 @@ function vibraNativa(H,p){
   [].concat(p).forEach((ms,i)=>{
     if(i%2===0){ /* cada tramo de vibración es un golpe: suave (<60 ms), medio (<140 ms) o fuerte */
       const style=ms<60?'LIGHT':ms<140?'MEDIUM':'HEAVY';
-      const golpe=()=>{try{Promise.resolve(H.impact({style})).catch(()=>{})}catch(e){}};
+      const golpe=()=>{try{Promise.resolve(H.impact({style})).then(()=>console.log('HAPTIC ok '+style)).catch(e=>console.log('HAPTIC error '+e))}catch(e){console.log('HAPTIC error '+e)}}; /* registro temporal para Xcode */
       if(t)setTimeout(golpe,t);else golpe();
     }
     t+=ms;
