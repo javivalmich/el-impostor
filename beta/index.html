@@ -178,7 +178,7 @@ input.codein::placeholder{color:var(--line)}
 .small{font-size:.95rem;font-weight:600;color:rgba(255,255,255,.72)}
 .word{color:#f5f5f7;font-weight:900;line-height:1.15;margin:6px 0 8px;overflow-wrap:break-word;letter-spacing:.01em;max-width:100%}
 .cat{color:var(--red);font-weight:700;letter-spacing:.08em;font-size:.8rem}
-.impword{font-weight:900;font-size:2.6rem;color:#fff;line-height:1;letter-spacing:.06em;margin:2px 0 14px}
+.impword{font-weight:900;font-size:2.6rem;color:var(--red);line-height:1;letter-spacing:.06em;margin:2px 0 14px}
 .hint{display:inline-block;background:#24242b;color:#fff;font-weight:800;font-size:1.3rem;padding:9px 20px;border-radius:14px;margin-top:4px;max-width:100%;overflow-wrap:break-word}
 .imp .note{margin-top:12px;font-weight:600;color:#fff}
 @media (prefers-reduced-motion:no-preference){
@@ -469,11 +469,11 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
         <div class="step"><button id="k2Minus" aria-label="Menos impostores">−</button><output id="k2Val">1</output><button id="k2Plus" aria-label="Más impostores">+</button></div>
       </div>
       <div class="row" style="flex-direction:column;align-items:stretch;gap:10px">
-        <div><div class="lbl">Pista al impostor</div><div class="sub" id="hint2Sub">Ve solo la categoría</div></div>
+        <div><div class="lbl">Pista al impostor</div><div class="sub" id="hint2Sub">Ve una palabra suelta y floja</div></div>
         <div class="seg" id="hint2Seg" role="radiogroup" aria-label="Nivel de pista para el impostor">
           <button type="button" data-v="0" aria-pressed="false">Sin pista</button>
-          <button type="button" data-v="1" aria-pressed="true">Categoría</button>
-          <button type="button" data-v="2" aria-pressed="false">Pista vaga</button>
+          <button type="button" data-v="1" aria-pressed="false">Categoría</button>
+          <button type="button" data-v="2" aria-pressed="true">Pista vaga</button>
         </div>
       </div>
       <div class="row">
@@ -527,11 +527,11 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
         <div class="step"><button id="kMinus" aria-label="Menos impostores">−</button><output id="kVal">1</output><button id="kPlus" aria-label="Más impostores">+</button></div>
       </div>
       <div class="row" style="flex-direction:column;align-items:stretch;gap:10px">
-        <div><div class="lbl">Pista al impostor</div><div class="sub" id="hintSub">Ve solo la categoría</div></div>
+        <div><div class="lbl">Pista al impostor</div><div class="sub" id="hintSub">Ve una palabra suelta y floja</div></div>
         <div class="seg" id="hintSeg" role="radiogroup" aria-label="Nivel de pista para el impostor">
           <button type="button" data-v="0" aria-pressed="false">Sin pista</button>
-          <button type="button" data-v="1" aria-pressed="true">Categoría</button>
-          <button type="button" data-v="2" aria-pressed="false">Pista vaga</button>
+          <button type="button" data-v="1" aria-pressed="false">Categoría</button>
+          <button type="button" data-v="2" aria-pressed="true">Pista vaga</button>
         </div>
       </div>
       <div class="row">
@@ -3144,8 +3144,8 @@ const EN_LOCAL=/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const QS=new URLSearchParams(location.search);
 const HOST_GRACE=(EN_LOCAL&&(+QS.get('grace'))*1000)||30000; /* segundos sin anfitrión antes de relevarlo */
 
-let setup={n:0,k:1,hint:1,mask:ALL_MASK,secret:false};
-let rs={k:1,hint:1,mask:ALL_MASK,remote:false}; // ajustes de la sala en línea
+let setup={n:0,k:1,hint:2,mask:ALL_MASK,secret:false};
+let rs={k:1,hint:2,mask:ALL_MASK,remote:false}; // ajustes de la sala en línea
 let names=[];try{names=JSON.parse(localStorage.getItem('impostor-names')||'[]').map(cleanName).filter(Boolean).slice(0,18)}catch(e){names=[]}
 let game=null; // partida en marcha: {code,cfg,names,me,round,creator,remote,legacy}
 let ROOM=null; // sala en línea de este móvil: {code,name,creator,remote,joined,set}
@@ -3415,7 +3415,7 @@ function okState(m){
   return !!(m.cfg&&Number.isInteger(m.cfg.seed)&&Array.isArray(m.pl)&&m.pl.length>=3&&m.pl.every(p=>p&&typeof p.p==='string'&&typeof p.n==='string'));
 }
 function newer(m,c){if(!c)return true;if(m.ep!==c.ep)return m.ep>c.ep;if(m.host!==c.host)return m.host<c.host;return m.sq>c.sq}
-const defSet=()=>({k:1,hint:1,mask:ALL_MASK,remote:false});
+const defSet=()=>({k:1,hint:2,mask:ALL_MASK,remote:false});
 /* rank se conserva mientras dure la sala (no se reinicia al volver a la sala de espera ni al empezar otra partida) */
 function lobbyState(set){return {ep:(S?S.ep:0)+1,sq:0,host:PID,ph:'lobby',set:{...defSet(),...set},cfg:null,pl:null,ban:[],pend:[],acc:[],left:[],round:1,dead:[],vt:null,res:null,prop:null,rank:S?cloneRank(S.rank):{}}}
 /* Construye la partida (game) a partir del estado de la sala */
