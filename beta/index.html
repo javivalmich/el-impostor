@@ -491,6 +491,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   </section>
 
   <section class="screen" id="s-lobby">
+    <button class="back" id="lbBack">‹ Volver</button>
     <div class="gtop"><h2>Sala de espera</h2><button class="menubtn" id="lobbyMenu" aria-label="Menú">☰</button></div>
     <div class="panel codebox">
       <p style="margin:0 0 4px">Código de la sala</p>
@@ -508,6 +509,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   </section>
 
   <section class="screen" id="s-wait">
+    <button class="back" id="wtBack">‹ Volver</button>
     <div class="gtop"><h2>Entrarás en la siguiente ronda</h2><button class="menubtn" id="waitMenu" aria-label="Menú">☰</button></div>
     <p class="hint-line" id="wtMsg"></p>
   </section>
@@ -3918,6 +3920,18 @@ async function shareRoom(){
   try{if(navigator.share){await navigator.share({title:'Punto Falso',text:`Entra en mi sala de Punto Falso (código ${ROOM.code}):`,url});return}}catch(e){if(e&&e.name==='AbortError')return}
   try{await navigator.clipboard.writeText(url);toast('Enlace copiado')}catch(e){toast('No se pudo copiar. Que escaneen el QR.')}
 }
+/* «‹ Volver» en la sala de espera: pide confirmación. Al salir, la sala sigue sin ti: si eras el anfitrión, otro jugador conectado lo pasa a ser
+   (takeover por presencia) y, si no queda nadie, la sala deja de existir. */
+function salirSalaSheet(){
+  if(!ROOM)return;
+  const otros=connectedList(NET.R||{}).filter(e=>e.p!==PID).length;
+  const nota=iAmHost()?(otros>0?'Como eres el anfitrión, otro jugador pasará a serlo.':'Eres el único en la sala: se cerrará.'):'Podrás volver a entrar con el código de la sala.';
+  sheet(`<h3>¿Salir de la sala?</h3><p>${nota}</p><button class="act" id="slYes">Salir</button><button class="link" id="slNo">Quedarme</button>`,()=>{
+    $('slNo').onclick=closeSheet;
+    $('slYes').onclick=()=>{closeSheet();if(ROOM)dropRoom();phHtml='';show('s-home')};
+  });
+}
+$('lbBack').onclick=salirSalaSheet;$('wtBack').onclick=salirSalaSheet;
 function renderWait(){
   if(!ROOM||!$('s-wait').classList.contains('on'))return;
   const acc=S&&S.acc.some(p=>p.p===PID);

@@ -503,6 +503,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   </section>
 
   <section class="screen" id="s-lobby">
+    <button class="back" id="lbBack">‹ Volver</button>
     <div class="gtop"><h2>Sala de espera</h2><button class="menubtn" id="lobbyMenu" aria-label="Menú">☰</button></div>
     <div class="panel codebox">
       <p style="margin:0 0 4px">Código de la sala</p>
@@ -520,6 +521,7 @@ body.wk-compact .wrap.game{padding-bottom:calc(min(52vh,400px) + 24px)}
   </section>
 
   <section class="screen" id="s-wait">
+    <button class="back" id="wtBack">‹ Volver</button>
     <div class="gtop"><h2>Entrarás en la siguiente ronda</h2><button class="menubtn" id="waitMenu" aria-label="Menú">☰</button></div>
     <p class="hint-line" id="wtMsg"></p>
   </section>
@@ -3135,8 +3137,6 @@ function vibraNativa(H,p,fuerte){
     t+=ms;
   });
 }
-/* Sesión de audio nativa: .ambient (los sonidos respetan el interruptor de silencio) y .playAndRecord mientras el walkie está abierto */
-const audioModo=m=>{try{const A=EN_APP&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AudioSesion;if(A)Promise.resolve(A.modo({modo:m})).catch(()=>{})}catch(e){}};
 const VIB_INI=[80,60,80],VIB_VOTO=[50,40,50]; /* partida lista / votación abierta: iguales para todos */
 const vibra=(p,fuerte)=>{if(!SETTINGS.vibra)return;try{const H=hapticos();if(H)vibraNativa(H,p,fuerte);else if(!EN_APP&&navigator.vibrate)navigator.vibrate(p)}catch(e){}};
 
@@ -3201,6 +3201,20 @@ document.addEventListener('pointerdown',()=>SND.unlock(),{once:true});
    En la app la página va en capacitor://localhost: lo que se comparta o abra fuera (enlaces de sala, correos de Supabase) tiene que llevar a la web pública,
    y las páginas externas (privacidad, términos, soporte…) se abren con @capacitor/browser y su URL absoluta (atributo data-ext). */
 const EN_APP=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+/* Sesión de audio. Los efectos son <audio> (WAV generados al vuelo) y el walkie usa Web Audio: WKWebView pisa la categoría nativa, así que se
+   fija también con navigator.audioSession.type (iOS 16.4+): 'ambient' (respeta el silencio) y 'play-and-record' solo con el walkie abierto.
+   La categoría nativa (plugin AudioSesion) queda de respaldo. El console.log es temporal, para comprobarlo en Xcode. */
+let audioTipo='';
+function audioModo(m){
+  const t=m==='walkie'?'play-and-record':'ambient';
+  try{
+    if(!EN_APP)return;
+    if(navigator.audioSession&&navigator.audioSession.type!==t)navigator.audioSession.type=t;
+    if(audioTipo!==t){audioTipo=t;console.log('AUDIO tipo='+(navigator.audioSession?navigator.audioSession.type:'no disponible (solo nativo)')+' (pedido '+t+')')}
+  }catch(e){console.log('AUDIO tipo error '+e)}
+  try{const A=window.Capacitor.Plugins&&window.Capacitor.Plugins.AudioSesion;if(A)Promise.resolve(A.modo({modo:m})).catch(()=>{})}catch(e){}
+}
+audioModo('ambient');
 /* En la app el WebView se sirve desde capacitor://localhost: sin el !EN_APP, localhost valdría también ahí y los parámetros de pruebas (?sblib, ?grace) tendrían efecto */
 const EN_LOCAL=!EN_APP&&/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const WEB_BASE='https://puntostudio.es/punto-falso/';
@@ -4002,6 +4016,18 @@ async function shareRoom(){
   try{if(navigator.share){await navigator.share({title:'Punto Falso',text:`Entra en mi sala de Punto Falso (código ${ROOM.code}):`,url});return}}catch(e){if(e&&e.name==='AbortError')return}
   try{await navigator.clipboard.writeText(url);toast('Enlace copiado')}catch(e){toast('No se pudo copiar. Que escaneen el QR.')}
 }
+/* «‹ Volver» en la sala de espera: pide confirmación. Al salir, la sala sigue sin ti: si eras el anfitrión, otro jugador conectado lo pasa a ser
+   (takeover por presencia) y, si no queda nadie, la sala deja de existir. */
+function salirSalaSheet(){
+  if(!ROOM)return;
+  const otros=connectedList(NET.R||{}).filter(e=>e.p!==PID).length;
+  const nota=iAmHost()?(otros>0?'Como eres el anfitrión, otro jugador pasará a serlo.':'Eres el único en la sala: se cerrará.'):'Podrás volver a entrar con el código de la sala.';
+  sheet(`<h3>¿Salir de la sala?</h3><p>${nota}</p><button class="act" id="slYes">Salir</button><button class="link" id="slNo">Quedarme</button>`,()=>{
+    $('slNo').onclick=closeSheet;
+    $('slYes').onclick=()=>{closeSheet();if(ROOM)dropRoom();phHtml='';show('s-home')};
+  });
+}
+$('lbBack').onclick=salirSalaSheet;$('wtBack').onclick=salirSalaSheet;
 function renderWait(){
   if(!ROOM||!$('s-wait').classList.contains('on'))return;
   const acc=S&&S.acc.some(p=>p.p===PID);

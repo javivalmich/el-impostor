@@ -52,3 +52,53 @@ test.describe('Sesión de audio de la app', () => {
     expect(await page.evaluate(() => window.__audio)).toEqual(['walkie', 'ambient']);
   });
 });
+
+test.describe('audioSession del WebView', () => {
+  test('ambient al iniciar, play-and-record solo con el walkie abierto y ambient al cerrarlo (con registro AUDIO tipo=)', async ({ page }) => {
+    const logs = [];
+    page.on('console', (m) => { if (m.text().startsWith('AUDIO tipo=')) logs.push(m.text()); });
+    await page.addInitScript(() => {
+      window.Capacitor = { isNativePlatform: () => true, Plugins: {} };
+      Object.defineProperty(navigator, 'audioSession', { value: { type: 'auto' }, configurable: true });
+    });
+    await page.goto('/');
+    expect(await page.evaluate(() => navigator.audioSession.type)).toBe('ambient');
+    await page.evaluate(() => { ROOM = { code: 'ABCDE', name: 'Ana', creator: true, remote: true, joined: Date.now() }; WK.abrir(); });
+    expect(await page.evaluate(() => navigator.audioSession.type)).toBe('play-and-record');
+    await page.evaluate(() => WK.cerrar());
+    expect(await page.evaluate(() => navigator.audioSession.type)).toBe('ambient');
+    expect(logs.map((l) => l.split(' ')[1])).toEqual(['tipo=ambient', 'tipo=play-and-record', 'tipo=ambient'].map((x) => x));
+  });
+
+  test('en la web no se toca audioSession', async ({ page }) => {
+    await page.addInitScript(() => { Object.defineProperty(navigator, 'audioSession', { value: { type: 'auto' }, configurable: true }); });
+    await page.goto('/');
+    expect(await page.evaluate(() => navigator.audioSession.type)).toBe('auto');
+  });
+});
+
+test.describe('Sala de espera: «‹ Volver»', () => {
+  test('pide confirmación; «Quedarme» no sale y «Salir» vuelve a la portada y suelta la sala', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => { ROOM = { code: 'ABCDE', name: 'Ana', creator: true, remote: false, joined: Date.now() }; S = { host: PID, ph: 'lobby', pl: [], acc: [], pend: [], ban: [] }; show('s-lobby'); });
+    await expect(page.locator('#lbBack')).toBeVisible();
+    await page.click('#lbBack');
+    await expect(page.locator('#sheet h3')).toHaveText('¿Salir de la sala?');
+    await expect(page.locator('#sheet p')).toContainText('único en la sala');
+    await page.click('#slNo');
+    await expect(page.locator('#s-lobby')).toHaveClass(/on/);
+    await page.click('#lbBack');
+    await page.click('#slYes');
+    await expect(page.locator('#s-home')).toHaveClass(/on/);
+    expect(await page.evaluate(() => ROOM)).toBeNull();
+  });
+
+  test('también en la pantalla de espera de quien llega con la partida empezada', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => { ROOM = { code: 'ABCDE', name: 'Ana', creator: false, remote: false, joined: Date.now() }; show('s-wait'); });
+    await page.click('#wtBack');
+    await expect(page.locator('#sheet p')).toContainText('volver a entrar');
+    await page.click('#slYes');
+    await expect(page.locator('#s-home')).toHaveClass(/on/);
+  });
+});
