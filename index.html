@@ -3124,18 +3124,18 @@ function setSetting(k,v){
    de nadie, así que impostor e inocentes notan exactamente lo mismo. */
 const hapticos=()=>{try{return(EN_APP&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Haptics)||null}catch(e){return null}};
 const puedeVibrar=()=>EN_APP?!!hapticos():typeof navigator.vibrate==='function';
-function vibraNativa(H,p){
+function vibraNativa(H,p,fuerte){
   let t=0;
   [].concat(p).forEach((ms,i)=>{
-    if(i%2===0){ /* cada tramo de vibración es un golpe: suave (<60 ms), medio (<140 ms) o fuerte */
-      const style=ms<60?'LIGHT':ms<140?'MEDIUM':'HEAVY';
-      const golpe=()=>{try{Promise.resolve(H.impact({style})).then(()=>console.log('HAPTIC ok '+style)).catch(e=>console.log('HAPTIC error '+e))}catch(e){console.log('HAPTIC error '+e)}}; /* registro temporal para Xcode */
+    if(i%2===0){ /* fuerte: zumbido real del iPhone (Haptics.vibrate, una llamada por pulso); si no, un toque suave/medio/fuerte según la duración */
+      const style=ms<60?'LIGHT':ms<140?'MEDIUM':'HEAVY',tipo=fuerte?'vibrate':style;
+      const golpe=()=>{try{Promise.resolve(fuerte?H.vibrate({duration:ms}):H.impact({style})).then(()=>console.log('HAPTIC ok '+tipo)).catch(e=>console.log('HAPTIC error '+e))}catch(e){console.log('HAPTIC error '+e)}}; /* registro temporal para Xcode */
       if(t)setTimeout(golpe,t);else golpe();
     }
     t+=ms;
   });
 }
-const vibra=p=>{if(!SETTINGS.vibra)return;try{const H=hapticos();if(H)vibraNativa(H,p);else if(!EN_APP&&navigator.vibrate)navigator.vibrate(p)}catch(e){}};
+const vibra=(p,fuerte)=>{if(!SETTINGS.vibra)return;try{const H=hapticos();if(H)vibraNativa(H,p,fuerte);else if(!EN_APP&&navigator.vibrate)navigator.vibrate(p)}catch(e){}};
 
 /* ---------- Sonidos cortos del juego ----------
    Se generan con la API de audio (nunca se descargan de fuera) y se guardan como WAV en memoria.
@@ -4150,7 +4150,7 @@ function setCardOpen(cardEl,on,vibKey){
   const isImp=cardEl.classList.contains('imp');
   cardEl.classList.toggle('open',on);
   /* Anti-chivato: el mismo fondo, la misma vibración y los mismos tiempos para todos los papeles */
-  if(on&&vibrated!==vibKey){vibrated=vibKey;vibra([90,60,90,60,220])}
+  if(on&&vibrated!==vibKey){vibrated=vibKey;vibra([90,60,90,60,220],true)}
   return isImp;
 }
 function bindHoldToReveal(cardEl,onOpen){
@@ -4212,9 +4212,9 @@ function renderReveal(){
     else if(r.top.length)h=`<div class="big pop">¡EMPATE!</div><p>${listNames(r.top.map(nm))}</p>`;
     else h=`<div class="big pop">NADIE HA VOTADO</div>`;
     if(stage>=2&&!REV.vib){
-      REV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60]);
+      REV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60],true);
       SND.play(isImp?'revealImp':'revealInn');
-      if(r.elim===game.me&&!REV.vibOut){REV.vibOut=true;setTimeout(()=>vibra([110,70,110,70,110,70,260]),260)}
+      if(r.elim===game.me&&!REV.vibOut){REV.vibOut=true;setTimeout(()=>vibra([110,70,110,70,110,70,260],true),260)}
     }
     if(stage===3){
       if(!r.shortcut){
@@ -5181,7 +5181,7 @@ function soloRenderReveal(){
     else if(r.elim!=null){cls='white';h=`<img class="mas" src="${MASCOT}" alt=""><div class="k" style="color:#6b6b75">${nm(r.elim)}</div><div class="big pop">NO ERA EL IMPOSTOR</div>`}
     else if(r.top.length)h=`<div class="big pop">¡EMPATE!</div><p>${listNames(r.top.map(nm))}</p>`;
     else h=`<div class="big pop">NADIE HA VOTADO</div>`;
-    if(stage>=2&&!SOLOREV.vib){SOLOREV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60]);SND.play(isImp?'revealImp':'revealInn')}
+    if(stage>=2&&!SOLOREV.vib){SOLOREV.vib=true;if(age<7000)vibra(isImp?[90,60,90,60,220]:[60],true);SND.play(isImp?'revealImp':'revealInn')}
     if(stage===3){
       if(!r.shortcut){
         const rows=Object.keys(r.counts).map(Number).sort((a,b)=>r.counts[b]-r.counts[a]||a-b),mx=Math.max(1,...rows.map(s=>r.counts[s]));

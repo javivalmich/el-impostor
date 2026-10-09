@@ -12,7 +12,7 @@ const puenteApp = () => {
       Browser: { open: () => Promise.resolve() },
       StatusBar: { setStyle: () => Promise.resolve() },
       SignInWithApple: { authorize: () => Promise.reject(new Error('cancel')) },
-      Haptics: { impact: (o) => { window.__golpes.push({ s: o.style, t: performance.now() }); return Promise.resolve(); } },
+      Haptics: { vibrate: () => { window.__golpes.push({ s: 'vibrate', t: performance.now() }); return Promise.resolve(); }, impact: (o) => { window.__golpes.push({ s: o.style, t: performance.now() }); return Promise.resolve(); } },
     },
   };
 };
@@ -46,8 +46,8 @@ test.describe('Vibración en la app (Haptics)', () => {
     expect(res.some((r) => r.isImp)).toBe(true);
     expect(res.some((r) => !r.isImp)).toBe(true);
     for (const r of res) {
-      // [90,60,90,60,220] → medio, medio, fuerte
-      expect(r.golpes.map((g) => g.s)).toEqual(['MEDIUM', 'MEDIUM', 'HEAVY']);
+      // [90,60,90,60,220] → tres zumbidos reales (Haptics.vibrate), la misma secuencia para todos
+      expect(r.golpes.map((g) => g.s)).toEqual(['vibrate', 'vibrate', 'vibrate']);
     }
     // y con los mismos tiempos (±80 ms) entre el primer golpe y los siguientes
     const rel = (r) => r.golpes.map((g) => g.t - r.golpes[0].t);
@@ -74,11 +74,23 @@ test.describe('Vibración en la app (Haptics)', () => {
     expect(await estilos([110, 70, 110, 70, 110, 70, 260])).toEqual(['MEDIUM', 'MEDIUM', 'MEDIUM', 'HEAVY']);
   });
 
+  test('pulsos fuertes: un zumbido por tramo, con sus pausas; los toques pequeños siguen siendo impact', async ({ page }) => {
+    await page.goto('/');
+    const estilos = async (patron, fuerte) => {
+      await page.evaluate(([p, f]) => { window.__golpes = []; vibra(p, f); }, [patron, fuerte]);
+      await page.waitForTimeout(700);
+      return page.evaluate(() => window.__golpes.map((g) => g.s));
+    };
+    expect(await estilos([110, 70, 110, 70, 110, 70, 260], true)).toEqual(['vibrate', 'vibrate', 'vibrate', 'vibrate']);
+    expect(await estilos([60], true)).toEqual(['vibrate']);
+    expect(await estilos([50, 40, 50], false)).toEqual(['LIGHT', 'LIGHT']);
+  });
+
   test('si falla el plugin, no se rompe nada', async ({ page }) => {
     const errores = [];
     page.on('pageerror', (e) => errores.push(e.message));
     await page.goto('/');
-    await page.evaluate(() => { window.Capacitor.Plugins.Haptics.impact = () => { throw new Error('boom'); }; vibra([90, 60, 90]); });
+    await page.evaluate(() => { window.Capacitor.Plugins.Haptics.impact = () => { throw new Error('boom'); }; window.Capacitor.Plugins.Haptics.vibrate = () => { throw new Error('boom'); }; vibra([90, 60, 90]); vibra([90, 60, 90], true); });
     await page.waitForTimeout(300);
     expect(errores).toEqual([]);
   });
