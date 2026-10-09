@@ -6,7 +6,9 @@ const path = require('path');
 const { startSolo, peekCard } = require('./helpers');
 
 async function pressCard(page, sel = '#card2') {
-  const box = await page.locator(sel).boundingBox();
+  const card = page.locator(sel);
+  await card.waitFor(); // la pantalla llega ~100 ms después del clic (efecto al pulsar)
+  const box = await card.boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
   await page.waitForTimeout(120);
