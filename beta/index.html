@@ -4928,7 +4928,7 @@ function soloStartVote(cand,tie){
   cand=cand||soloAlive();
   /* los candidatos (a quién se puede votar) pueden ser solo los empatados, pero votan todos los vivos */
   SOLO.vote={cand,tie:!!tie,ballots:{},order:soloAlive(),idx:0};
-  SOLO.phase='vote';SOLO.voiceChoice=null;soloSave();
+  SOLO.phase='vote';SOLO.voiceChoice=null;soloSave();vibra([50,40,50]);
   if(SOLO.voteMode==='secreta')soloVoteSecretNext();else soloRenderVoiceVote();
 }
 function soloRenderVoiceVote(){
